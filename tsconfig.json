@@ -4,6 +4,13 @@
   "compilerOptions": {
     "outDir": "./dist/out-tsc",
     "strict": true,
+    "baseUrl": "src",
+    "paths": {
+      "@core/*": ["app/core/*"],
+      "@shared/*": ["app/shared/*"],
+      "@pages/*": ["app/pages/*"],
+      "@env/*": ["environments/*"]
+    },
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
     "noImplicitReturns": true,
