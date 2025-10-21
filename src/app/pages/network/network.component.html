@@ -1,5 +1,140 @@
-<div class="bg-white rounded-lg shadow p-4">
-  <h1 class="text-2xl font-semibold mb-4">Mạng lưới của bạn</h1>
-
-  <p class="text-gray-700">Hiển thị lời mời kết nối, danh sách bạn bè, gợi ý kết nối...</p>
+  <div class="min-h-screen bg-gray-50 p-4">
+  <div class="max-w-7xl mx-auto">
+    <h1 class="text-3xl font-bold text-gray-900 mb-8">Mạng lưới của bạn</h1>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <!-- Left Sidebar - Manage my network -->
+      <div class="lg:col-span-1">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <h2 class="text-lg font-semibold text-gray-900 mb-4">Quản lý mạng lưới</h2>
+          
+          <!-- Connections -->
+          <a routerLink="/network/connections" class="flex items-center justify-between py-3 hover:bg-gray-50 rounded-lg px-3 cursor-pointer transition-colors">
+            <div class="flex items-center space-x-3">
+              <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z"/>
+                </svg>
+              </div>
+              <span class="text-gray-700 font-medium">Kết nối</span>
+            </div>
+            <span class="text-gray-900 font-semibold">{{ connectionsCount }}</span>
+          </a>
+          
+          <!-- Following & Followers -->
+          <a routerLink="/network/following" class="flex items-center justify-between py-3 hover:bg-gray-50 rounded-lg px-3 cursor-pointer transition-colors">
+            <div class="flex items-center space-x-3">
+              <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"/>
+                </svg>
+              </div>
+              <span class="text-gray-700 font-medium">Theo dõi</span>
+            </div>
+            <span class="text-gray-900 font-semibold">{{ followingCount }}</span>
+          </a>
+          
+          <!-- Pages/Companies -->
+          <a routerLink="/network/companies" class="flex items-center justify-between py-3 hover:bg-gray-50 rounded-lg px-3 cursor-pointer transition-colors">
+            <div class="flex items-center space-x-3">
+              <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                <svg class="w-4 h-4 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-6a1 1 0 00-1-1H9a1 1 0 00-1 1v6a1 1 0 01-1 1H4a1 1 0 110-2V4z" clip-rule="evenodd"/>
+                </svg>
+              </div>
+              <span class="text-gray-700 font-medium">Công ty</span>
+            </div>
+            <span class="text-gray-900 font-semibold">{{ companiesCount }}</span>
+          </a>
+        </div>
+      </div>
+      
+      <!-- Right Content -->
+      <div class="lg:col-span-3 space-y-8">
+        <!-- Invitation Requests section -->
+        <div *ngIf="invitationRequests.length > 0" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-xl font-semibold text-gray-900">Lời mời kết nối ({{ invitationRequests.length }})</h2>
+            <a 
+              routerLink="/network/invitations"
+              class="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center">
+              Xem tất cả
+              <i class="pi pi-arrow-right ml-1 text-xs"></i>
+            </a>
+          </div>
+          
+          <!-- Horizontal scrollable container -->
+          <div class="overflow-x-auto">
+            <div class="flex gap-4 pb-4" style="width: max-content;">
+              <div 
+                *ngFor="let invitation of displayedInvitations" 
+                class="flex-shrink-0 w-80 bg-gray-50 rounded-lg p-4 hover:shadow-md transition-all duration-300">
+                
+                <!-- Horizontal layout -->
+                <div class="flex items-center space-x-4">
+                  <!-- Avatar -->
+                  <img 
+                    [src]="invitation.avatar || 'assets/default-avatar.png'" 
+                    [alt]="invitation.fullName"
+                    class="w-16 h-16 rounded-full object-cover border-2 border-white shadow-sm flex-shrink-0">
+                  
+                  <!-- Person Info -->
+                  <div class="flex-1 min-w-0">
+                    <h3 class="font-semibold text-gray-900 text-sm mb-1 truncate">{{ invitation.fullName }}</h3>
+                    <p class="text-xs text-gray-600 mb-2 line-clamp-2">{{ invitation.headline }}</p>
+                    <p class="text-xs text-gray-500 mb-1">{{ invitation.location }}</p>
+                    <p class="text-xs text-blue-600" *ngIf="invitation.mutualConnections > 0">
+                      {{ invitation.mutualConnections }} bạn chung
+                    </p>
+                  </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="flex gap-2 mt-4">
+                  <button 
+                    (click)="acceptInvitation(invitation)"
+                    class="flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors bg-blue-600 text-white hover:bg-blue-700 border border-blue-600">
+                    Chấp nhận
+                  </button>
+                  
+                  <button 
+                    (click)="declineInvitation(invitation)"
+                    class="flex-1 py-2 px-3 rounded-md text-sm font-medium transition-colors bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300">
+                    Từ chối
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- People you may know section -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <h2 class="text-xl font-semibold text-gray-900 mb-6">Những người bạn có thể biết</h2>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
+            <app-person-card 
+              *ngFor="let person of suggestedPeople" 
+              [person]="person"
+              (onConnect)="toggleConnection($event)"
+              (onFollow)="toggleFollow($event)">
+            </app-person-card>
+          </div>
+        </div>
+        
+        <!-- Companies you may want to follow section -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <h2 class="text-xl font-semibold text-gray-900 mb-6">Công ty bạn có thể muốn theo dõi</h2>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
+            <app-company-card 
+              *ngFor="let company of suggestedCompanies" 
+              [company]="company"
+              (onFollow)="toggleCompanyFollow($event)">
+            </app-company-card>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

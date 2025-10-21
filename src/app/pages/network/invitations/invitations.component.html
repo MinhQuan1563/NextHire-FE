@@ -1,0 +1,48 @@
+<div class="min-h-screen bg-gray-50 p-4">
+  <div class="max-w-6xl mx-auto">
+    <!-- Header -->
+    <div class="mb-6">
+      <h1 class="text-3xl font-bold text-gray-900 mb-2">Lời mời kết nối</h1>
+      <p class="text-gray-600">{{ invitationRequests.length }} lời mời đang chờ phản hồi</p>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="mb-6 flex gap-4" *ngIf="invitationRequests.length > 0">
+      <button 
+        (click)="acceptAll()"
+        class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium">
+        Chấp nhận tất cả
+      </button>
+      <button 
+        (click)="declineAll()"
+        class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors font-medium">
+        Từ chối tất cả
+      </button>
+    </div>
+
+    <!-- Invitations Grid -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6" *ngIf="invitationRequests.length > 0">
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
+        <app-invitation-card 
+          *ngFor="let invitation of invitationRequests" 
+          [invitation]="invitation"
+          (onAccept)="acceptInvitation($event)"
+          (onDecline)="declineInvitation($event)">
+        </app-invitation-card>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="invitationRequests.length === 0" class="bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
+      <div class="text-gray-400 mb-4">
+        <i class="pi pi-user-plus" style="font-size: 4rem;"></i>
+      </div>
+      <h3 class="text-xl font-semibold text-gray-900 mb-2">Không có lời mời nào</h3>
+      <p class="text-gray-600 mb-4">Bạn đã xử lý hết tất cả lời mời kết nối.</p>
+      <a href="/network" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+        <i class="pi pi-arrow-left mr-2"></i>
+        Quay lại mạng lưới
+      </a>
+    </div>
+  </div>
+</div>
