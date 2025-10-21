@@ -1,0 +1,17 @@
+.hover\:-translate-y-1:hover {
+  transform: translateY(-0.25rem);
+}
+
+.transition-all {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+.duration-300 {
+  transition-duration: 300ms;
+}
+
+button {
+  transition: all 0.2s ease-in-out;
+}

@@ -1,0 +1,93 @@
+<div class="min-h-screen bg-gray-50 p-4">
+  <div class="max-w-4xl mx-auto">
+    <!-- Header -->
+    <div class="mb-6">
+      <h1 class="text-3xl font-bold text-gray-900 mb-4">{{ connections.length }} Connections</h1>
+      
+      <!-- Top Bar -->
+      <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <!-- Sort Dropdown -->
+          <div class="flex items-center gap-2">
+            <span class="text-sm text-gray-600">Sort by:</span>
+            <p-dropdown 
+              [options]="sortOptions"
+              [(ngModel)]="selectedSort"
+              optionLabel="label"
+              styleClass="w-40">
+            </p-dropdown>
+          </div>
+          
+          <!-- Search Section -->
+          <div class="flex items-center gap-3">
+            <div class="relative">
+              <i class="pi pi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+              <input 
+                type="text" 
+                pInputText 
+                [(ngModel)]="searchTerm"
+                placeholder="Search by name"
+                class="pl-10 pr-4 py-2 w-64 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <a href="#" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+              Search with filters
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Connections List -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+      <div *ngFor="let connection of filteredConnections; let last = last" class="p-6">
+        <div class="flex items-center justify-between">
+          <!-- Left Side - Avatar & Info -->
+          <div class="flex items-center space-x-4">
+            <img 
+              [src]="connection.avatar || 'assets/default-avatar.png'"
+              [alt]="connection.fullName"
+              class="w-16 h-16 rounded-full object-cover border-2 border-gray-200">
+            
+            <div>
+              <h3 class="text-lg font-semibold text-gray-900 mb-1">{{ connection.fullName }}</h3>
+              <p class="text-sm text-gray-600 mb-2 max-w-lg">{{ connection.headline }}</p>
+              <p class="text-xs text-gray-500">Connected {{ connection.connectedDate }}</p>
+            </div>
+          </div>
+          
+          <!-- Right Side - Actions -->
+          <div class="flex items-center space-x-3">
+            <button 
+              pButton 
+              type="button" 
+              label="Message"
+              icon="pi pi-envelope"
+              class="p-button-outlined p-button-sm"
+              (click)="onMessage(connection)">
+            </button>
+            
+            <button 
+              pButton 
+              type="button" 
+              icon="pi pi-ellipsis-h"
+              class="p-button-text p-button-sm"
+              (click)="onMenuClick(connection)">
+            </button>
+          </div>
+        </div>
+        
+        <!-- Divider (except for last item) -->
+        <p-divider *ngIf="!last" styleClass="my-0 mt-6"></p-divider>
+      </div>
+      
+      <!-- Empty State -->
+      <div *ngIf="filteredConnections.length === 0" class="p-12 text-center">
+        <div class="text-gray-400 mb-4">
+          <i class="pi pi-users" style="font-size: 3rem;"></i>
+        </div>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">No connections found</h3>
+        <p class="text-gray-500">Try adjusting your search terms or filters.</p>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,30 @@
+<div class="bg-gray-50 rounded-lg p-4 hover:shadow-md transition-all duration-300 hover:-translate-y-1">
+  <!-- Company Logo -->
+  <div class="flex justify-center mb-4">
+    <app-company-logo 
+      [src]="company.logo"
+      [alt]="company.name"
+      width="64px"
+      height="64px"
+      class="rounded-lg shadow-sm">
+    </app-company-logo>
+  </div>
+  
+  <!-- Company Info -->
+  <div class="text-center mb-4">
+    <h3 class="font-semibold text-gray-900 text-sm mb-1">{{ company.name }}</h3>
+    <p class="text-xs text-gray-600 mb-2">{{ company.industry }}</p>
+    <p class="text-xs text-gray-500 mb-1">{{ company.location }}</p>
+    <p class="text-xs text-blue-600">
+      {{ company.followersCount | number }} người theo dõi
+    </p>
+  </div>
+  
+  <!-- Follow Button -->
+  <button 
+    [class]="getFollowButtonClass()"
+    (click)="handleFollow()"
+    class="w-full py-2 px-3 rounded-md text-sm font-medium transition-colors">
+    {{ getFollowButtonText() }}
+  </button>
+</div>
