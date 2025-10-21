@@ -1,0 +1,8 @@
+<div class="loading-overlay">
+  <p-progressSpinner
+    [style]="{width: diameter, height: diameter}"
+    [strokeWidth]="strokeWidth"
+    animationDuration=".8s">
+  </p-progressSpinner>
+  <p *ngIf="showText" class="loading-text">{{ loadingText }}</p>
+</div>

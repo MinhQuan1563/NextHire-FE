@@ -1,0 +1,21 @@
+.cv-section {
+  border: 1px solid #e0e0e0;
+  padding: 1.5rem;
+  border-radius: 6px;
+  background-color: #ffffff;
+  margin-bottom: 1.5rem;
+}
+
+.section-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--primary-color);
+  border-bottom: 2px solid var(--primary-color);
+  padding-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.section-content {
+  margin-top: 1rem;
+}

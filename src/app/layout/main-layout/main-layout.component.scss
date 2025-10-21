@@ -1,0 +1,36 @@
+.main-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #F4F2EE;
+}
+
+.main-content {
+  flex: 1;
+}
+
+.main-content-container {
+   max-width: 1128px;
+   margin: 0 auto;
+//    display: grid;
+//    grid-template-columns: minmax(0, 5fr) minmax(0, 12fr) minmax(0, 7fr);
+//    gap: 1.5rem;
+}
+
+/* Responsive */
+// Tablet
+@media screen and (max-width: 992px) {
+   .main-content-container {
+       grid-template-columns: minmax(0, 8fr) minmax(0, 12fr);
+   }
+}
+// Mobile
+@media screen and (max-width: 768px) {
+   .main-content-container {
+       grid-template-columns: 1fr;
+   }
+   .main-content {
+      padding-left: 0.5rem;
+      padding-right: 0.5rem;
+   }
+}

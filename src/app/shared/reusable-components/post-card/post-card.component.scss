@@ -1,0 +1,13 @@
+:host ::ng-deep .post-card {
+  .p-avatar {
+      background-color: var(--primary-color);
+      color: #ffffff;
+  }
+   .p-avatar-text {
+     font-size: 1.1rem;
+   }
+
+   .post-image-container img {
+       display: block;
+   }
+}

@@ -1,0 +1,27 @@
+<p-card *ngIf="job">
+  <ng-template pTemplate="header">
+    <div class="job-card-header">
+       <p-avatar [image]="job.companyLogo" shape="circle" size="large" *ngIf="job.companyLogo; else defaultAvatar"></p-avatar>
+       <ng-template #defaultAvatar>
+          <p-avatar icon="pi pi-building" shape="circle" size="large"></p-avatar>
+       </ng-template>
+       <div class="company-info">
+         <h3 class="job-title">{{ job.title }}</h3>
+         <p class="company-name">{{ job.companyName }}</p>
+       </div>
+    </div>
+  </ng-template>
+
+  <div class="job-details">
+    <p><i class="pi pi-map-marker"></i> {{ job.location }}</p>
+    <p *ngIf="job.salary"><i class="pi pi-dollar"></i> {{ job.salary }}</p>
+    <p *ngIf="job.postedDate"><i class="pi pi-calendar"></i> {{ job.postedDate | date:'dd/MM/yyyy' }}</p> </div>
+
+  <div class="job-tags" *ngIf="job.tags && job.tags.length > 0">
+    <p-tag *ngFor="let tag of job.tags" [value]="tag" severity="info" styleClass="p-mr-2"></p-tag>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <p-button label="Xem chi tiết" icon="pi pi-info-circle" styleClass="p-button-sm p-button-info p-mr-2" (click)="onViewDetailClick()"></p-button>
+    <p-button icon="pi pi-heart" styleClass="p-button-sm p-button-secondary p-button-outlined" (click)="onSaveJobClick()"></p-button> </ng-template>
+</p-card>

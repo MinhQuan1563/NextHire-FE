@@ -1,0 +1,59 @@
+<header class="app-header shadow-2 px-3 py-2 md:px-5 bg-white">
+  <div class="header-container flex items-center justify-between">
+
+    <div class="flex items-center">
+      <a routerLink="/" class="logo mr-2">
+        <!-- <img src="assets/images/logo-linkedin-icon.png" alt="Logo" height="34"> -->
+        <img src="favicon.ico" alt="Logo" height="34">
+      </a>
+      <div class="search-bar flex items-center border border-gray-300 rounded-md overflow-hidden">
+        <span class="px-2 text-gray-500">
+          <i class="pi pi-search"></i>
+        </span>
+        <input 
+          type="text" 
+          placeholder="Tìm kiếm" 
+          (keyup.enter)="onSearch($event)" 
+          class="p-2 text-sm outline-none flex-1"
+        />
+      </div>
+    </div>
+
+    <nav class="main-nav flex items-center">
+      <a routerLink="/" 
+         class="nav-item flex flex-col items-center justify-center p-2 mx-1 text-center hover:text-blue-600">
+        <i class="pi pi-home text-xl"></i>
+        <span class="nav-text text-xs">Trang chủ</span>
+      </a>
+      <a routerLink="/network" 
+         class="nav-item flex flex-col items-center justify-center p-2 mx-1 text-center hover:text-blue-600">
+        <i class="pi pi-users text-xl"></i>
+        <span class="nav-text text-xs">Mạng lưới</span>
+      </a>
+      <a routerLink="/jobs" 
+         class="nav-item flex flex-col items-center justify-center p-2 mx-1 text-center hover:text-blue-600">
+        <i class="pi pi-briefcase text-xl"></i>
+        <span class="nav-text text-xs">Việc làm</span>
+      </a>
+      <a routerLink="/messaging" 
+         class="nav-item flex flex-col items-center justify-center p-2 mx-1 text-center hover:text-blue-600">
+        <i class="pi pi-comments text-xl"></i>
+        <span class="nav-text text-xs">Nhắn tin</span>
+      </a>
+      <a routerLink="/notifications" 
+         class="nav-item flex flex-col items-center justify-center p-2 mx-1 text-center hover:text-blue-600">
+        <i class="pi pi-bell text-xl"></i>
+        <span class="nav-text text-xs">Thông báo</span>
+      </a>
+
+      <div class="user-menu ml-2">
+        <p-tieredMenu #userMenuPopup [model]="userMenuItems" [popup]="true"></p-tieredMenu>
+        <button class="user-button flex flex-col items-center justify-center text-center" 
+                (click)="userMenuPopup.toggle($event)">
+          <p-avatar [label]="userInitial" shape="circle" styleClass="user-avatar"></p-avatar>
+          <span class="nav-text text-xs mt-1">Tôi <i class="pi pi-caret-down text-xs ml-1"></i></span>
+        </button>
+      </div>
+    </nav>
+  </div>
+</header>

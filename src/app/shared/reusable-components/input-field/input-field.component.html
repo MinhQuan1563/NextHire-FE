@@ -1,0 +1,55 @@
+<div class="field mb-3">
+  <label [for]="inputId" class="block mb-1">{{ label }}</label>
+  <input
+    [type]="type"
+    pInputText
+    [id]="inputId"
+    [placeholder]="placeholder"
+    [(ngModel)]="value"
+    (blur)="onTouched()"
+    class="w-full"
+    [ngClass]="{'ng-invalid ng-dirty': control && control.invalid && (control.dirty || control.touched)}"
+  />
+  <small *ngIf="hasError('required')" class="p-error block">
+    {{ label || 'Trường này' }} không được để trống.
+  </small>
+  <small *ngIf="hasError('email')" class="p-error block">
+    Email không hợp lệ.
+  </small>
+  <small *ngIf="hasError('minlength')" class="p-error block">
+    Cần ít nhất {{ control.errors?.['minlength']?.requiredLength }} ký tự.
+  </small>
+   <small *ngIf="hasError('passwordMismatch')" class="p-error block">
+     Mật khẩu không khớp.
+  </small>
+</div>
+
+
+<!-- vi du cach su dung component -->
+<!-- <form [formGroup]="myForm">
+  <app-input-field
+    label="Tên đăng nhập"
+    placeholder="Nhập tên đăng nhập"
+    formControlName="username"
+    [control]="myForm.controls.username"> </app-input-field>
+
+   <app-input-field
+    label="Email"
+    type="email"
+    placeholder="Nhập email"
+    formControlName="email"
+    [control]="myForm.controls.email">
+  </app-input-field>
+</form> -->
+
+<!-- // Trong TS của component cha
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+// ...
+myForm: FormGroup;
+
+constructor(private fb: FormBuilder) {
+  this.myForm = this.fb.group({
+    username: ['', [Validators.required, Validators.minLength(5)]],
+    email: ['', [Validators.required, Validators.email]]
+  });
+} -->

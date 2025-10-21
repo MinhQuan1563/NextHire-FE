@@ -1,0 +1,9 @@
+/* Tùy chỉnh style chung cho modal tại đây */
+:host ::ng-deep .p-dialog .p-dialog-header {
+  background-color: #f8f9fa;
+}
+
+:host ::ng-deep .p-dialog .p-dialog-footer {
+   border-top: 1px solid #dee2e6;
+   padding-top: 1rem;
+}

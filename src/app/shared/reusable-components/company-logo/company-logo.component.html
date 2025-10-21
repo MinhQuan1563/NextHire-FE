@@ -1,0 +1,7 @@
+<img
+  [src]="src || defaultLogo"
+  [alt]="alt"
+  [style.width]="width"
+  [style.height]="height"
+  (error)="handleImageError($event)"
+/>

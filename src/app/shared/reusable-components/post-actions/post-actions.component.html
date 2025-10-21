@@ -1,0 +1,24 @@
+<div class="flex justify-around items-center text-sm text-gray-600">
+  <button pButton
+          [icon]="liked ? 'pi pi-thumbs-up-fill' : 'pi pi-thumbs-up'"
+          [label]="liked ? 'Đã thích' : 'Thích'"
+          [ngClass]="{'text-blue-600': liked}"
+          (click)="triggerAction('like')"
+          styleClass="p-button-text p-button-sm text-gray-600 hover:bg-gray-100 flex-1 justify-center">
+  </button>
+
+  <button pButton icon="pi pi-comment" label="Bình luận"
+          (click)="triggerAction('comment')"
+          styleClass="p-button-text p-button-sm text-gray-600 hover:bg-gray-100 flex-1 justify-center">
+  </button>
+
+  <button pButton icon="pi pi-sync" label="Chia sẻ lại"
+          (click)="triggerAction('repost')"
+          styleClass="p-button-text p-button-sm text-gray-600 hover:bg-gray-100 flex-1 justify-center">
+  </button>
+
+  <button pButton icon="pi pi-send" label="Gửi"
+          (click)="triggerAction('send')"
+          styleClass="p-button-text p-button-sm text-gray-600 hover:bg-gray-100 flex-1 justify-center">
+  </button>
+</div>

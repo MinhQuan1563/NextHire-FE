@@ -1,0 +1,106 @@
+.app-header {
+  position: sticky;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  background-color: var(--surface-card);
+  border-bottom: 1px solid var(--surface-border);
+  width: 100%;
+}
+
+.header-container {
+  max-width: 1128px;
+  margin: 0 auto;
+}
+
+.logo img {
+  display: block;
+}
+
+.search-bar {
+   width: 280px;
+   .search-input {
+      background-color: var(--surface-ground);
+      border: none;
+      &:focus {
+         background-color: var(--surface-section);
+         box-shadow: none;
+      }
+   }
+   .p-inputgroup-addon {
+       background-color: var(--surface-ground);
+       border: none;
+   }
+}
+
+
+.main-nav {
+  .nav-item {
+    color: var(--text-color-secondary);
+    border-radius: 4px;
+    min-width: 80px;
+    text-decoration: none;
+    transition: background-color 0.2s;
+
+    &:hover {
+      background-color: var(--surface-hover);
+      color: var(--text-color);
+    }
+
+    &.active-link {
+       color: var(--text-color);
+       border-bottom: 2px solid var(--text-color);
+    }
+
+    i {
+      display: block;
+    }
+
+    .nav-text {
+      display: block;
+      line-height: 1.2;
+    }
+  }
+}
+
+.user-menu {
+   border-left: 1px solid var(--surface-border);
+   padding-left: 0.5rem;
+
+    .user-button {
+        cursor: pointer;
+        border: none;
+        background: none;
+        padding: 0.25rem;
+        color: var(--text-color-secondary);
+         &:hover {
+            color: var(--text-color);
+         }
+    }
+    .user-avatar {
+       width: 24px;
+       height: 24px;
+       font-size: 0.75rem;
+    }
+    .nav-text {
+         display: flex;
+         align-items: center;
+    }
+}
+
+/* Responsive mobile */
+@media screen and (max-width: 768px) {
+   .search-bar {
+       display: none;
+   }
+   .nav-item .nav-text {
+      display: none;
+   }
+   .nav-item {
+       min-width: 50px; 
+   }
+   .user-menu .nav-text {
+      display: none;
+   }
+}

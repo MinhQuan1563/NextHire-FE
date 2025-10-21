@@ -1,0 +1,8 @@
+:host ::ng-deep .p-button {
+  &.p-button-sm {
+    padding: 0.5rem 0.75rem;
+  }
+  .p-button-label {
+     margin-left: 0.25rem;
+  }
+}

@@ -1,0 +1,12 @@
+.notification-item {
+  transition: background-color 0.15s ease-in-out;
+}
+
+:host ::ng-deep .p-avatar-text {
+  font-size: 1.25rem;
+}
+
+:host ::ng-deep i.p-avatar {
+    width: 3rem;
+    height: 3rem;
+}

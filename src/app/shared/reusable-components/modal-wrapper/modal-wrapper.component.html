@@ -1,0 +1,54 @@
+<p-dialog
+  [header]="header"
+  [(visible)]="visible"
+  [modal]="true"
+  [styleClass]="modalStyleClass"
+  [draggable]="draggable"
+  [closable]="closable"
+  (onHide)="handleHide()"> <ng-content></ng-content>
+
+  <ng-template pTemplate="footer" *ngIf="showFooter">
+    <p-button
+      *ngIf="showCancelButton"
+      [label]="cancelLabel"
+      icon="pi pi-times"
+      (click)="cancelAction()"
+      styleClass="p-button-text">
+    </p-button>
+    <p-button
+      *ngIf="showConfirmButton"
+      [label]="confirmLabel"
+      icon="pi pi-check"
+      (click)="confirmAction()"
+      [disabled]="confirmDisabled"
+      autofocus>
+    </p-button>
+  </ng-template>
+</p-dialog>
+
+<!-- ví dụ sử dụng modal-wrapper -->
+<!-- <button pButton label="Mở Modal" (click)="showMyModal = true"></button>
+
+<app-modal-wrapper
+  header="Xác nhận hành động"
+  [(visible)]="showMyModal"
+  (onConfirm)="doSomething()"
+  (onCancel)="handleCancel()"
+  [confirmDisabled]="!canConfirm">
+    <p>Bạn có chắc chắn muốn thực hiện hành động này không?</p>
+    <input type="checkbox" [(ngModel)]="canConfirm"> Đồng ý điều khoản
+</app-modal-wrapper> -->
+
+<!-- // Trong TS của component cha
+showMyModal = false;
+canConfirm = false;
+
+doSomething() {
+  console.log('Confirmed!');
+  // Xử lý logic...
+  this.showMyModal = false; // Đóng modal sau khi xử lý
+}
+
+handleCancel() {
+  console.log('Cancelled!');
+} -->
