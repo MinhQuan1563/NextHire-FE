@@ -15,9 +15,29 @@ export const routes: Routes = [
     path: '',
     component: MainLayoutComponent,
     children: [
-      { path: '', component: HomeComponent, pathMatch: 'full' }, // Trang chủ
-      { path: 'network', component: NetworkComponent },           // Mạng lưới chính
-      { path: 'network/connections', component: ConnectionsComponent }, // Kết nối
+      { path: '', component: HomeComponent, pathMatch: 'full' },
+      { path: 'network', component: NetworkComponent },
+      { path: 'network/connections', component: ConnectionsComponent },
+      { 
+        path: 'cv-builder',
+        children: [
+          { 
+            path: '', 
+            loadComponent: () => import('./pages/cv-builder/template-list/template-list.component')
+              .then(m => m.TemplateListComponent)
+          },
+          { 
+            path: 'editor/:id', 
+            loadComponent: () => import('./pages/cv-builder/cv-editor/cv-editor.component')
+              .then(m => m.CvEditorComponent)
+          },
+          { 
+            path: 'admin', 
+            loadComponent: () => import('./pages/cv-builder/admin-template/admin-template.component')
+              .then(m => m.AdminTemplateComponent)
+          }
+        ]
+      },
       { path: 'network/following', component: FollowingComponent },     // Theo dõi
       { path: 'network/companies', component: CompaniesComponent },     // Công ty
       { path: 'network/invitations', component: InvitationsComponent }, // Lời mời
