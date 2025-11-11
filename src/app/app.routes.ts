@@ -9,11 +9,26 @@ import { InvitationsComponent } from './pages/network/invitations/invitations.co
 import { JobsComponent } from './pages/jobs/jobs.component';
 import { MessagingComponent } from './pages/messaging/messaging.component';
 import { NotificationsComponent } from './pages/notifications/notifications.component';
+import { LoginComponent } from './pages/auth/login/login.component';
+import { RegisterComponent } from './pages/auth/register/register.component';
+import { ForgotPasswordComponent } from './pages/auth/forgot-password/forgot-password.component';
+import { ResetPasswordComponent } from './pages/auth/reset-password/reset-password.component';
+import { AuthGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
   {
+    path: 'auth',
+    children: [
+      { path: 'login', component: LoginComponent },
+      { path: 'forgot-password', component: ForgotPasswordComponent },
+      { path: 'reset-password', component: ResetPasswordComponent },
+      { path: 'register', component: RegisterComponent }
+    ]
+  },
+  {
     path: '',
     component: MainLayoutComponent,
+    canActivate: [AuthGuard],
     children: [
       { path: '', component: HomeComponent, pathMatch: 'full' },
       { path: 'network', component: NetworkComponent },
