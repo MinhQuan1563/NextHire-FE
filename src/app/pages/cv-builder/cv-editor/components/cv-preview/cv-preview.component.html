@@ -1,0 +1,240 @@
+<div class="cv-preview-area">
+  <div class="preview-header">
+    <h2>Xem trước CV</h2>
+    <div class="preview-actions">
+      <button class="btn-secondary" (click)="zoomCV()">
+        <i class="icon-zoom"></i>
+        {{ isZoomed ? 'Thu nhỏ' : 'Phóng to' }}
+      </button>
+      <button class="btn-primary" (click)="downloadCV()">
+        <i class="icon-download"></i>
+        Tải xuống
+      </button>
+    </div>
+  </div>
+
+  <!-- A4 CV Preview -->
+  <div class="cv-preview" [class.zoomed]="isZoomed">
+    <div class="cv-paper" 
+         [style.font-family]="designSettings.selectedFont"
+         [style.font-size.px]="designSettings.fontSize"
+         [style.line-height]="designSettings.lineSpacing"
+         [class]="'bg-' + designSettings.selectedBackground">
+      
+      <!-- Hidden file input -->
+      <input #fileInput 
+             id="cvFileInput"
+             type="file" 
+             accept="image/*" 
+             style="display: none" 
+             (change)="onFileSelected($event)">
+      
+      <!-- CV Header -->
+      <div class="cv-header">
+        <div class="cv-avatar">
+          <div class="avatar-placeholder editable" 
+               title="Click để thêm ảnh"
+               (click)="uploadAvatar()"
+               *ngIf="!selectedAvatarUrl">
+            <i class="icon-camera">📷</i>
+            <span>Thêm ảnh</span>
+          </div>
+          <div class="avatar-image" 
+               *ngIf="selectedAvatarUrl"
+               (click)="uploadAvatar()">
+            <img [src]="selectedAvatarUrl" alt="Avatar" />
+            <div class="avatar-overlay">
+              <i class="icon-edit">✏️</i>
+            </div>
+          </div>
+        </div>
+        <div class="cv-personal-info">
+          <h1 class="cv-name editable" 
+              contenteditable="true"
+              (click)="onEditableClick($event, 'name')"
+              (blur)="updateField('name', $event)">Nguyễn Văn A</h1>
+          <div class="cv-title editable" 
+               contenteditable="true"
+               (click)="onEditableClick($event, 'title')"
+               (blur)="updateField('title', $event)">Frontend Developer</div>
+          <div class="cv-contact">
+            <div class="contact-item editable" 
+                 contenteditable="true"
+                 (click)="onEditableClick($event, 'email')"
+                 (blur)="updateField('email', $event)">📧 nguyen.vana&#64;email.com</div>
+            <div class="contact-item editable" 
+                 contenteditable="true"
+                 (click)="onEditableClick($event, 'phone')"
+                 (blur)="updateField('phone', $event)">📱 0123 456 789</div>
+            <div class="contact-item editable" 
+                 contenteditable="true"
+                 (click)="onEditableClick($event, 'address')"
+                 (blur)="updateField('address', $event)">📍 Hà Nội, Việt Nam</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CV Body -->
+      <div class="cv-body">
+        <!-- Dynamic sections based on usedSections order -->
+        <div *ngFor="let section of getSortedUsedSections()" class="cv-section">
+          
+          <!-- Personal Info Section -->
+          <div *ngIf="section.id === 'personal-info'">
+            <!-- Personal info is in header, skip here -->
+          </div>
+          
+          <!-- Objective Section -->
+          <div *ngIf="section.id === 'objective'">
+            <h3 class="section-title" [style.color]="designSettings.selectedColor">
+              MỤC TIÊU NGHỀ NGHIỆP
+            </h3>
+            <div class="section-content editable"
+                 contenteditable="true"
+                 (click)="onEditableClick($event, 'objective')"
+                 (blur)="updateField('objective', $event)">
+              Là một Frontend Developer với 3 năm kinh nghiệm, tôi mong muốn gia nhập một 
+              môi trường làm việc chuyên nghiệp để phát triển kỹ năng và đóng góp vào 
+              sự thành công của công ty.
+            </div>
+          </div>
+
+          <!-- Education Section -->
+          <div *ngIf="section.id === 'education'">
+            <h3 class="section-title" [style.color]="designSettings.selectedColor">
+              HỌC VẤN
+            </h3>
+            <div class="education-item">
+              <div class="edu-header">
+                <h4 class="edu-degree editable"
+                    contenteditable="true"
+                    (blur)="updateField('degree', $event)">Cử nhân Công nghệ Thông tin</h4>
+                <span class="edu-year editable"
+                      contenteditable="true"
+                      (blur)="updateField('edu-year', $event)">2018 - 2022</span>
+              </div>
+              <div class="edu-school editable"
+                   contenteditable="true"
+                   (blur)="updateField('school', $event)">Đại học Công nghệ - ĐH Quốc gia Hà Nội</div>
+              <div class="edu-gpa editable"
+                   contenteditable="true"
+                   (blur)="updateField('gpa', $event)">GPA: 3.5/4.0</div>
+            </div>
+          </div>
+
+          <!-- Experience Section -->
+          <div *ngIf="section.id === 'experience'">
+            <div class="section-header">
+              <h3 class="section-title" [style.color]="designSettings.selectedColor">
+                KINH NGHIỆM LÀM VIỆC
+              </h3>
+              <button class="add-item-btn" (click)="addExperience()" title="Thêm kinh nghiệm">
+                +
+              </button>
+            </div>
+            <div *ngFor="let exp of cvData.experiences; let i = index" class="experience-item">
+              <div class="item-controls">
+                <button class="remove-item-btn" (click)="removeExperience(i)" title="Xóa kinh nghiệm">
+                  ×
+                </button>
+              </div>
+              <div class="exp-header">
+                <h4 class="exp-position editable"
+                    contenteditable="true"
+                    (click)="onEditableClick($event, 'position-' + i)"
+                    (blur)="updateField('position-' + i, $event)">{{ exp.position }}</h4>
+                <span class="exp-duration editable"
+                      contenteditable="true"
+                      (click)="onEditableClick($event, 'duration-' + i)"
+                      (blur)="updateField('duration-' + i, $event)">{{ exp.duration }}</span>
+              </div>
+              <div class="exp-company editable"
+                   contenteditable="true"
+                   (click)="onEditableClick($event, 'company-' + i)"
+                   (blur)="updateField('company-' + i, $event)">{{ exp.company }}</div>
+              <ul class="exp-responsibilities">
+                <li *ngFor="let resp of exp.responsibilities; let j = index" class="responsibility-item">
+                  <div class="editable responsibility-text"
+                       contenteditable="true"
+                       (click)="onEditableClick($event, 'responsibility-' + i + '-' + j)"
+                       (blur)="updateField('responsibility-' + i + '-' + j, $event)">{{ resp }}</div>
+                  <button class="remove-resp-btn" (click)="removeResponsibility(i, j)" title="Xóa">×</button>
+                </li>
+              </ul>
+              <button class="add-resp-btn" (click)="addResponsibility(i)">+ Thêm trách nhiệm</button>
+            </div>
+          </div>
+
+          <!-- Activities Section -->
+          <div *ngIf="section.id === 'activities'">
+            <h3 class="section-title" [style.color]="designSettings.selectedColor">
+              HOẠT ĐỘNG
+            </h3>
+            <div *ngFor="let activity of cvData.activities; let i = index" class="activity-item">
+              <h4 class="activity-title editable"
+                  contenteditable="true"
+                  (blur)="updateField('activity-title-' + i, $event)">{{ activity.title }}</h4>
+              <div class="activity-org editable"
+                   contenteditable="true"
+                   (blur)="updateField('activity-org-' + i, $event)">{{ activity.organization }}</div>
+              <div class="activity-desc editable"
+                   contenteditable="true"
+                   (blur)="updateField('activity-desc-' + i, $event)">{{ activity.description }}</div>
+            </div>
+          </div>
+
+          <!-- Certificates Section -->
+          <div *ngIf="section.id === 'certificates'">
+            <h3 class="section-title" [style.color]="designSettings.selectedColor">
+              CHỨNG CHỈ
+            </h3>
+            <div *ngFor="let cert of cvData.certificates; let i = index" class="certificate-item">
+              <h4 class="cert-name editable"
+                  contenteditable="true"
+                  (blur)="updateField('cert-name-' + i, $event)">{{ cert.name }}</h4>
+              <div class="cert-issuer editable"
+                   contenteditable="true"
+                   (blur)="updateField('cert-issuer-' + i, $event)">{{ cert.issuer }}</div>
+            </div>
+          </div>
+
+          <!-- Projects Section -->
+          <div *ngIf="section.id === 'projects'">
+            <h3 class="section-title" [style.color]="designSettings.selectedColor">
+              DỰ ÁN
+            </h3>
+            <div *ngFor="let project of cvData.projects; let i = index" class="project-item">
+              <h4 class="project-title editable"
+                  contenteditable="true"
+                  (blur)="updateField('project-title-' + i, $event)">{{ project.title }}</h4>
+              <div class="project-tech editable"
+                   contenteditable="true"
+                   (blur)="updateField('project-tech-' + i, $event)">{{ project.technology }}</div>
+              <div class="project-desc editable"
+                   contenteditable="true"
+                   (blur)="updateField('project-desc-' + i, $event)">{{ project.description }}</div>
+            </div>
+          </div>
+
+          <!-- References Section -->
+          <div *ngIf="section.id === 'references'">
+            <h3 class="section-title" [style.color]="designSettings.selectedColor">
+              NGƯỜI THAM CHIẾU
+            </h3>
+            <div *ngFor="let ref of cvData.references; let i = index" class="reference-item">
+              <h4 class="reference-name editable"
+                  contenteditable="true"
+                  (blur)="updateField('ref-name-' + i, $event)">{{ ref.name }}</h4>
+              <div class="reference-position editable"
+                   contenteditable="true"
+                   (blur)="updateField('ref-position-' + i, $event)">{{ ref.position }}</div>
+              <div class="reference-contact editable"
+                   contenteditable="true"
+                   (blur)="updateField('ref-contact-' + i, $event)">{{ ref.contact }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

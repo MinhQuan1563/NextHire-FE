@@ -1,0 +1,36 @@
+<div class="panel">
+  <h3>Bố cục CV</h3>
+  <p class="panel-description">Kéo thả để sắp xếp lại thứ tự các mục</p>
+  
+  <div class="layout-sections">
+    <div 
+      *ngFor="let section of getSortedUsedSections()"
+      class="layout-section-item"
+      draggable="true"
+      (dragstart)="onDragStart($event, section)"
+      (dragover)="onDragOver($event)"
+      (drop)="onDrop($event, section)">
+      
+      <div class="drag-handle">
+        <i class="icon-drag">⋮⋮</i>
+      </div>
+      
+      <div class="section-info">
+        <span class="section-number">{{ section.order }}</span>
+        <span class="section-name">{{ section.name }}</span>
+      </div>
+      
+      <button 
+        class="remove-button"
+        (click)="onRemoveSection(section)"
+        title="Xóa mục này">
+        <i class="icon-trash">🗑️</i>
+      </button>
+    </div>
+  </div>
+  
+  <div *ngIf="usedSections.length === 0" class="no-sections">
+    <p>Chưa có mục nào được thêm</p>
+    <p class="hint">Vào tab "Thêm mục" để thêm các mục mới</p>
+  </div>
+</div>

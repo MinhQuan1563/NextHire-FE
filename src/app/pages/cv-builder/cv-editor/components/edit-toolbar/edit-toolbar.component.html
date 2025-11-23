@@ -1,0 +1,106 @@
+<div 
+  *ngIf="show" 
+  class="edit-toolbar"
+  [style.left.px]="position.x"
+  [style.top.px]="position.y">
+  
+  <div class="toolbar-content">
+    <!-- Font Size -->
+    <div class="toolbar-group">
+      <select 
+        [(ngModel)]="selectedFontSize"
+        (change)="onFontSizeChange($event)"
+        class="font-size-select">
+        <option value="10">10px</option>
+        <option value="12">12px</option>
+        <option value="14">14px</option>
+        <option value="16">16px</option>
+        <option value="18">18px</option>
+        <option value="20">20px</option>
+        <option value="24">24px</option>
+      </select>
+    </div>
+    
+    <!-- Text Formatting -->
+    <div class="toolbar-group">
+      <button 
+        class="toolbar-button"
+        (click)="onBold()"
+        title="Đậm">
+        <i class="icon-bold">B</i>
+      </button>
+      
+      <button 
+        class="toolbar-button"
+        (click)="onItalic()"
+        title="Nghiêng">
+        <i class="icon-italic">I</i>
+      </button>
+      
+      <button 
+        class="toolbar-button"
+        (click)="onUnderline()"
+        title="Gạch chân">
+        <i class="icon-underline">U</i>
+      </button>
+    </div>
+    
+    <!-- List Formatting -->
+    <div class="toolbar-group">
+      <button 
+        class="toolbar-button"
+        (click)="onBulletList()"
+        title="Danh sách đầu dòng">
+        <i class="icon-bullet-list">•</i>
+      </button>
+      
+      <button 
+        class="toolbar-button"
+        (click)="onNumberList()"
+        title="Danh sách đánh số">
+        <i class="icon-number-list">1.</i>
+      </button>
+    </div>
+    
+    <!-- Alignment -->
+    <div class="toolbar-group">
+      <button 
+        class="toolbar-button"
+        (click)="onAlignLeft()"
+        title="Căn trái">
+        <i class="icon-align-left">⫷</i>
+      </button>
+      
+      <button 
+        class="toolbar-button"
+        (click)="onAlignCenter()"
+        title="Căn giữa">
+        <i class="icon-align-center">≣</i>
+      </button>
+      
+      <button 
+        class="toolbar-button"
+        (click)="onAlignRight()"
+        title="Căn phải">
+        <i class="icon-align-right">⫸</i>
+      </button>
+      
+      <button 
+        class="toolbar-button"
+        (click)="onAlignJustify()"
+        title="Căn đều">
+        <i class="icon-align-justify">≡</i>
+      </button>
+    </div>
+    
+    <!-- Close Button -->
+    <div class="toolbar-group">
+      <button 
+        class="toolbar-button close-button"
+        (click)="onHide()"
+        title="Đóng">
+        <i class="icon-close">×</i>
+      </button>
+    </div>
+  </div>
+</div>
