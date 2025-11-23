@@ -1,0 +1,153 @@
+<div *ngIf="show" class="modal-overlay" (click)="onClose()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Quản lý Layout CV</h3>
+      <div class="layout-info" *ngIf="currentLayout">
+        <span class="layout-name">{{ currentLayout.name }}</span>
+        <span class="layout-meta">{{ currentLayout.rows.length }} dòng • {{ currentLayout.totalColumns }} cột tối đa</span>
+      </div>
+      <button class="modal-close" (click)="onClose()">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="layout-container">
+        <!-- Available Sections Panel -->
+        <div class="available-sections-panel">
+          <div class="panel-header">
+            <h4>Các mục có sẵn</h4>
+            <span class="section-count">{{ availableSectionsList.length }} mục</span>
+          </div>
+          
+          <div 
+            class="available-sections"
+            cdkDropList
+            id="available-sections"
+            [cdkDropListData]="availableSectionsList"
+            [cdkDropListConnectedTo]="getConnectedLists()"
+            (cdkDropListDropped)="onSectionDrop($event, null)"
+          >
+            <div 
+              *ngFor="let section of availableSectionsList; trackBy: trackBySection"
+              class="section-item"
+              cdkDrag
+              [cdkDragData]="section"
+            >
+              <div class="section-icon">{{ section.icon }}</div>
+              <div class="section-info">
+                <span class="section-name">{{ section.name }}</span>
+                <span class="section-category" *ngIf="section.categoryId">{{ section.categoryId }}</span>
+              </div>
+              <div class="drag-handle" cdkDragHandle>⋮⋮</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Layout Grid -->
+        <div class="layout-grid" *ngIf="currentLayout">
+          <div class="grid-header">
+            <h4>Bố cục CV</h4>
+            <div class="grid-actions">
+              <button class="btn btn-sm btn-secondary" (click)="onClose()">
+                <i class="icon">↩️</i>
+                Quay lại
+              </button>
+            </div>
+          </div>
+
+          <div class="layout-rows">
+            <div 
+              *ngFor="let row of currentLayout.rows; let rowIndex = index; trackBy: trackByRow"
+              class="layout-row"
+            >
+              <!-- Row Header -->
+              <div class="row-header">
+                <span class="row-label">Dòng {{ rowIndex + 1 }}</span>
+                <span class="row-info">{{ row.columns.length }} cột</span>
+              </div>
+
+              <!-- Row Columns -->
+              <div class="row-columns">
+                <div 
+                  *ngFor="let column of row.columns; let columnIndex = index; trackBy: trackByColumn; let isLast = last"
+                  class="layout-column"
+                  [style.width.%]="column.widthPercentage"
+                >
+                  <!-- Column Header -->
+                  <div class="column-header">
+                    <span class="column-label">Cột {{ columnIndex + 1 }}</span>
+                    <span class="column-width">{{ column.widthPercentage }}%</span>
+                  </div>
+
+                  <!-- Drop Zone -->
+                  <div 
+                    class="drop-zone"
+                    cdkDropList
+                    [id]="getZoneId(rowIndex, columnIndex)"
+                    [cdkDropListData]="getSectionsForZone(row.id, column.id)"
+                    [cdkDropListConnectedTo]="getConnectedLists()"
+                    (cdkDropListDropped)="onSectionDrop($event, getZoneForColumn(row.id, column.id) || null)"
+                  >
+                    <!-- Placed Sections -->
+                    <div 
+                      *ngFor="let section of getSectionsForZone(row.id, column.id); trackBy: trackBySection"
+                      class="placed-section"
+                      cdkDrag
+                      [cdkDragData]="section"
+                    >
+                      <div class="section-icon">{{ section.icon }}</div>
+                      <div class="section-info">
+                        <span class="section-name">{{ section.name }}</span>
+                      </div>
+                      <div class="drag-handle" cdkDragHandle>⋮⋮</div>
+                    </div>
+
+                    <!-- Empty State -->
+                    <div *ngIf="getSectionsForZone(row.id, column.id).length === 0" class="empty-drop-zone">
+                      <div class="empty-icon">📄</div>
+                      <span class="empty-text">Kéo thả mục vào đây</span>
+                    </div>
+                  </div>
+
+                  <!-- Column Resizer -->
+                  <div 
+                    *ngIf="!isLast"
+                    class="column-resizer"
+                    (mousedown)="startColumnResize($event, rowIndex, columnIndex)"
+                  >
+                    <div class="resizer-handle"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Layout Summary Footer -->
+    <div class="modal-footer" *ngIf="currentLayout">
+      <div class="layout-summary">
+        <div class="summary-stats">
+          <div class="stat-item">
+            <strong>{{ currentLayout.rows.length }}</strong>
+            <span>dòng</span>
+          </div>
+          <div class="stat-item">
+            <strong>{{ getTotalZones() }}</strong>
+            <span>vùng</span>
+          </div>
+          <div class="stat-item">
+            <strong>{{ getTotalPlacedSections() }}</strong>
+            <span>mục đã đặt</span>
+          </div>
+        </div>
+        <div class="summary-actions">
+          <button class="btn btn-primary" (click)="onClose()">
+            <i class="icon">💾</i>
+            Lưu Layout
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

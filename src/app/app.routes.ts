@@ -42,15 +42,11 @@ export const routes: Routes = [
               .then(m => m.TemplateListComponent)
           },
           { 
-            path: 'editor/:id', 
+            path: 'editor', 
             loadComponent: () => import('./pages/cv-builder/cv-editor/cv-editor.component')
               .then(m => m.CvEditorComponent)
           },
-          { 
-            path: 'admin', 
-            loadComponent: () => import('./pages/cv-builder/admin-template/admin-template.component')
-              .then(m => m.AdminTemplateComponent)
-          }
+         
         ]
       },
       { path: 'network/following', component: FollowingComponent },     // Theo dõi

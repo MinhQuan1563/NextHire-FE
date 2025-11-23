@@ -1,0 +1,81 @@
+<div class="panel">
+  <h3>Thiết kế & Font</h3>
+  
+  <!-- Font Selection -->
+  <div class="setting-group">
+    <label>Phông chữ</label>
+    <select [(ngModel)]="settings.selectedFont" (change)="onFontChange($event)">
+      <option *ngFor="let font of fonts" [value]="font">{{ font }}</option>
+    </select>
+  </div>
+
+  <!-- Font Size -->
+  <div class="setting-group">
+    <label>Cỡ chữ</label>
+    <div class="font-size-control">
+      <input 
+        type="range" 
+        min="10" 
+        max="20" 
+        [(ngModel)]="settings.fontSize"
+        (input)="onFontSizeChange($event)"
+        class="slider">
+      <div class="font-size-labels">
+        <span class="label-small">Nhỏ</span>
+        <span class="label-medium">Trung bình</span>
+        <span class="label-large">Siêu lớn</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Line Spacing -->
+  <div class="setting-group">
+    <label>Khoảng cách dòng: {{ settings.lineSpacing }}</label>
+    <input 
+      type="range" 
+      min="1" 
+      max="2" 
+      step="0.1"
+      [(ngModel)]="settings.lineSpacing"
+      (input)="onLineSpacingChange($event)"
+      class="slider">
+    <div class="slider-marks">
+      <span>1.0</span>
+      <span>1.5</span>
+      <span>2.0</span>
+    </div>
+  </div>
+
+  <!-- Color Palette -->
+  <div class="setting-group">
+    <label>Màu chủ đạo</label>
+    <div class="color-palette">
+      <div 
+        *ngFor="let color of colors" 
+        class="color-item"
+        [class.selected]="settings.selectedColor === color"
+        [style.background-color]="color"
+        (click)="onColorChange(color)">
+      </div>
+      <input 
+        type="color" 
+        [(ngModel)]="settings.selectedColor"
+        (change)="onColorPickerChange($event)"
+        class="color-picker">
+    </div>
+  </div>
+
+  <!-- Background Presets -->
+  <div class="setting-group">
+    <label>Nền CV</label>
+    <div class="background-presets">
+      <div 
+        *ngFor="let bg of backgrounds" 
+        class="background-item"
+        [class.selected]="settings.selectedBackground === bg"
+        [class]="'bg-' + bg"
+        (click)="onBackgroundChange(bg)">
+      </div>
+    </div>
+  </div>
+</div>

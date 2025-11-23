@@ -1,0 +1,170 @@
+<div *ngIf="show" class="modal-overlay" (click)="onClose()">
+  <div class="modal-content large" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Cấu hình Layout CV</h3>
+      <button class="modal-close" (click)="onClose()">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <!-- Layout Basic Info -->
+      <div class="config-section">
+        <h4>Thông tin cơ bản</h4>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="layoutName">Tên Layout *</label>
+            <input
+              id="layoutName"
+              type="text"
+              [(ngModel)]="configForm.name"
+              placeholder="VD: Layout 2 cột cơ bản"
+              class="form-input"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input 
+                type="checkbox" 
+                [(ngModel)]="configForm.isDefault"
+              />
+              <span class="checkmark"></span>
+              Đặt làm layout mặc định
+            </label>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="layoutDescription">Mô tả</label>
+          <textarea
+            id="layoutDescription"
+            [(ngModel)]="configForm.description"
+            placeholder="Mô tả layout này..."
+            class="form-textarea"
+            rows="2"
+          ></textarea>
+        </div>
+      </div>
+
+      <!-- Layout Configuration -->
+      <div class="config-section">
+        <div class="section-header">
+          <h4>Cấu hình Layout ({{ configForm.rows?.length || 0 }} dòng, {{ configForm.totalColumns }} cột tối đa)</h4>
+          <button class="btn btn-sm btn-primary" (click)="addRow()">
+            <i class="icon">➕</i>
+            Thêm dòng
+          </button>
+        </div>
+
+        <!-- Layout Preview -->
+        <div class="layout-preview">
+          <div 
+            *ngFor="let row of configForm.rows; let rowIndex = index; trackBy: trackByRow"
+            class="layout-row"
+          >
+            <!-- Row Header -->
+            <div class="row-header">
+              <div class="row-info">
+                <span class="row-label">Dòng {{ rowIndex + 1 }}</span>
+                <span class="row-meta">{{ row.columns.length }} cột • {{ getTotalWidth(row) }}% tổng chiều rộng</span>
+              </div>
+              <div class="row-actions">
+                <button 
+                  class="btn btn-xs btn-secondary"
+                  (click)="addColumn(rowIndex)"
+                  [disabled]="row.columns.length >= 4"
+                >
+                  <i class="icon">➕</i>
+                  Thêm cột
+                </button>
+                <button 
+                  class="btn btn-xs btn-danger"
+                  (click)="removeRow(rowIndex)"
+                  [disabled]="configForm.rows!.length <= 1"
+                >
+                  <i class="icon">🗑️</i>
+                  Xóa dòng
+                </button>
+              </div>
+            </div>
+
+            <!-- Row Columns -->
+            <div class="row-columns">
+              <div 
+                *ngFor="let column of row.columns; let columnIndex = index; trackBy: trackByColumn"
+                class="layout-column"
+                [style.flex]="'0 0 ' + column.widthPercentage + '%'"
+              >
+                <div class="column-header">
+                  <span class="column-label">Cột {{ columnIndex + 1 }}</span>
+                  <button 
+                    class="btn btn-xs btn-danger"
+                    (click)="removeColumn(rowIndex, columnIndex)"
+                    [disabled]="row.columns.length <= 1"
+                  >
+                    ✕
+                  </button>
+                </div>
+                
+                <div class="column-body">
+                  <div class="width-control">
+                    <label>Chiều rộng:</label>
+                    <div class="width-input-group">
+                      <input
+                        type="range"
+                        [value]="column.widthPercentage"
+                        (input)="onWidthChange(rowIndex, columnIndex, $event)"
+                        min="10"
+                        max="90"
+                        class="width-slider"
+                      />
+                      <input
+                        type="number"
+                        [value]="column.widthPercentage"
+                        (input)="onWidthChange(rowIndex, columnIndex, $event)"
+                        min="10"
+                        max="90"
+                        class="width-number"
+                      />
+                      <span class="width-unit">%</span>
+                    </div>
+                  </div>
+                  
+                  <div class="column-preview">
+                    <div class="drop-zone">
+                      <i class="zone-icon">📄</i>
+                      <span class="zone-text">Khu vực kéo thả</span>
+                      <small class="zone-meta">{{ column.sections.length }} section</small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Layout Summary -->
+        <div class="layout-summary">
+          <div class="summary-item">
+            <strong>Tổng dòng:</strong> {{ configForm.rows?.length || 0 }}
+          </div>
+          <div class="summary-item">
+            <strong>Cột tối đa:</strong> {{ configForm.totalColumns }}
+          </div>
+          <div class="summary-item">
+            <strong>Tổng vùng kéo thả:</strong> 
+            {{ getTotalDropZones() }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="onClose()">
+        Hủy
+      </button>
+      <button class="btn btn-primary" (click)="onSave()">
+        Lưu Layout
+      </button>
+    </div>
+  </div>
+</div>

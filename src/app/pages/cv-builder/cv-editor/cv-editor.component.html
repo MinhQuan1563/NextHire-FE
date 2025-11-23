@@ -1,0 +1,411 @@
+<div class="cv-builder-container">
+  <!-- Left Sidebar -->
+  <div class="sidebar">
+    <!-- Tab Navigation -->
+    <app-sidebar-tabs
+      [activeTab]="activeTab"
+      (activeTabChange)="setActiveTab($event)"
+    >
+    </app-sidebar-tabs>
+
+    <!-- Tab Content Panels -->
+    <div class="tab-content">
+      <!-- Design & Font Panel -->
+      <app-design-panel
+        *ngIf="activeTab === 'design'"
+        [settings]="designSettings"
+        (fontChange)="onFontChange($event)"
+        (fontSizeChange)="onFontSizeChange($event)"
+        (lineSpacingChange)="onLineSpacingChange($event)"
+        (colorChange)="onColorChange($event)"
+        (colorPickerChange)="onColorPickerChange($event)"
+        (backgroundChange)="onBackgroundChange($event)"
+      >
+      </app-design-panel>
+
+      <!-- Add Sections Panel -->
+      <app-sections-panel
+        *ngIf="activeTab === 'sections'"
+        [availableSections]="getUnusedSections()"
+        (sectionAdd)="addSectionToLayout($event)"
+      >
+      </app-sections-panel>
+
+      <!-- Layout Panel -->
+      <app-layout-panel
+        *ngIf="activeTab === 'layout'"
+        [usedSections]="usedSections"
+        (sectionRemove)="removeSection($event)"
+        (sectionsReorder)="reorderSections($event)"
+        (dragStart)="onDragStart($event.event, $event.section)"
+        (drop)="onDrop($event.event, $event.targetSection)"
+      >
+      </app-layout-panel>
+    </div>
+  </div>
+
+  <!-- Main CV Preview Area -->
+  <div class="main-content">
+    <!-- Header with Management Button -->
+    <div class="cv-editor-header">
+      <div class="header-left">
+        <h1>CV Editor</h1>
+        <p>Tạo và chỉnh sửa CV của bạn</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn-manage-categories" (click)="openManagementModal()">
+          <i class="icon-settings">⚙️</i>
+          <span>Quản lý danh mục</span>
+        </button>
+        <button class="btn-layout-config" (click)="openLayoutConfigModal()">
+          <i class="icon-layout">🎨</i>
+          <span>Cấu hình Layout</span>
+        </button>
+        <button 
+          class="btn-layout-manage" 
+          (click)="openLayoutManagementModal()"
+          [disabled]="false"
+        >
+          <i class="icon-grid">📐</i>
+          <span>Quản lý Layout</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Edit Toolbar -->
+    <app-edit-toolbar
+      [show]="showEditToolbar"
+      [position]="editToolbarPosition"
+      (hide)="hideEditToolbar()"
+      (bold)="makeBold()"
+      (italic)="makeItalic()"
+      (underline)="makeUnderline()"
+      (bulletList)="createBulletList()"
+      (numberList)="createNumberList()"
+      (fontSizeChange)="changeFontSize($event.toString())"
+      (alignLeft)="alignLeft()"
+      (alignCenter)="alignCenter()"
+      (alignRight)="alignRight()"
+      (alignJustify)="alignJustify()"
+    >
+    </app-edit-toolbar>
+
+    <!-- CV Preview -->
+    <app-cv-preview
+      #fileInput
+      [cvData]="cvData"
+      [usedSections]="usedSections"
+      [designSettings]="designSettings"
+      [selectedAvatarUrl]="selectedAvatarUrl"
+      [isZoomed]="isZoomed"
+      (fileSelected)="onFileSelected($event)"
+      (fieldUpdate)="updateField($event.fieldName, $event.event)"
+      (editableClick)="onEditableClick($event.event, $event.fieldName)"
+      (zoomToggle)="zoomCV()"
+      (download)="downloadCV()"
+      (experienceAdd)="addExperience()"
+      (experienceRemove)="removeExperience($event)"
+      (responsibilityAdd)="addResponsibility($event)"
+      (responsibilityRemove)="removeResponsibility($event)"
+    >
+    </app-cv-preview>
+  </div>
+</div>
+
+<!-- Category Modal -->
+<div *ngIf="showCategoryModal" class="modal-overlay" (click)="closeCategoryModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ modalMode === 'add' ? 'Thêm danh mục mới' : 'Chỉnh sửa danh mục' }}</h3>
+      <button class="modal-close" (click)="closeCategoryModal()">✕</button>
+    </div>
+    
+    <div class="modal-body">
+      <div class="form-group">
+        <label for="categoryName">Tên danh mục *</label>
+        <input 
+          id="categoryName"
+          type="text" 
+          [(ngModel)]="newCategoryForm.name"
+          placeholder="Nhập tên danh mục"
+          class="form-input"
+          required
+        />
+      </div>
+      
+      <div class="form-group">
+        <label for="categoryIcon">Icon</label>
+        <input 
+          id="categoryIcon"
+          type="text" 
+          [(ngModel)]="newCategoryForm.icon"
+          placeholder="Chọn emoji (vd: 📁)"
+          class="form-input"
+        />
+        <small class="form-help">Sử dụng emoji làm icon cho danh mục</small>
+      </div>
+      
+      <div class="form-group">
+        <label for="categoryDescription">Mô tả</label>
+        <textarea 
+          id="categoryDescription"
+          [(ngModel)]="newCategoryForm.description"
+          placeholder="Mô tả ngắn gọn về danh mục"
+          class="form-textarea"
+          rows="3"
+        ></textarea>
+      </div>
+      
+      <div class="form-group">
+        <label class="checkbox-label">
+          <input 
+            type="checkbox" 
+            [(ngModel)]="newCategoryForm.allowMultiple"
+          />
+          <span class="checkmark"></span>
+          Cho phép thêm nhiều mục cùng loại
+        </label>
+        <small class="form-help">Nếu bật, người dùng có thể thêm nhiều mục trong danh mục này</small>
+      </div>
+    </div>
+    
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeCategoryModal()">
+        Hủy
+      </button>
+      <button 
+        class="btn btn-primary" 
+        (click)="modalMode === 'add' ? addCategory() : updateCategory()"
+        [disabled]="!newCategoryForm.name.trim()"
+      >
+        {{ modalMode === 'add' ? 'Thêm danh mục' : 'Cập nhật' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Section Modal -->
+<div *ngIf="showSectionModal" class="modal-overlay" (click)="closeSectionModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ modalMode === 'add' ? 'Thêm mục mới' : 'Chỉnh sửa mục' }}</h3>
+      <button class="modal-close" (click)="closeSectionModal()">✕</button>
+    </div>
+    
+    <div class="modal-body">
+      <div class="form-group">
+        <label for="sectionName">Tên mục *</label>
+        <input 
+          id="sectionName"
+          type="text" 
+          [(ngModel)]="newSectionForm.name"
+          placeholder="Nhập tên mục"
+          class="form-input"
+          required
+        />
+      </div>
+      
+      <div class="form-group">
+        <label for="sectionIcon">Icon</label>
+        <input 
+          id="sectionIcon"
+          type="text" 
+          [(ngModel)]="newSectionForm.icon"
+          placeholder="Chọn emoji (vd: 📄)"
+          class="form-input"
+        />
+        <small class="form-help">Sử dụng emoji làm icon cho mục</small>
+      </div>
+      
+      <div class="form-group">
+        <label class="checkbox-label">
+          <input 
+            type="checkbox" 
+            [(ngModel)]="newSectionForm.allowMultiple"
+          />
+          <span class="checkmark"></span>
+          Cho phép nhiều instance
+        </label>
+        <small class="form-help">Nếu bật, có thể thêm nhiều instance của mục này vào CV</small>
+      </div>
+    </div>
+    
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeSectionModal()">
+        Hủy
+      </button>
+      <button 
+        class="btn btn-primary" 
+        (click)="modalMode === 'add' ? addSectionToCategory() : updateSection()"
+        [disabled]="!newSectionForm.name.trim()"
+      >
+        {{ modalMode === 'add' ? 'Thêm mục' : 'Cập nhật' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Category Management Modal -->
+<div *ngIf="showManagementModal" class="modal-overlay large" (click)="closeManagementModal()">
+  <div class="modal-content large" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Quản lý danh mục CV</h3>
+      <button class="modal-close" (click)="closeManagementModal()">✕</button>
+    </div>
+    
+    <div class="modal-body large">
+      <!-- Header Actions -->
+      <div class="management-header">
+        <div class="header-info">
+          <p class="description">Quản lý các danh mục và section cho CV của bạn</p>
+          <div class="stats">
+            <span class="stat-item">
+              <strong>{{ categories.length }}</strong> danh mục
+            </span>
+            <span class="stat-item">
+              <strong>{{ getTotalSections() }}</strong> section
+            </span>
+          </div>
+        </div>
+        <button class="btn-primary" (click)="openCategoryModal('add')">
+          <i class="icon-plus">➕</i>
+          Thêm danh mục mới
+        </button>
+      </div>
+
+      <!-- Categories Grid -->
+      <div class="categories-grid">
+        <div *ngIf="categories.length === 0" class="empty-state">
+          <div class="empty-icon">📁</div>
+          <h4>Chưa có danh mục nào</h4>
+          <p>Bắt đầu bằng cách tạo danh mục đầu tiên cho CV của bạn</p>
+          <button class="btn-primary" (click)="openCategoryModal('add')">
+            <i class="icon-plus">➕</i>
+            Tạo danh mục đầu tiên
+          </button>
+        </div>
+        
+        <div *ngFor="let category of categories; trackBy: trackByCategory" class="category-card">
+          <div class="category-header">
+            <div class="category-main">
+              <div class="category-icon">{{ category.icon }}</div>
+              <div class="category-info">
+                <h4>{{ category.name }}</h4>
+                <p class="description">{{ category.description || 'Không có mô tả' }}</p>
+                <div class="badges">
+                  <span class="badge" [class.system]="category.isSystemCategory">
+                    {{ category.isSystemCategory ? '🔒 Hệ thống' : '🔧 Tùy chỉnh' }}
+                  </span>
+                  <span class="badge" *ngIf="category.allowMultiple">
+                    🔄 Nhiều mục
+                  </span>
+                  <span class="badge count">
+                    📊 {{ category.sections.length }} section
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="category-actions">
+              <button 
+                class="btn-action" 
+                (click)="editCategory(category)"
+                title="Chỉnh sửa danh mục"
+              >
+                <i>✏️</i>
+                Sửa
+              </button>
+              <button 
+                *ngIf="!category.isSystemCategory"
+                class="btn-action danger" 
+                (click)="deleteCategory(category.id)"
+                title="Xóa danh mục"
+              >
+                <i>🗑️</i>
+                Xóa
+              </button>
+            </div>
+          </div>
+
+          <!-- Sections Management -->
+          <div class="sections-container">
+            <div class="sections-header">
+              <h5>Sections ({{ category.sections.length }})</h5>
+              <button 
+                class="btn-add-section" 
+                (click)="openSectionModal('add', category.id)"
+                title="Thêm section mới"
+              >
+                <i>+</i>
+                Thêm section
+              </button>
+            </div>
+            
+            <div class="sections-list" *ngIf="category.sections.length > 0">
+              <div 
+                *ngFor="let section of category.sections; trackBy: trackBySection" 
+                class="section-item"
+              >
+                <div class="section-main">
+                  <span class="section-icon">{{ section.icon }}</span>
+                  <div class="section-info">
+                    <span class="name">{{ section.name }}</span>
+                    <span class="meta" *ngIf="section.allowMultiple">
+                      🔄 Cho phép nhiều instance
+                    </span>
+                  </div>
+                </div>
+                <div class="section-actions">
+                  <button 
+                    class="btn-sm" 
+                    (click)="editSection(section)"
+                    title="Sửa section"
+                  >
+                    ✏️
+                  </button>
+                  <button 
+                    class="btn-sm danger" 
+                    (click)="deleteSectionFromCategory(category.id, section.id)"
+                    title="Xóa section"
+                  >
+                    🗑️
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <div class="no-sections" *ngIf="category.sections.length === 0">
+              <span class="icon">📝</span>
+              <span>Chưa có section nào. Thêm section đầu tiên!</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeManagementModal()">
+        Đóng
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Layout Configuration Modal -->
+<app-layout-config-modal
+  [show]="showLayoutConfigModal"
+  [layoutConfig]="currentLayoutConfig"
+  (close)="closeLayoutConfigModal()"
+  (save)="onLayoutConfigSave($event)"
+>
+</app-layout-config-modal>
+
+<!-- Layout Management Modal -->
+<app-layout-management
+  [show]="showLayoutManagementModal"
+  [layoutConfig]="currentLayoutConfig"
+  [availableSections]="availableSections"
+  (close)="closeLayoutManagementModal()"
+  (layoutUpdated)="onLayoutUpdated($event)"
+  (sectionPlaced)="onSectionPlaced($event)"
+>
+</app-layout-management>
