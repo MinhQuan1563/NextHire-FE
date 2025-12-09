@@ -1,43 +1,76 @@
 <div class="bg-white rounded-lg shadow overflow-hidden">
-  <div class="relative">
-    <img [src]="coverImageUrl ? coverImageUrl : 'favicon.ico'" alt="Cover" class="w-full h-16 object-cover" />
-    <div class="absolute left-1/2 transform -translate-x-1/2 -bottom-8">
-      <p-avatar
-        [image]="avatarUrl"
-        [label]="!avatarUrl ? userInitial : ''"
-        styleClass="w-16 h-16 text-xl border-2 border-white"
-        shape="circle"
-      >
-      </p-avatar>
+  <ng-container *ngIf="currentUser$ | async as user; else anon">
+    <div class="relative">
+      <img [src]="coverImageUrl ? coverImageUrl : 'favicon.ico'" alt="Cover" class="w-full h-16 object-cover" />
+      <div class="absolute left-1/2 transform -translate-x-1/2 -bottom-8">
+        <p-avatar
+          [image]="user?.profilePicture"
+          styleClass="w-16 h-16 text-xl border-2 border-white"
+          shape="circle"
+        >
+        </p-avatar>
+      </div>
     </div>
-  </div>
 
-  <div class="text-center pt-10 pb-4 border-b border-gray-200 px-4">
-    <h3 class="font-semibold text-gray-800 hover:underline cursor-pointer">
-      {{ userName }}
-    </h3>
-    <p class="text-xs text-gray-500 mt-1">{{ userTitle }}</p>
-  </div>
-
-  <div
-    class="py-3 px-4 text-xs text-gray-500 border-b border-gray-200 space-y-1"
-  >
-    <div
-      class="flex justify-between items-center hover:bg-gray-100 p-1 rounded cursor-pointer"
-    >
-      <span>Lượt xem hồ sơ</span>
-      <span class="text-blue-600 font-semibold">{{ profileViews }}</span>
+    <div class="text-center pt-10 pb-4 border-b border-gray-200 px-4">
+      <h3 class="font-semibold text-gray-800 hover:underline cursor-pointer">
+        {{ user?.fullName }}
+      </h3>
+      <p class="text-xs text-gray-500 mt-1">{{ user?.email || user?.username }}</p>
     </div>
-    <div
-      class="flex justify-between items-center hover:bg-gray-100 p-1 rounded cursor-pointer"
-    >
-      <span>Lượt hiển thị bài viết</span>
-      <span class="text-blue-600 font-semibold">{{ postImpressions }}</span>
-    </div>
-  </div>
 
-  <div class="py-3 px-4 text-xs text-gray-500 hover:bg-gray-100 cursor-pointer">
-    <i class="pi pi-bookmark mr-1"></i>
-    <span class="font-semibold text-gray-700">Mục đã lưu</span>
-  </div>
+    <div class="py-3 px-4 text-xs text-gray-500 border-b border-gray-200 space-y-1">
+      <div class="flex justify-between items-center hover:bg-gray-100 p-1 rounded cursor-pointer">
+        <span>Lượt xem hồ sơ</span>
+        <span class="text-blue-600 font-semibold">{{ profileViews }}</span>
+      </div>
+      <div class="flex justify-between items-center hover:bg-gray-100 p-1 rounded cursor-pointer">
+        <span>Lượt hiển thị bài viết</span>
+        <span class="text-blue-600 font-semibold">{{ postImpressions }}</span>
+      </div>
+    </div>
+
+    <div class="py-3 px-4 text-xs text-gray-500 hover:bg-gray-100 cursor-pointer">
+      <i class="pi pi-bookmark mr-1"></i>
+      <span class="font-semibold text-gray-700">Mục đã lưu</span>
+    </div>
+  </ng-container>
+
+  <ng-template #anon>
+    <div class="relative">
+      <img [src]="coverImageUrl ? coverImageUrl : 'favicon.ico'" alt="Cover" class="w-full h-16 object-cover" />
+      <div class="absolute left-1/2 transform -translate-x-1/2 -bottom-8">
+        <p-avatar
+          [image]="avatarUrl"
+          [label]="!avatarUrl ? userName.charAt(0) : ''"
+          styleClass="w-16 h-16 text-xl border-2 border-white"
+          shape="circle"
+        >
+        </p-avatar>
+      </div>
+    </div>
+
+    <div class="text-center pt-10 pb-4 border-b border-gray-200 px-4">
+      <h3 class="font-semibold text-gray-800 hover:underline cursor-pointer">
+        {{ userName }}
+      </h3>
+      <p class="text-xs text-gray-500 mt-1">{{ userTitle }}</p>
+    </div>
+
+    <div class="py-3 px-4 text-xs text-gray-500 border-b border-gray-200 space-y-1">
+      <div class="flex justify-between items-center hover:bg-gray-100 p-1 rounded cursor-pointer">
+        <span>Lượt xem hồ sơ</span>
+        <span class="text-blue-600 font-semibold">{{ profileViews }}</span>
+      </div>
+      <div class="flex justify-between items-center hover:bg-gray-100 p-1 rounded cursor-pointer">
+        <span>Lượt hiển thị bài viết</span>
+        <span class="text-blue-600 font-semibold">{{ postImpressions }}</span>
+      </div>
+    </div>
+
+    <div class="py-3 px-4 text-xs text-gray-500 hover:bg-gray-100 cursor-pointer">
+      <i class="pi pi-bookmark mr-1"></i>
+      <span class="font-semibold text-gray-700">Mục đã lưu</span>
+    </div>
+  </ng-template>
 </div>

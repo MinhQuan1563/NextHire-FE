@@ -1,0 +1,110 @@
+<div class="min-h-screen bg-gray-50 p-4">
+  <div class="max-w-4xl mx-auto">
+    <!-- Header -->
+    <div class="mb-6">
+      <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ userName }}'s Network</h1>
+    </div>
+
+    <!-- Tab View -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+      <p-tabView>
+        <!-- Following Tab -->
+        <p-tabPanel header="Following">
+          <ng-template pTemplate="header">
+            <span>Following ({{ followingCount }})</span>
+          </ng-template>
+          
+          <div class="p-4">
+            <!-- Info Text -->
+            <p class="text-sm text-gray-600 mb-6">
+              You are following {{ followingCount }} people out of your network.
+            </p>
+            
+            <!-- Following List -->
+            <div class="space-y-4">
+              <div *ngFor="let user of followingUsers" 
+                   class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors">
+                <!-- Left Side - Avatar & Info -->
+                <div class="flex items-center space-x-4">
+                  <img 
+                    [src]="user.avatar || 'assets/default-avatar.png'"
+                    [alt]="user.fullName"
+                    class="w-12 h-12 rounded-full object-cover border border-gray-200">
+                  
+                  <div>
+                    <h3 class="font-semibold text-gray-900 mb-1">{{ user.fullName }}</h3>
+                    <p class="text-sm text-gray-600">{{ user.headline }}</p>
+                  </div>
+                </div>
+                
+                <!-- Right Side - Follow Button -->
+                <button 
+                  pButton 
+                  type="button" 
+                  [label]="getFollowButtonText(user.isFollowing || false)"
+                  [class]="getFollowButtonClass(user.isFollowing || false)"
+                  (click)="toggleFollowing(user)">
+                </button>
+              </div>
+              
+              <!-- Empty State -->
+              <div *ngIf="followingUsers.length === 0" class="text-center py-12">
+                <div class="text-gray-400 mb-4">
+                  <i class="pi pi-heart" style="font-size: 3rem;"></i>
+                </div>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">No one followed yet</h3>
+                <p class="text-gray-500">Start following people to see them here.</p>
+              </div>
+            </div>
+          </div>
+        </p-tabPanel>
+        
+        <!-- Followers Tab -->
+        <p-tabPanel header="Followers">
+          <ng-template pTemplate="header">
+            <span>Followers ({{ followers.length }})</span>
+          </ng-template>
+          
+          <div class="p-4">
+            <!-- Followers List -->
+            <div class="space-y-4">
+              <div *ngFor="let user of followers" 
+                   class="flex items-center justify-between p-4 hover:bg-gray-50 rounded-lg transition-colors">
+                <!-- Left Side - Avatar & Info -->
+                <div class="flex items-center space-x-4">
+                  <img 
+                    [src]="user.avatar || 'assets/default-avatar.png'"
+                    [alt]="user.fullName"
+                    class="w-12 h-12 rounded-full object-cover border border-gray-200">
+                  
+                  <div>
+                    <h3 class="font-semibold text-gray-900 mb-1">{{ user.fullName }}</h3>
+                    <p class="text-sm text-gray-600">{{ user.headline }}</p>
+                  </div>
+                </div>
+                
+                <!-- Right Side - Follow Back Button -->
+                <button 
+                  pButton 
+                  type="button" 
+                  label="Follow"
+                  class="p-button-sm"
+                  (click)="followUser(user)">
+                </button>
+              </div>
+              
+              <!-- Empty State -->
+              <div *ngIf="followers.length === 0" class="text-center py-12">
+                <div class="text-gray-400 mb-4">
+                  <i class="pi pi-users" style="font-size: 3rem;"></i>
+                </div>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">No followers yet</h3>
+                <p class="text-gray-500">When people follow you, they'll appear here.</p>
+              </div>
+            </div>
+          </div>
+        </p-tabPanel>
+      </p-tabView>
+    </div>
+  </div>
+</div>

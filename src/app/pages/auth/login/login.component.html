@@ -1,0 +1,106 @@
+<div class="min-h-screen flex items-center justify-center bg-gray-100">
+  <div class="max-w-md w-full space-y-8 p-8 bg-white rounded-lg shadow-lg">
+    <div>
+      <h2 class="text-center text-3xl font-bold text-gray-900">
+        Sign in to NextHire
+      </h2>
+      <p class="mt-2 text-center text-sm text-gray-600">
+        Or
+        <a
+          [routerLink]="['/auth/register']"
+          class="font-medium text-blue-600 hover:text-blue-500"
+        >
+          create a new account
+        </a>
+      </p>
+    </div>
+
+    <form
+      [formGroup]="loginForm"
+      (ngSubmit)="onSubmit()"
+      class="mt-8 space-y-6"
+    >
+      <div class="space-y-4">
+        <div>
+          <label for="userNameOrEmail" class="block text-sm font-medium text-gray-700"
+            >Username or Email</label
+          >
+          <div class="mt-1">
+            <input
+              id="userNameOrEmail"
+              formControlName="userNameOrEmail"
+              pInputText
+              class="w-full border"
+              [ngClass]="{
+                'ng-invalid ng-dirty':
+                  submitted && loginForm.get('userNameOrEmail')?.errors,
+              }"
+            />
+            @if (submitted && loginForm.get("userNameOrEmail")?.errors?.["required"]) {
+              <small class="text-red-500">Username is required</small>
+            }
+          </div>
+        </div>
+
+        <div>
+          <label
+            for="ip-password"
+            class="block text-sm font-medium text-gray-700"
+            >Password</label
+          >
+          <div class="mt-1">
+            <p-password
+              id="ip-password"
+              formControlName="password"
+              [toggleMask]="true"
+              [style]="{ width: '100%' }"
+              [inputStyle]="{ width: '100%' }"
+              styleClass="w-full border rounded-sm"
+              [ngClass]="{
+                'ng-invalid ng-dirty':
+                  submitted && loginForm.get('password')?.errors,
+              }"
+              [feedback]="false"
+            ></p-password>
+            @if (submitted && loginForm.get("password")?.errors?.["required"]) {
+              <small class="text-red-500">Password is required</small>
+            }
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <div class="flex items-center">
+            <p-checkbox
+              formControlName="rememberMe"
+              [binary]="true"
+              class="border rounded-sm"
+              inputId="rememberMe"
+            ></p-checkbox>
+            <label for="rememberMe" class="ml-2 block text-sm text-gray-900"
+              >Remember me</label
+            >
+          </div>
+
+          <div class="text-sm">
+            <a
+              [routerLink]="['/auth/forgot-password']"
+              class="font-medium text-blue-600 hover:text-blue-500"
+            >
+              Forgot your password?
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <p-button
+          type="submit"
+          [loading]="loading"
+          styleClass="w-full border rounded-md p-1"
+          label="Sign in"
+        ></p-button>
+      </div>
+    </form>
+  </div>
+</div>
+<p-toast></p-toast>

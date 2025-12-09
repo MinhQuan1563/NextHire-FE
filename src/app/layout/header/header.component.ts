@@ -6,7 +6,8 @@ import { AvatarModule } from 'primeng/avatar';
 import { MenuModule } from 'primeng/menu';
 import { MenuItem } from 'primeng/api';
 import { TieredMenuModule } from 'primeng/tieredmenu';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
+import { AuthService } from '@app/services/auth/auth.service';
 
 @Component({
   selector: 'app-header',
@@ -18,35 +19,35 @@ import { RouterLink } from '@angular/router';
     InputTextModule,
     AvatarModule,
     MenuModule,
-    TieredMenuModule
+    TieredMenuModule,
   ],
   templateUrl: './header.component.html',
-  styleUrl: './header.component.scss'
+  styleUrl: './header.component.scss',
 })
 export class HeaderComponent {
-  isLoggedIn = true;
-  username = 'Người Dùng';
-  userInitial = 'N';
   userMenuItems: MenuItem[];
-
-  constructor() {
-      this.userMenuItems = [
-          {
-              label: 'Xem hồ sơ',
-              icon: 'pi pi-fw pi-user',
-              command: () => this.navigateToProfile()
-          },
-          {
-              label: 'Cài đặt',
-              icon: 'pi pi-fw pi-cog',
-          },
-          { separator: true },
-          {
-              label: 'Đăng xuất',
-              icon: 'pi pi-fw pi-sign-out',
-              command: () => this.logout()
-          }
-      ];
+  currentUser$ = this.authService.currentUser$;
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+  ) {
+    this.userMenuItems = [
+      {
+        label: 'Xem hồ sơ',
+        icon: 'pi pi-fw pi-user',
+        command: () => this.navigateToProfile(),
+      },
+      {
+        label: 'Cài đặt',
+        icon: 'pi pi-fw pi-cog',
+      },
+      { separator: true },
+      {
+        label: 'Đăng xuất',
+        icon: 'pi pi-fw pi-sign-out',
+        command: () => this.logout(),
+      },
+    ];
   }
 
   navigateToProfile() {
@@ -55,8 +56,14 @@ export class HeaderComponent {
   }
 
   logout() {
-    console.log('Logout clicked');
-    this.isLoggedIn = false;
+    this.authService.logout().subscribe({
+      next: () => {
+        this.router.navigate(['/auth/login']);
+      },
+      error: (error) => {
+        console.error('Logout failed:', error);
+      },
+    });
   }
 
   onSearch(event: Event) {

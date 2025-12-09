@@ -1,0 +1,85 @@
+// Network page specific styles
+
+// Line clamp utility for invitation cards
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+// Horizontal scroll for invitation cards
+.overflow-x-auto {
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e0 #f7fafc;
+  
+  &::-webkit-scrollbar {
+    height: 6px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: #f7fafc;
+    border-radius: 3px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: #cbd5e0;
+    border-radius: 3px;
+    
+    &:hover {
+      background: #a0aec0;
+    }
+  }
+}
+
+// Truncate text utility
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// Flex utilities
+.flex-shrink-0 {
+  flex-shrink: 0;
+}
+
+.min-w-0 {
+  min-width: 0;
+}
+
+// Transition utilities
+.transition-all {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+.duration-300 {
+  transition-duration: 300ms;
+}
+
+// Button styling
+button {
+  transition: all 0.2s ease-in-out;
+}
+
+// Avatar styling
+img {
+  object-fit: cover;
+}
+
+// Responsive grid improvements
+@media (max-width: 768px) {
+  .grid {
+    gap: 1rem;
+  }
+}
+
+// Sidebar item hover effect
+.hover\:bg-gray-50:hover {
+  background-color: #f9fafb;
+  transition: background-color 0.2s ease;
+}

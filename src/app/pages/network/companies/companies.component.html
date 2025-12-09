@@ -1,0 +1,54 @@
+<div class="min-h-screen bg-gray-50 p-4">
+  <div class="max-w-4xl mx-auto">
+    <!-- Header -->
+    <div class="mb-6">
+      <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ companies.length }} Pages</h1>
+    </div>
+
+    <!-- Companies List -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+      <div *ngFor="let company of companies; let last = last" class="p-6">
+        <div class="flex items-center justify-between">
+          <!-- Left Side - Logo & Info -->
+          <div class="flex items-center space-x-4">
+            <app-company-logo 
+              [src]="company.logo"
+              [alt]="company.name"
+              width="60px"
+              height="60px"
+              class="rounded-lg shadow-sm flex-shrink-0">
+            </app-company-logo>
+            
+            <div>
+              <h3 class="text-lg font-semibold text-gray-900 mb-1">{{ company.name }}</h3>
+              <p class="text-sm text-gray-600">
+                {{ formatFollowersCount(company.followersCount) }} followers
+              </p>
+            </div>
+          </div>
+          
+          <!-- Right Side - Follow Button -->
+          <button 
+            pButton 
+            type="button" 
+            [label]="getFollowButtonText(company.isFollowing)"
+            [class]="getFollowButtonClass(company.isFollowing)"
+            (click)="toggleFollow(company)">
+          </button>
+        </div>
+        
+        <!-- Divider (except for last item) -->
+        <p-divider *ngIf="!last" styleClass="my-0 mt-6"></p-divider>
+      </div>
+      
+      <!-- Empty State -->
+      <div *ngIf="companies.length === 0" class="p-12 text-center">
+        <div class="text-gray-400 mb-4">
+          <i class="pi pi-building" style="font-size: 3rem;"></i>
+        </div>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">No companies found</h3>
+        <p class="text-gray-500">Companies you follow will appear here.</p>
+      </div>
+    </div>
+  </div>
+</div>

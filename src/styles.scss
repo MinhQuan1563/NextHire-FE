@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&family=Open+Sans:wght@300;400;500;600;700&family=Lato:wght@300;400;700&family=Montserrat:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -7,4 +9,28 @@ html, body {
   padding: 0;
   height: 100%;
   width: 100%;
+}
+
+// Global CV Builder Styles
+.cv-builder-app {
+  font-family: 'Roboto', sans-serif;
+  
+  * {
+    box-sizing: border-box;
+  }
+  
+  // Smooth transitions for all interactive elements
+  button, .tab-item, .section-item, .template-item, .color-item {
+    transition: all 0.2s ease;
+  }
+  
+  // Focus styles for accessibility
+  button:focus, 
+  input:focus, 
+  select:focus, 
+  .tab-item:focus,
+  .editable:focus {
+    outline: 2px solid #00B14F;
+    outline-offset: 2px;
+  }
 }
