@@ -1,0 +1,108 @@
+<div class="game-container">
+  <div class="game-header">
+    <button class="back-button" (click)="goBack()">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <path d="M12 4L6 10L12 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Back
+    </button>
+    
+    <h1 class="game-title">👑 Queens #596</h1>
+    
+    <div class="game-stats">
+      <div class="stat">
+        <span class="stat-label">Time</span>
+        <span class="stat-value">{{ formatTime(timer) }}</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Queens</span>
+        <span class="stat-value">{{ queensPlaced }}/{{ totalQueens }}</span>
+      </div>
+      <div class="stat" *ngIf="isGameWon">
+        <span class="stat-label">Score</span>
+        <span class="stat-value">{{ score }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="game-board">
+    <!-- Invalid Move Alert -->
+    <div class="alert-banner" *ngIf="showInvalidMove">
+      ⚠️ Queens cannot attack each other!
+    </div>
+
+    <div class="grid-container">
+      <div class="grid" [style.grid-template-columns]="'repeat(' + gridSize + ', 1fr)'">
+        <div
+          *ngFor="let row of grid; let i = index"
+          class="grid-row"
+          [style.display]="'contents'">
+          <div
+            *ngFor="let cell of row; let j = index"
+            class="cell"
+            [class.has-queen]="cell.hasQueen"
+            [class.attacked]="cell.isAttacked"
+            [class.hint]="isHintCell(i, j)"
+            [style.background-color]="getCellColor(i, j)"
+            (click)="onCellClick(i, j)">
+            <span class="queen-icon" *ngIf="cell.hasQueen">👑</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="game-instructions">
+      <h3>How to Play</h3>
+      <p>Place one 👑 in each row, column, and colored region. No 👑 can touch another, even diagonally!</p>
+      <div class="legend">
+        <div class="legend-item">
+          <div class="legend-box queen-box">👑</div>
+          <span>Queen</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-box region-box"></div>
+          <span>Colored Region</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-box attacked-box"></div>
+          <span>Invalid Placement</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="game-controls">
+    <button class="control-button reset" (click)="resetGame()">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <path d="M4 10C4 13.3137 6.68629 16 10 16C13.3137 16 16 13.3137 16 10C16 6.68629 13.3137 4 10 4C8.1435 4 6.4723 4.80974 5.34315 6.09099M5 3V6.5H8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Reset Board
+    </button>
+    <button class="control-button hint" (click)="showHint()">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <path d="M10 2C7.24 2 5 4.24 5 7C5 8.38 5.56 9.64 6.46 10.55L8 12.09V15C8 15.55 8.45 16 9 16H11C11.55 16 12 15.55 12 15V12.09L13.54 10.55C14.44 9.64 15 8.38 15 7C15 4.24 12.76 2 10 2ZM9 18C9 18.55 9.45 19 10 19C10.55 19 11 18.55 11 18V17H9V18Z" fill="currentColor"/>
+      </svg>
+      Hint
+    </button>
+  </div>
+
+  <!-- Win Modal -->
+  <div class="modal-overlay" *ngIf="isGameWon" (click)="goBack()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-icon">🎉</div>
+      <h2>Perfect!</h2>
+      <p>You completed Queens #596</p>
+      <div class="modal-stats">
+        <div class="modal-stat">
+          <span class="label">Time</span>
+          <span class="value">{{ formatTime(timer) }}</span>
+        </div>
+        <div class="modal-stat">
+          <span class="label">Score</span>
+          <span class="value">{{ score }}</span>
+        </div>
+      </div>
+      <button class="modal-button" (click)="goBack()">Back to Games</button>
+    </div>
+  </div>
+</div>
