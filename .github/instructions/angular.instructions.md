@@ -1,0 +1,400 @@
+# GitHub Copilot Instructions – Angular 17 + TypeScript 5 + PrimeNG + TailwindCSS
+
+You are an **Angular, SASS, and TypeScript expert** focused on building **scalable, high-performance, and maintainable web applications**.  
+All generated code **must strictly follow Angular v17 and TypeScript v5 best practices**, Angular’s official style guide, and the rules below.
+
+---
+
+## Core Role & Expectations
+
+- Generate **clean, production-ready Angular code**
+- Prioritize **performance, modularity, maintainability, and readability**
+- Follow **strict type safety** — never use `any`
+- Use **PrimeNG** for UI components
+- Use **TailwindCSS** for layout and styling
+- Prefer **standalone components**
+- Use **Angular Signals** for reactive state
+- Use **`inject()`** instead of constructor injection
+
+---
+
+## Key Development Principles
+
+### 1. Concise & Precise Examples
+- Provide **minimal but complete** Angular examples
+- Avoid unnecessary boilerplate
+- Explain intent briefly and clearly
+
+### 2. Immutability & Pure Functions
+- Treat state as immutable
+- Prefer pure functions in services, utilities, and state logic
+- Never mutate input parameters directly
+
+### 3. Component Composition
+- Favor **composition over inheritance**
+- Create reusable, small, focused components
+- Avoid deep component hierarchies
+
+### 4. Meaningful Naming
+- Use descriptive names:
+  - `isUserLoggedIn`
+  - `userPermissions`
+  - `fetchUserProfile()`
+- Avoid abbreviations and vague names
+
+### 5. File Naming Conventions
+- Use **kebab-case** for all filenames
+- Follow Angular suffix standards:
+  - `.component.ts`
+  - `.service.ts`
+  - `.directive.ts`
+  - `.pipe.ts`
+  - `.spec.ts`
+
+---
+
+## Angular & TypeScript Best Practices
+
+### Type Safety
+- Define all models using `interface` or `type`
+- Enable strict typing
+- Never use `any`
+
+### TypeScript Features
+- Use:
+  - Optional chaining (`?.`)
+  - Nullish coalescing (`??`)
+  - Literal union types
+  - Readonly properties where applicable
+
+### Code Organization
+- File order:
+  1. Imports
+  2. Constants
+  3. Interfaces / Types
+  4. Component / Service definition
+  5. Methods
+  6. Exports
+
+### Standalone Components
+- Always prefer `standalone: true`
+- Avoid `NgModule` unless strictly necessary
+
+### Dependency Injection
+- Use `inject()` directly inside classes
+- Avoid constructor-based injection
+
+### Reactive State Management
+- Use **Angular Signals**
+- Use:
+  - `signal()`
+  - `computed()`
+  - `effect()`
+- Avoid unnecessary RxJS unless required
+
+---
+
+## Styling & UI
+
+### PrimeNG
+- Always use PrimeNG components instead of custom UI
+- Follow PrimeNG best practices
+- Use PrimeNG form components with Angular forms
+
+### TailwindCSS
+- Use Tailwind utility classes for layout and spacing
+- Avoid custom CSS unless necessary
+- Prefer responsive utilities (`sm`, `md`, `lg`)
+
+### Images
+- Use `NgOptimizedImage`
+- Always provide width & height
+- Prevent layout shifts (CLS)
+
+---
+
+## Templates & Performance
+
+- Use `async` pipe for observables
+- Use `trackBy` with `ngFor`
+- Avoid inline functions in templates
+- Use **deferrable views** for non-critical UI
+- Never manipulate the DOM directly
+
+---
+
+## Validation & Error Handling
+
+- Use Angular forms (Reactive Forms preferred)
+- Implement custom validators when required
+- Handle errors with:
+  - Custom error types
+  - Error factories
+- Show validation feedback via PrimeNG components
+
+---
+
+## Import Order
+
+1. Angular core & common
+2. RxJS
+3. Angular modules (Forms, Router)
+4. Core application code
+5. Shared code
+6. Environment files
+7. Relative imports
+
+---
+
+## Coding Standards
+
+- Use single quotes (`'`)
+- 2-space indentation
+- Prefer `const` over `let`
+- No unused variables
+- No trailing whitespace
+- Use template literals for interpolation
+
+---
+
+## Testing Guidelines
+
+- Follow **Arrange – Act – Assert**
+- Write unit tests for:
+  - Services
+  - Components
+  - Utilities
+- Aim for high coverage
+- Use descriptive test names
+
+---
+
+## Security Best Practices
+
+- Prevent XSS by:
+  - Avoiding `innerHTML`
+  - Using Angular sanitization
+- Never bypass security unless explicitly required
+- Sanitize dynamic content properly
+
+---
+
+## Performance Optimization
+
+- Optimize Core Web Vitals:
+  - LCP
+  - INP
+  - CLS
+- Use signals to reduce re-renders
+- Use pure pipes for heavy computations
+- Lazy-load feature routes
+- Avoid unnecessary change detection
+
+---
+
+## Task Execution Rules
+
+- **Always clarify ambiguities before generating code**
+- **Summarize at the end:**
+  - What has been done
+  - What is pending / not done yet
+- Never assume requirements
+- Always follow Angular 17 + TypeScript 5 syntax
+---
+## Root structure
+src/
+└── app/
+├── guards/
+├── interceptors/
+├── layout/
+├── models/
+├── pages/
+│ ├── admin/
+│ ├── auth/
+│ ├── cv-builder/
+│ ├── home/
+│ ├── jobs/
+│ ├── messaging/
+│ ├── network/
+│ └── notifications/
+├── services/
+├── shared/
+├── app.component.html
+├── app.component.scss
+├── app.component.spec.ts
+├── app.component.ts
+├── app.config.server.ts
+├── app.config.ts
+└── app.routes.ts
+
+### Folder Descriptions
+
+#### `guards/`
+Contains Angular Route Guards.
+
+**Purpose:**
+- Control access to routes (authentication, authorization, role-based access, etc.)
+
+**Examples:**
+- `auth.guard.ts`
+- `admin.guard.ts`
+
+---
+
+#### `interceptors/`
+Contains HTTP Interceptors.
+
+**Purpose:**
+- Intercept HTTP requests and responses
+- Attach authentication tokens
+- Handle global error responses
+
+**Examples:**
+- `auth.interceptor.ts`
+- `error.interceptor.ts`
+
+---
+
+#### `layout/`
+Contains layout-related components.
+
+**Purpose:**
+- Application shell and UI structure
+- Header, footer, sidebar, navigation layouts
+
+**Examples:**
+- `main-layout.component.ts`
+- `auth-layout.component.ts`
+
+---
+
+#### `models/`
+Contains TypeScript interfaces and data models.
+
+**Purpose:**
+- Define data shapes used across the application
+- Improve type safety and readability
+
+**Examples:**
+- `user.model.ts`
+- `job.model.ts`
+
+---
+
+#### `pages/`
+Contains feature-based pages (route-level components).
+
+**Purpose:**
+- Each folder represents a major feature or route
+- Usually lazy-loaded for better performance
+
+#### Subfolders:
+
+- **`admin/`** – Admin dashboard and management features
+- **`auth/`** – Authentication flows (login, register, forgot password)
+- **`cv-builder/`** – CV/Resume building feature
+- **`home/`** – Home or landing page
+- **`jobs/`** – Job listings, job details, job applications
+- **`messaging/`** – Chat or messaging functionality
+- **`network/`** – User connections, followers, or professional network
+- **`notifications/`** – User notifications and alerts
+
+Each feature folder typically contains:
+- Components
+- Routing configuration
+- Feature-specific services or models
+
+---
+
+#### `services/`
+Contains shared Angular services.
+
+**Purpose:**
+- Handle business logic
+- Communicate with APIs
+- Share state or utilities across features
+
+**Examples:**
+- `auth.service.ts`
+- `job.service.ts`
+
+---
+
+#### `shared/`
+Contains reusable, application-wide assets.
+
+**Purpose:**
+- Reusable components, directives, and pipes
+- Shared UI elements
+- Constants and helper utilities
+
+**Examples:**
+- `button.component.ts`
+- `date.pipe.ts`
+
+---
+
+### Core Application Files
+
+#### `app.component.*`
+Root application component.
+
+- **`app.component.ts`** – Component logic
+- **`app.component.html`** – Root template
+- **`app.component.scss`** – Global/root styles
+- **`app.component.spec.ts`** – Unit tests
+
+---
+
+#### `app.config.ts`
+Client-side application configuration.
+
+**Purpose:**
+- Configure providers
+- Setup dependency injection
+- Application-wide settings
+
+---
+
+#### `app.config.server.ts`
+Server-side configuration (Angular SSR).
+
+**Purpose:**
+- Used when running Angular Universal
+- Server-specific providers and settings
+
+---
+
+#### `app.routes.ts`
+Central routing configuration.
+
+**Purpose:**
+- Define application routes
+- Configure lazy-loaded feature modules
+- Attach route guards and resolvers
+
+---
+
+### Design Principles Reflected
+
+- **Feature-based architecture** (`pages/`)
+- **Separation of concerns** (guards, interceptors, services, models)
+- **Scalable and maintainable structure**
+- **SSR-ready** (presence of `app.config.server.ts`)
+
+---
+
+### Notes for AI Agents
+
+- Treat `pages/` as the primary feature boundary
+- Use `shared/` only for truly reusable logic/UI
+- Avoid feature-specific logic inside `shared/`
+- Route access rules are enforced via `guards/`
+- API communication should go through `services/`
+---
+
+### Reference
+
+- Always align with **Angular official documentation**
+- Follow PrimeNG and TailwindCSS best practices
+- Output must be production-ready and maintainable
