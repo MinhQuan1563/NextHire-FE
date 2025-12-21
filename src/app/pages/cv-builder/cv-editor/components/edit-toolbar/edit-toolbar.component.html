@@ -1,104 +1,159 @@
-<div 
-  *ngIf="show" 
+<div
+  *ngIf="show"
   class="edit-toolbar"
   [style.left.px]="position.x"
-  [style.top.px]="position.y">
-  
+  [style.top.px]="position.y"
+  (click)="stopPropagation($event)">
+
   <div class="toolbar-content">
-    <!-- Font Size -->
+    <!-- Font Family -->
     <div class="toolbar-group">
-      <select 
-        [(ngModel)]="selectedFontSize"
-        (change)="onFontSizeChange($event)"
-        class="font-size-select">
-        <option value="10">10px</option>
-        <option value="12">12px</option>
-        <option value="14">14px</option>
-        <option value="16">16px</option>
-        <option value="18">18px</option>
-        <option value="20">20px</option>
-        <option value="24">24px</option>
+      <select
+        [(ngModel)]="formatState.fontFamily"
+        (change)="onFontFamilyChange($event)"
+        (click)="stopPropagation($event)"
+        class="font-family-select"
+        title="Font">
+        <option *ngFor="let font of fontFamilies" [value]="font.value" [style.font-family]="font.value">
+          {{ font.label }}
+        </option>
       </select>
     </div>
-    
+
+    <!-- Font Size -->
+    <div class="toolbar-group">
+      <select
+        [(ngModel)]="formatState.fontSize"
+        (change)="onFontSizeChange($event)"
+        (click)="stopPropagation($event)"
+        class="font-size-select"
+        title="Cỡ chữ">
+        <option *ngFor="let size of fontSizes" [value]="size">{{ size }}px</option>
+      </select>
+    </div>
+
     <!-- Text Formatting -->
     <div class="toolbar-group">
-      <button 
+      <button
         class="toolbar-button"
+        [class.active]="isActive('bold')"
         (click)="onBold()"
-        title="Đậm">
+        title="Đậm (Ctrl+B)">
         <i class="icon-bold">B</i>
       </button>
-      
-      <button 
+
+      <button
         class="toolbar-button"
+        [class.active]="isActive('italic')"
         (click)="onItalic()"
-        title="Nghiêng">
+        title="Nghiêng (Ctrl+I)">
         <i class="icon-italic">I</i>
       </button>
-      
-      <button 
+
+      <button
         class="toolbar-button"
+        [class.active]="isActive('underline')"
         (click)="onUnderline()"
-        title="Gạch chân">
+        title="Gạch chân (Ctrl+U)">
         <i class="icon-underline">U</i>
       </button>
     </div>
-    
+
+    <!-- Text Color -->
+    <div class="toolbar-group color-group">
+      <button
+        class="toolbar-button color-button"
+        (click)="toggleColorPicker($event)"
+        title="Màu chữ">
+        <span class="color-icon">
+          <span class="color-square" [style.background-color]="formatState.color"></span>
+          A
+        </span>
+      </button>
+
+      <!-- Color Picker Dropdown -->
+      <div *ngIf="showColorPicker" class="color-picker-dropdown" (click)="stopPropagation($event)">
+        <div class="color-palette">
+          <button
+            *ngFor="let color of colorPalette"
+            class="color-option"
+            [class.selected]="formatState.color === color"
+            [style.background-color]="color"
+            [title]="color"
+            (click)="selectColor(color)">
+          </button>
+        </div>
+        <div class="custom-color">
+          <label>Màu tùy chỉnh:</label>
+          <input
+            type="color"
+            [(ngModel)]="formatState.color"
+            (change)="onColorChange($event)"
+            class="color-input" />
+        </div>
+      </div>
+    </div>
+
     <!-- List Formatting -->
     <div class="toolbar-group">
-      <button 
+      <button
         class="toolbar-button"
+        [class.active]="isActive('list')"
         (click)="onBulletList()"
-        title="Danh sách đầu dòng">
+        title="Danh sách đầu dòng (Ctrl+Shift+L)">
         <i class="icon-bullet-list">•</i>
       </button>
-      
-      <button 
+
+      <button
         class="toolbar-button"
+        [class.active]="isActive('list')"
         (click)="onNumberList()"
-        title="Danh sách đánh số">
+        title="Danh sách đánh số (Ctrl+Shift+N)">
         <i class="icon-number-list">1.</i>
       </button>
     </div>
-    
+
     <!-- Alignment -->
     <div class="toolbar-group">
-      <button 
+      <button
         class="toolbar-button"
+        [class.active]="isActive('left')"
         (click)="onAlignLeft()"
         title="Căn trái">
         <i class="icon-align-left">⫷</i>
       </button>
-      
-      <button 
+
+      <button
         class="toolbar-button"
+        [class.active]="isActive('center')"
         (click)="onAlignCenter()"
         title="Căn giữa">
         <i class="icon-align-center">≣</i>
       </button>
-      
-      <button 
+
+      <button
         class="toolbar-button"
+        [class.active]="isActive('right')"
         (click)="onAlignRight()"
         title="Căn phải">
         <i class="icon-align-right">⫸</i>
       </button>
-      
-      <button 
+
+      <button
         class="toolbar-button"
+        [class.active]="isActive('justify')"
         (click)="onAlignJustify()"
         title="Căn đều">
         <i class="icon-align-justify">≡</i>
       </button>
     </div>
-    
+
     <!-- Close Button -->
     <div class="toolbar-group">
-      <button 
+      <button
         class="toolbar-button close-button"
         (click)="onHide()"
-        title="Đóng">
+        title="Đóng (Esc)">
         <i class="icon-close">×</i>
       </button>
     </div>

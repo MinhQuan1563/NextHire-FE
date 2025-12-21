@@ -1,36 +1,119 @@
 <div class="panel">
   <h3>Bố cục CV</h3>
-  <p class="panel-description">Kéo thả để sắp xếp lại thứ tự các mục</p>
-  
-  <div class="layout-sections">
-    <div 
-      *ngFor="let section of getSortedUsedSections()"
-      class="layout-section-item"
-      draggable="true"
-      (dragstart)="onDragStart($event, section)"
-      (dragover)="onDragOver($event)"
-      (drop)="onDrop($event, section)">
-      
-      <div class="drag-handle">
-        <i class="icon-drag">⋮⋮</i>
+  <p class="panel-description">
+    Kéo thả để sắp xếp lại thứ tự các mục, di chuyển giữa các cột và hàng, hoặc thêm/bớt mục để tùy chỉnh bố cục CV.
+  </p>
+
+  <!-- Layout Grid: Rows and Columns -->
+  <div class="layout-grid" *ngIf="rows && rows.length > 0">
+    <h4 class="section-group-title">Bố cục lưới</h4>
+
+    <!-- Each Row -->
+    <div
+      *ngFor="let row of rows; trackBy: trackByRowId"
+      class="layout-row"
+      [attr.data-row-id]="row.id"
+    >
+      <div class="row-header">
+        <span class="row-label">Hàng {{ row.order }}</span>
+        <span class="row-info">({{ row.columns.length || 0 }} cột)</span>
       </div>
-      
-      <div class="section-info">
-        <span class="section-number">{{ section.order }}</span>
-        <span class="section-name">{{ section.name }}</span>
+
+      <!-- Columns within the row -->
+      <div class="row-columns">
+        <div
+          *ngFor="let column of row.columns; trackBy: trackByColumnId"
+          class="layout-column"
+          [attr.data-column-id]="column.id"
+          [style.flex]="column.widthPercentage"
+          (dragover)="onDragOver($event)"
+          (drop)="onDropOnColumn($event, row.id, column.id)"
+        >
+          <div class="column-header">
+            <span class="column-label">Cột ({{ column.widthPercentage }}%)</span>
+          </div>
+
+          <!-- Sections within the column -->
+          <div class="column-sections">
+            <div
+              *ngFor="let sectionId of column.sections; let idx = index; trackBy: trackBySectionId"
+              class="section-card"
+              [attr.draggable]="!isSectionLocked(sectionId)"
+              [class.locked]="isSectionLocked(sectionId)"
+              (dragstart)="onDragStartFromLayout($event, sectionId, row.id, column.id)"
+              (dragover)="onDragOver($event)"
+              (drop)="onDropOnSection($event, sectionId, row.id, column.id)"
+            >
+              <!-- Drag handle -->
+              <div class="drag-handle" [class.locked]="isSectionLocked(sectionId)">
+                <i class="icon-drag" *ngIf="!isSectionLocked(sectionId)">⋮⋮</i>
+                <i class="icon-lock" *ngIf="isSectionLocked(sectionId)">🔒</i>
+              </div>
+
+              <!-- Section info -->
+              <div class="section-info">
+                <span class="section-number">{{ idx + 1 }}</span>
+                <span class="section-name">{{ getSectionName(sectionId) }}</span>
+              </div>
+
+              <!-- Remove button -->
+              <button
+                *ngIf="!isSectionLocked(sectionId)"
+                class="remove-button"
+                (click)="onRemoveSectionFromLayout(sectionId, row.id, column.id)"
+                title="Xóa mục này khỏi bố cục"
+                type="button"
+              >
+                <i class="icon-trash">🗑️</i>
+              </button>
+            </div>
+
+            <!-- Empty column placeholder -->
+            <div *ngIf="!column.sections || column.sections.length === 0" class="empty-column-placeholder">
+              <p class="placeholder-text">Kéo thả mục vào đây</p>
+            </div>
+          </div>
+        </div>
       </div>
-      
-      <button 
-        class="remove-button"
-        (click)="onRemoveSection(section)"
-        title="Xóa mục này">
-        <i class="icon-trash">🗑️</i>
-      </button>
     </div>
   </div>
-  
-  <div *ngIf="usedSections.length === 0" class="no-sections">
-    <p>Chưa có mục nào được thêm</p>
-    <p class="hint">Vào tab "Thêm mục" để thêm các mục mới</p>
+
+  <!-- Empty layout state -->
+  <div *ngIf="!rows || rows.length === 0" class="empty-layout">
+    <p>Chưa có bố cục nào được cấu hình.</p>
+    <p class="hint">Sử dụng "Quản lý Layout" để tạo cấu trúc hàng và cột.</p>
+  </div>
+
+  <!-- Unused Sections Area -->
+  <div
+    class="unused-sections"
+    *ngIf="unusedSections && unusedSections.length > 0"
+    (dragover)="onDragOver($event)"
+    (drop)="onDropOnUnused($event)"
+  >
+    <h4 class="section-group-title">Mục chưa sử dụng</h4>
+    <p class="unused-hint">Kéo các mục dưới đây vào lưới bố cục để thêm vào CV</p>
+
+    <div class="unused-sections-grid">
+      <div
+        *ngFor="let section of unusedSections; trackBy: trackByUnusedId"
+        class="unused-section-chip"
+        [attr.draggable]="!section.locked"
+        [class.locked]="section.locked"
+        (dragstart)="onDragStartFromUnused($event, section)"
+        (click)="onQuickAddSection(section)"
+      >
+        <span class="chip-icon" *ngIf="!section.locked">➕</span>
+        <span class="chip-icon" *ngIf="section.locked">🔒</span>
+        <span class="chip-name">{{ section.name }}</span>
+        <span class="chip-hint" *ngIf="!section.locked">Nhấn hoặc kéo</span>
+        <span class="chip-hint" *ngIf="section.locked">Đã khóa</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- No unused sections message -->
+  <div *ngIf="!unusedSections || unusedSections.length === 0" class="no-unused">
+    <p class="info-text">✓ Tất cả các mục đã được sử dụng trong bố cục</p>
   </div>
 </div>

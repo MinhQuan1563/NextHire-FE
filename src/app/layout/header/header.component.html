@@ -45,7 +45,11 @@
         <i class="pi pi-bell text-xl"></i>
         <span class="nav-text text-xs">Thông báo</span>
       </a>
-
+      <a routerLink="/cv-template" 
+         class="nav-item flex flex-col items-center justify-center p-2 mx-1 text-center hover:text-blue-600">
+        <i class="pi pi-id-card text-xl"></i>
+        <span class="nav-text text-xs">Tạo CV</span>
+      </a>
       <div class="user-menu ml-2">
         <p-tieredMenu #userMenuPopup [model]="userMenuItems" [popup]="true"></p-tieredMenu>
         <button class="user-button flex flex-col items-center justify-center text-center" 
