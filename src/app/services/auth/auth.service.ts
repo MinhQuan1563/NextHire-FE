@@ -37,7 +37,6 @@ export class AuthService {
       try {
         this.currentUserSubject.next(JSON.parse(userData));
       } catch (e) {
-        console.error('Error parsing user data from storage:', e);
         localStorage.removeItem('user');
       }
     }
@@ -107,5 +106,23 @@ export class AuthService {
         this.currentUserSubject.next(null);
       }),
     );
+  }
+
+  /**
+   * Check if current user has Admin role
+   */
+  isAdmin(): boolean {
+    const user = this.currentUserSubject.value;
+    if (!user || !user.roles) {
+      return false;
+    }
+    return user.roles.some(role => role.toLowerCase() === 'admin');
+  }
+
+  /**
+   * Get current user synchronously
+   */
+  getCurrentUser(): User | null {
+    return this.currentUserSubject.value;
   }
 }

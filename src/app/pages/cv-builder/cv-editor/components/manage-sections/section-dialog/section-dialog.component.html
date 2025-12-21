@@ -1,0 +1,155 @@
+<p-dialog
+  [(visible)]="visible"
+  modal
+  draggable="false"
+  [resizable]="false"
+  [maximizable]="true"
+  [style]="{ width: '560px' }"
+  [header]="section ? 'Edit Section' : 'Create Section'"
+  (onHide)="close()"
+>
+  <!-- SECTION FORM -->
+  <form
+    [formGroup]="form"
+    class="flex flex-col gap-4"
+  >
+    <div>
+      <label class="block text-sm font-medium mb-1">
+        Section Name <span class="text-red-500">*</span>
+      </label>
+      <input
+        pInputText
+        formControlName="name"
+        placeholder="Enter section name"
+        class="border border-gray-300 rounded-lg focus:border-blue-500 w-full p-2"
+        id="section_input_name"
+        [ngClass]="{'border-red-500': isFieldInvalid(form, 'name')}"
+      />
+      <app-form-error [form]="form" fieldName="name" [messages]="{'required': 'Tên section là bắt buộc'}"></app-form-error>
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium mb-1">
+        Description
+      </label>
+      <textarea
+        pInputTextarea
+        rows="3"
+        formControlName="description"
+        placeholder="Optional description"
+        class="border border-gray-300 rounded-lg focus:border-blue-500 w-full p-2"
+        id="section_input_description"
+      ></textarea>
+    </div>
+  </form>
+
+  <!-- FIELDS -->
+  <div class="mt-6">
+
+    <!-- HEADER -->
+    <div class="flex items-center justify-between mb-3">
+      <h4 class="text-base font-semibold">Fields</h4>
+
+      <p-button
+        icon="pi pi-plus"
+        label="Add Field"
+        size="small"
+        (click)="createField()"
+      />
+    </div>
+
+    <!-- TABLE -->
+    <p-table
+      *ngIf="fields().length; else emptyFields"
+      [value]="fields()"
+      size="small"
+      responsiveLayout="scroll"
+      class="border rounded-lg overflow-hidden"
+    >
+      <ng-template pTemplate="header">
+        <tr class="text-sm">
+          <th>Name</th>
+          <th>Label</th>
+          <th>Type</th>
+          <th class="text-center">Required</th>
+          <th class="w-24"></th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-field>
+        <tr class="text-sm">
+          <td class="font-medium">{{ field.name }}</td>
+          <td>{{ field.label }}</td>
+          <td>
+            <p-tag
+              [value]="field.type"
+              severity="info"
+              class="capitalize"
+            />
+          </td>
+          <td class="text-center">
+            <i
+              class="pi text-sm"
+              [ngClass]="{
+                'pi-check text-green-500': field.required,
+                'pi-times text-surface-400': !field.required
+              }"
+            ></i>
+          </td>
+          <td class="text-right space-x-1">
+            <p-button
+              icon="pi pi-pencil"
+              size="small"
+              text
+              rounded
+              (click)="editField(field)"
+            />
+            <p-button
+              icon="pi pi-trash"
+              size="small"
+              text
+              rounded
+              severity="danger"
+              (click)="deleteField(field)"
+            />
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+
+    <!-- EMPTY -->
+    <ng-template #emptyFields>
+      <div
+        class="flex flex-col items-center justify-center gap-2
+               border border-dashed rounded-lg p-6 text-sm text-surface-500"
+      >
+        <i class="pi pi-inbox text-2xl"></i>
+        <span>No fields added yet</span>
+      </div>
+    </ng-template>
+  </div>
+
+  <!-- FOOTER -->
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-2">
+      <p-button
+        label="Cancel"
+        severity="secondary"
+        text
+        (click)="close()"
+      />
+      <p-button
+        label="Save Section"
+        icon="pi pi-check"
+        (click)="saveSection()"
+      />
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- FIELD DIALOG -->
+<app-field-dialog
+  [(visible)]="fieldDialogVisible"
+  [field]="editingField"
+  (saveField)="onFieldSaved($event)"
+></app-field-dialog>

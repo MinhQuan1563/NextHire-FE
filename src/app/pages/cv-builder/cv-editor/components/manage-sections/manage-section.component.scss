@@ -1,0 +1,88 @@
+.manage-sections-container {
+  padding: 1rem;
+  
+  h3 {
+    color: #2d3748;
+    font-weight: 600;
+  }
+}
+
+:host ::ng-deep {
+  .p-datatable {
+    .p-datatable-thead > tr > th {
+      background: #f8fafc;
+      color: #2d3748;
+      font-weight: 600;
+      border-bottom: 2px solid #e2e8f0;
+    }
+    
+    .p-datatable-tbody > tr {
+      transition: all 0.2s ease;
+      
+      &:hover {
+        background: #f1f5f9 !important;
+      }
+    }
+    
+    .p-datatable-tbody > tr > td {
+      vertical-align: middle;
+      padding: 1rem 0.75rem;
+    }
+  }
+  
+  .p-toolbar {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 8px;
+    
+    .p-toolbar-group-start h3 {
+      color: white;
+    }
+  }
+  
+  .p-tag {
+    &.p-tag-success {
+      background: #10b981;
+      color: white;
+    }
+    
+    &.p-tag-info {
+      background: #3b82f6;
+      color: white;
+    }
+    
+    &.p-tag-warning {
+      background: #f59e0b;
+      color: white;
+    }
+  }
+  
+  .p-button {
+    &.p-button-success {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      border: none;
+      
+      &:hover {
+        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+      }
+    }
+    
+    &.p-button-info:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+    }
+    
+    &.p-button-danger:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+    }
+  }
+  
+  .p-datatable-emptymessage {
+    .pi-inbox {
+      opacity: 0.5;
+    }
+  }
+}

@@ -38,12 +38,17 @@ export const routes: Routes = [
       { path: 'network', component: NetworkComponent },
       { path: 'network/connections', component: ConnectionsComponent },
       { 
-        path: 'cv-builder',
+        path: 'cv-template',
         children: [
           { 
             path: '', 
             loadComponent: () => import('./pages/cv-builder/template-list/template-list.component')
               .then(m => m.TemplateListComponent)
+          },
+          { 
+            path: 'editor/:templateCode', 
+            loadComponent: () => import('./pages/cv-builder/cv-editor/cv-editor.component')
+              .then(m => m.CvEditorComponent)
           },
           { 
             path: 'editor', 

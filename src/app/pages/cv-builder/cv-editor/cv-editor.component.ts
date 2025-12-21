@@ -1,1067 +1,881 @@
-import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { SidebarTabsComponent } from './components/sidebar-tabs/sidebar-tabs.component';
-import { DesignPanelComponent, DesignSettings } from './components/design-panel/design-panel.component';
-import { SectionsPanelComponent } from './components/sections-panel/sections-panel.component';
-import { LayoutPanelComponent, UsedSection } from './components/layout-panel/layout-panel.component';
-import { EditToolbarComponent } from './components/edit-toolbar/edit-toolbar.component';
-import { CvPreviewComponent } from './components/cv-preview/cv-preview.component';
-import { LayoutConfigModalComponent } from './components/layout-config-modal/layout-config-modal.component';
-import { LayoutManagementComponent } from './components/layout-management/layout-management.component';
-import { SectionManagerService, CVData } from './services/section-manager.service';
-import { 
-  CVCategory, 
-  CVSection, 
-  LayoutConfiguration, 
-  LayoutRow, 
-  LayoutColumn, 
-  DragDropData 
-} from '../../../models/cv-builder/cv-template.model';
+import {
+  Component,
+  OnInit,
+  ViewChild,
+  ElementRef,
+  OnDestroy,
+  effect,
+  EffectRef,
+  signal,
+  inject,
+} from "@angular/core";
+import { CommonModule } from "@angular/common";
+import { FormsModule } from "@angular/forms";
+import { ActivatedRoute, Router } from "@angular/router";
+import { SidebarTabsComponent } from "./components/sidebar-tabs/sidebar-tabs.component";
+import { DesignPanelComponent } from "./components/design-panel/design-panel.component";
+import {
+  LayoutPanelComponent,
+  UsedSection,
+} from "./components/layout-panel/layout-panel.component";
+import { EditToolbarComponent } from "./components/edit-toolbar/edit-toolbar.component";
+import { CvPreviewComponent } from "./components/cv-preview/cv-preview.component";
+import {
+  CVSection,
+  LayoutConfiguration,
+  LayoutRow,
+  LayoutColumn,
+  CvTemplate,
+} from "../../../models/cv-builder/cv-template.model";
+import {
+  DesignHandlerService,
+  DesignSettings,
+} from "./services/design-handler.service";
+import { EditToolbarService } from "./services/edit-toolbar.service";
+import {
+  CvPdfExportService,
+  ValidationResult,
+} from "./services/cv-pdf-export.service";
+import { Subscription } from "rxjs";
+import { ButtonModule } from "primeng/button";
+import { DialogModule } from "primeng/dialog";
+import { ToastModule } from "primeng/toast";
+import { ProgressSpinnerModule } from "primeng/progressspinner";
+import { MessageService } from "primeng/api";
+import { ManageSectionComponent } from "./components/manage-sections/manage-section.component";
+import { LayoutConfigModalComponent } from "./components/layout-config-modal/layout-config-modal.component";
+import { SaveTemplateDialogComponent } from "./components/save-template-dialog/save-template-dialog.component";
+import { CvTemplateStore } from "./stores/cv-template.store";
+import { AuthService } from "../../../services/auth/auth.service";
+import { CvTemplateService } from "../../../services/cv-builder/cv-template.service";
+import { CvTemplateType } from "../../../models/cv-builder/cv-template.model";
 
+/**
+ * CV Editor Component
+ *
+ * Main component for CV template editing with grid-based layout management.
+ *
+ * Features:
+ * - Design panel for fonts, colors, and styling
+ * - Layout panel with drag & drop for rows, columns, and sections
+ * - Real-time CV preview that reflects layout changes immediately
+ * - Section management modal for adding/editing sections
+ * - Layout configuration modal for defining row/column structure
+ *
+ * Layout System:
+ * - Grid-based: Rows → Columns → Sections
+ * - Sections can be dragged between columns and rows
+ * - Unused sections can be activated by dragging to layout
+ * - Active sections can be deactivated by dragging to unused area
+ * - Locked sections cannot be moved or removed
+ */
 @Component({
-  selector: 'app-admin-template',
+  selector: "app-admin-template",
   standalone: true,
   imports: [
-    CommonModule, 
-    FormsModule, 
+    CommonModule,
+    FormsModule,
     SidebarTabsComponent,
     DesignPanelComponent,
-    SectionsPanelComponent,
     LayoutPanelComponent,
     EditToolbarComponent,
     CvPreviewComponent,
+    ManageSectionComponent,
     LayoutConfigModalComponent,
-    LayoutManagementComponent
+    SaveTemplateDialogComponent,
+    ButtonModule,
+    DialogModule,
+    ToastModule,
+    ProgressSpinnerModule,
   ],
-  templateUrl: './cv-editor.component.html',
-  styleUrls: ['./cv-editor.component.scss']
+  providers: [MessageService],
+  templateUrl: "./cv-editor.component.html",
+  styleUrls: ["./cv-editor.component.scss"],
 })
-export class CvEditorComponent implements OnInit {
+export class CvEditorComponent implements OnInit, OnDestroy {
   // Sidebar state
-  activeTab: string = 'design';
-  
+  activeTab: string = "design";
+
   // Preview state
   isZoomed: boolean = false;
-  selectedAvatarUrl: string = '';
-  
+
   // Design settings
-  designSettings: DesignSettings = {
-    selectedFont: 'Roboto',
-    fontSize: 14,
-    lineSpacing: 1.5,
-    selectedColor: '#00B14F',
-    selectedBackground: 'white'
-  };
-  
-  // Edit toolbar state
+  designSettings: DesignSettings;
+
+  // Toolbar state - now managed by service
   showEditToolbar = false;
   editToolbarPosition = { x: 0, y: 0 };
-  activeEditElement: HTMLElement | null = null;
-  
-  // CV data structure
-  cvData: CVData = {
-    experiences: [],
-    education: [],
-    activities: [],
-    certificates: [],
-    projects: [],
-    references: []
-  };
-  
-  // CV sections that can be added (now loaded dynamically)
-  availableSections: CVSection[] = [];
-  categories: CVCategory[] = [];
-  
-  // Category management state
-  showCategoryModal: boolean = false;
-  showSectionModal: boolean = false;
-  showManagementModal: boolean = false; // New modal for category management
-  modalMode: 'add' | 'edit' = 'add';
-  editingCategory: CVCategory | null = null;
-  editingSection: CVSection | null = null;
-  currentCategoryId: string = '';
-  
+
+  // Section management state
+  showManagementModal: boolean = false;
+  modalMode: "add" | "edit" = "add";
+
   // Layout management state
   showLayoutConfigModal: boolean = false;
-  showLayoutManagementModal: boolean = false;
-  currentLayoutConfig: LayoutConfiguration | null = null;
-  layoutConfigurations: LayoutConfiguration[] = [];
-  
-  newCategoryForm = {
-    name: '',
-    icon: '',
-    description: '',
-    allowMultiple: false
-  };
-  
-  // Section management state
-  newSectionForm = {
-    name: '',
-    icon: '',
-    categoryId: '',
-    allowMultiple: false
-  };
-  
-  // CV layout sections (sections currently used in CV)
-  usedSections: UsedSection[] = [
-    { id: 'personal-info', name: 'Thông tin cá nhân', order: 1 },
-    { id: 'objective', name: 'Mục tiêu nghề nghiệp', order: 2 },
-    { id: 'education', name: 'Học vấn', order: 3 },
-    { id: 'experience', name: 'Kinh nghiệm làm việc', order: 4 }
-  ];
-  
+
+  // Save template dialog state
+  showSaveTemplateDialog: boolean = false;
+
+  // PDF export state
+  isExporting: boolean = false;
+
+  // Reference to CV preview component for PDF export
+  @ViewChild(CvPreviewComponent) cvPreviewComponent?: CvPreviewComponent;
+
+  // Layout configuration from store
+  layoutConfiguration?: LayoutConfiguration;
+
+  // All sections from store
+  allSections: CVSection[] = [];
+
+  // Legacy support for flat layout (backward compatibility)
+  usedSections: UsedSection[] = [];
+  availableLayoutSections: UsedSection[] = [];
+
+  // Subscriptions
+  private subscriptions: Subscription = new Subscription();
+
+  // Signal effect reference for reacting to store changes
+  private layoutEffect?: EffectRef;
+
+  // Admin check
+  isAdmin = signal<boolean>(false);
+  isSaving = signal<boolean>(false);
+  isLoading = signal<boolean>(false);
+
+  // Expose template store for template access
+  cvTemplateStore = inject(CvTemplateStore);
+
   constructor(
-    private sectionManager: SectionManagerService,
-  ) {}
+    private designHandler: DesignHandlerService,
+    private editToolbar: EditToolbarService,
+    private pdfExportService: CvPdfExportService,
+    private messageService: MessageService,
+    private authService: AuthService,
+    private cvTemplateService: CvTemplateService,
+    private route: ActivatedRoute,
+    private router: Router,
+  ) {
+    this.designSettings = this.designHandler.getDefaultDesignSettings();
+
+    // React to section & layout changes in the store
+    // This ensures the layout panel and preview always reflect the latest state
+    this.layoutEffect = effect(() => {
+      const sections = this.cvTemplateStore.sections();
+      const layoutConfig = this.cvTemplateStore.layoutConfiguration();
+
+      this.allSections = sections;
+      this.layoutConfiguration = layoutConfig;
+
+      // Also update legacy flat layout for backward compatibility
+      this.rebuildLegacyLayout(sections, layoutConfig);
+    });
+  }
 
   ngOnInit() {
-    // Initialize component
-    this.initializeDefaults();
-    
-    // Initialize layout system
-    this.initializeDefaultLayout();
-    
-    // Subscribe to CV data changes
-    this.sectionManager.cvData$.subscribe(data => {
-      this.cvData = data;
-    });
-    
+    this.setupSubscriptions();
+    this.checkAdminStatus();
+    this.handleRouteParams();
+
     // Apply initial font size after a short delay to ensure DOM is ready
     setTimeout(() => {
-      this.applyFontSizeChange();
+      this.designHandler.applyFontSizeChange(this.designSettings.fontSize);
     }, 100);
   }
-  
-  // Get sections that are available but not used yet
-  getUnusedSections() {
-    return this.availableSections.filter(section => 
-      !this.usedSections.some(used => used.id === section.id)
-    );
-  }
-  
-  // Get sorted used sections for display in CV
-  getSortedUsedSections() {
-    return [...this.usedSections].sort((a, b) => a.order - b.order);
+
+  /**
+   * Check if current user is admin
+   */
+  private checkAdminStatus(): void {
+    this.isAdmin.set(this.authService.isAdmin());
   }
 
-  private initializeDefaults() {
-    // Initialize default categories if empty
-    if (this.categories.length === 0) {
-      this.initializeDefaultCategories();
-    }
-    console.log('CV Builder initialized with modern interface');
-  }
-  
-  private initializeDefaultCategories() {
-    this.categories = [
-      {
-        id: 'basic-info',
-        name: 'Thông tin cơ bản',
-        icon: '📝',
-        description: 'Thông tin cá nhân và liên hệ',
-        allowMultiple: false,
-        isSystemCategory: true,
-        order: 1,
-        sections: [
-          { id: 'personal-info', name: 'Thông tin cá nhân', icon: '👤', isDefault: true },
-          { id: 'objective', name: 'Mục tiêu nghề nghiệp', icon: '🎯' }
-        ]
-      },
-      {
-        id: 'education-experience',
-        name: 'Học vấn & Kinh nghiệm',
-        icon: '🎓',
-        description: 'Học vấn và kinh nghiệm làm việc',
-        allowMultiple: true,
-        isSystemCategory: true,
-        order: 2,
-        sections: [
-          { id: 'education', name: 'Học vấn', icon: '🎓', allowMultiple: true },
-          { id: 'experience', name: 'Kinh nghiệm làm việc', icon: '💼', allowMultiple: true }
-        ]
-      },
-      {
-        id: 'skills-projects',
-        name: 'Kỹ năng & Dự án',
-        icon: '⚙️',
-        description: 'Kỹ năng và dự án đã thực hiện',
-        allowMultiple: true,
-        isSystemCategory: false,
-        order: 3,
-        sections: [
-          { id: 'skills', name: 'Kỹ năng', icon: '⚡' },
-          { id: 'projects', name: 'Dự án', icon: '📁', allowMultiple: true },
-          { id: 'certificates', name: 'Chứng chỉ', icon: '📜', allowMultiple: true }
-        ]
-      },
-      {
-        id: 'additional',
-        name: 'Thông tin bổ sung',
-        icon: 'ℹ️',
-        description: 'Các thông tin khác',
-        allowMultiple: true,
-        isSystemCategory: false,
-        order: 4,
-        sections: [
-          { id: 'languages', name: 'Ngoại ngữ', icon: '🌐', allowMultiple: true },
-          { id: 'activities', name: 'Hoạt động', icon: '🎯', allowMultiple: true },
-          { id: 'interests', name: 'Sở thích', icon: '🎨' },
-          { id: 'references', name: 'Người tham chiếu', icon: '👥', allowMultiple: true }
-        ]
+  /**
+   * Handle route parameters to load template or clear state for new template
+   */
+  private handleRouteParams(): void {
+    this.route.paramMap.subscribe((params) => {
+      const templateCode = params.get('templateCode');
+
+      if (!templateCode) {
+        // No template code - clear state for new template
+        this.clearStateForNewTemplate();
+        return;
       }
-    ];
-    
-    // Flatten all sections from categories
-    this.availableSections = this.categories.flatMap(cat => cat.sections);
+
+      if (templateCode === 'new') {
+        // Creating new template - clear all state
+        this.clearStateForNewTemplate();
+      } else {
+        // Loading existing template - load from API
+        this.loadTemplate(templateCode);
+      }
+    });
   }
-  
+
+  /**
+   * Load template data from API and apply to store
+   */
+  private loadTemplate(templateCode: string): void {
+    this.isLoading.set(true);
+    
+    this.cvTemplateService.getCvTemplateByCode(templateCode).subscribe({
+      next: (template) => {
+        // Parse JSON strings if API returns them as strings
+        const parsedTemplate = this.parseTemplateFromApi(template);
+        
+        // Apply template to store - this will trigger the effect
+        this.cvTemplateStore.setTemplate(parsedTemplate);
+        
+        // Apply design settings if available
+        if (parsedTemplate.designSettings) {
+          this.designSettings = {
+            selectedFont: parsedTemplate.designSettings.selectedFont || this.designSettings.selectedFont,
+            fontSize: parsedTemplate.designSettings.fontSize || this.designSettings.fontSize,
+            lineSpacing: parsedTemplate.designSettings.lineSpacing || this.designSettings.lineSpacing,
+            selectedColor: parsedTemplate.designSettings.selectedColor || this.designSettings.selectedColor,
+            selectedBackground: parsedTemplate.designSettings.selectedBackground || this.designSettings.selectedBackground,
+          };
+          
+          // Apply all design settings to the design handler service
+          setTimeout(() => {
+            this.designHandler.applyFontChange(this.designSettings.selectedFont);
+            this.designHandler.applyFontSizeChange(this.designSettings.fontSize);
+            this.designHandler.applyLineSpacingChange(this.designSettings.lineSpacing);
+            this.designHandler.applyColorChange(this.designSettings.selectedColor);
+            this.designHandler.applyBackgroundChange(this.designSettings.selectedBackground);
+          }, 100);
+        }
+        
+        // Force update local state to ensure UI reflects the changes
+        // The effect should handle this, but we'll also update directly to be sure
+        setTimeout(() => {
+          const storeSections = this.cvTemplateStore.sections();
+          const storeLayout = this.cvTemplateStore.layoutConfiguration();
+          
+          this.allSections = storeSections;
+          this.layoutConfiguration = storeLayout;
+          this.rebuildLegacyLayout(storeSections, storeLayout);
+        }, 50);
+        
+        this.isLoading.set(false);
+      },
+      error: (error) => {
+        this.isLoading.set(false);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Load Failed',
+          detail: error.error?.message || 'Failed to load template. Please try again.',
+        });
+        // Navigate back to template list on error
+        this.router.navigate(['/cv-template']);
+      },
+    });
+  }
+
+  /**
+   * Parse template data from API response
+   * Handles cases where API returns JSON strings instead of objects
+   */
+  private parseTemplateFromApi(template: CvTemplate): CvTemplate {
+    const rawTemplate = template as any;
+    let layoutConfiguration: LayoutConfiguration | undefined;
+    let sections: CVSection[] | undefined;
+    let designSettings: DesignSettings | undefined;
+
+    // Parse layoutConfiguration - check raw value first
+    if (rawTemplate.layoutConfiguration !== undefined) {
+      try {
+        if (typeof rawTemplate.layoutConfiguration === 'string') {
+          layoutConfiguration = JSON.parse(rawTemplate.layoutConfiguration);
+        } else if (rawTemplate.layoutConfiguration && typeof rawTemplate.layoutConfiguration === 'object') {
+          layoutConfiguration = rawTemplate.layoutConfiguration;
+        }
+      } catch (e) {
+        // Silently fail and use undefined
+      }
+    }
+
+    // Parse sections - check both 'sections' (plural) and 'section' (singular) field names
+    // API might return either field name
+    const sectionsValue = rawTemplate.sections !== undefined 
+      ? rawTemplate.sections 
+      : rawTemplate.section !== undefined 
+        ? rawTemplate.section 
+        : undefined;
+    
+    if (sectionsValue !== undefined && sectionsValue !== null) {
+      try {
+        if (typeof sectionsValue === 'string') {
+          sections = JSON.parse(sectionsValue);
+        } else if (Array.isArray(sectionsValue)) {
+          sections = sectionsValue;
+        }
+      } catch (e) {
+        // Silently fail and use undefined
+      }
+    } else if (sectionsValue === null) {
+      // If explicitly null, use empty array
+      sections = [];
+    }
+
+    // Parse designSettings - check raw value first
+    if (rawTemplate.designSettings !== undefined) {
+      try {
+        if (typeof rawTemplate.designSettings === 'string') {
+          designSettings = JSON.parse(rawTemplate.designSettings);
+        } else if (rawTemplate.designSettings && typeof rawTemplate.designSettings === 'object') {
+          designSettings = rawTemplate.designSettings;
+        }
+      } catch (e) {
+        // Silently fail and use undefined
+      }
+    }
+
+    return {
+      ...template,
+      layoutConfiguration: layoutConfiguration ?? template.layoutConfiguration,
+      section: sections ?? template.section ?? [],
+      designSettings: designSettings ?? template.designSettings,
+    };
+  }
+
+  /**
+   * Clear all state when creating a new template
+   */
+  private clearStateForNewTemplate(): void {
+    // Reset template store to initial state
+    this.cvTemplateStore.reset();
+
+    // Reset design settings to defaults
+    this.designSettings = this.designHandler.getDefaultDesignSettings();
+
+    // Reset UI state
+    this.showManagementModal = false;
+    this.showLayoutConfigModal = false;
+    this.showSaveTemplateDialog = false;
+    this.isExporting = false;
+    this.showEditToolbar = false;
+    this.activeTab = 'design';
+    this.isZoomed = false;
+
+    // Apply default font size
+    setTimeout(() => {
+      this.designHandler.applyFontSizeChange(this.designSettings.fontSize);
+    }, 100);
+  }
+
+  ngOnDestroy() {
+    this.subscriptions.unsubscribe();
+    this.layoutEffect?.destroy();
+  }
+
+  private setupSubscriptions() {
+    // Subscribe to toolbar state
+    this.subscriptions.add(
+      this.editToolbar.toolbarState$.subscribe((state) => {
+        this.showEditToolbar = state.visible;
+        this.editToolbarPosition = state.position;
+      }),
+    );
+  }
+
   setActiveTab(tab: string) {
     this.activeTab = tab;
   }
-  
-  onFontChange(font: string) {
-    this.designSettings.selectedFont = font;
-    this.applyFontChange();
-  }
-  
-  onFontSizeChange(fontSize: number) {
-    this.designSettings.fontSize = fontSize;
-    this.applyFontSizeChange();
-    console.log('Font size changed to:', this.designSettings.fontSize);
-  }
-  
-  onLineSpacingChange(lineSpacing: number) {
-    this.designSettings.lineSpacing = lineSpacing;
-    this.applyLineSpacingChange();
-  }
-  
-  onColorChange(color: string) {
-    this.designSettings.selectedColor = color;
-    this.applyColorChange();
-  }
 
-  onColorPickerChange(color: string) {
-    this.designSettings.selectedColor = color;
-    this.applyColorChange();
-  }
-  
-  onBackgroundChange(background: string) {
-    this.designSettings.selectedBackground = background;
-    this.applyBackgroundChange();
-  }
-  
-  addSection(section: any) {
-    // Add section to available sections if not already there
-    if (!this.availableSections.find(s => s.id === section.id)) {
-      this.availableSections.push(section);
-    }
-    console.log('Section added to available sections:', section);
-  }
-  
-  addSectionToLayout(section: any) {
-    // Check if section allows multiple instances
-    const category = this.categories.find(cat => 
-      cat.sections.some(s => s.id === section.id)
-    );
-    
-    if (category && !category.allowMultiple) {
-      // Check if section is already used
-      const existingSection = this.usedSections.find(s => s.id === section.id);
-      if (existingSection) {
-        alert(`Danh mục "${category.name}" chỉ cho phép thêm một mục.`);
-        return;
-      }
-    }
-    
-    // Add section to used sections (layout)
-    const maxOrder = Math.max(...this.usedSections.map(s => s.order), 0);
-    this.usedSections.push({
-      id: section.id,
-      name: section.name,
-      order: maxOrder + 1
-    });
-    console.log('Section added to layout:', section);
-  }
-  
-  removeSection(section: any) {
-    // Remove section from used sections
-    this.usedSections = this.usedSections.filter(s => s.id !== section.id);
-    // Reorder remaining sections
-    this.usedSections.forEach((s, index) => {
-      s.order = index + 1;
-    });
-    console.log('Section removed from layout:', section);
-  }
-  
-  reorderSections(sections: any[]) {
-    // Logic to reorder CV sections
-    this.usedSections = sections;
-  }
+  // ========== Preview Controls ==========
 
-  // Font application methods
-  private applyFontChange() {
-    // Apply font change to CV preview
-    const cvPaper = document.querySelector('.cv-paper') as HTMLElement;
-    if (cvPaper) {
-      cvPaper.style.fontFamily = this.designSettings.selectedFont;
-    }
-  }
-
-  private applyFontSizeChange() {
-    // Apply font size change to CV preview immediately
-    const cvPaper = document.querySelector('.cv-paper') as HTMLElement;
-    if (cvPaper) {
-      // Update the main font size
-      cvPaper.style.fontSize = this.designSettings.fontSize + 'px';
-      
-      // Force update all text elements that might have inherited font sizes
-      const textElements = cvPaper.querySelectorAll('.section-content, .editable, .cv-name, .cv-title, .contact-item, .edu-degree, .exp-position, .activity-title, .cert-name, .project-title');
-      textElements.forEach((element: any) => {
-        if (!element.hasAttribute('data-custom-size')) {
-          element.style.fontSize = this.designSettings.fontSize + 'px';
-        }
-      });
-      
-      // Also update base font size for the paper
-      cvPaper.style.setProperty('--base-font-size', this.designSettings.fontSize + 'px');
-    }
-    console.log('Font size applied:', this.designSettings.fontSize + 'px');
-  }
-
-  private applyLineSpacingChange() {
-    // Apply line spacing change to CV preview
-    const cvPaper = document.querySelector('.cv-paper') as HTMLElement;
-    if (cvPaper) {
-      cvPaper.style.lineHeight = this.designSettings.lineSpacing.toString();
-    }
-  }
-
-  private applyColorChange() {
-    // Apply color change to CV preview
-    const sectionTitles = document.querySelectorAll('.section-title') as NodeListOf<HTMLElement>;
-    sectionTitles.forEach(title => {
-      title.style.color = this.designSettings.selectedColor;
-    });
-  }
-
-  private applyBackgroundChange() {
-    // Apply background change to CV preview
-    const cvPaper = document.querySelector('.cv-paper') as HTMLElement;
-    if (cvPaper) {
-      cvPaper.className = cvPaper.className.replace(/bg-\w+/g, '');
-      cvPaper.classList.add(`bg-${this.designSettings.selectedBackground}`);
-    }
-  }
-
-  // Drag and drop functionality for layout sections
-  onDragStart(event: DragEvent, section: any) {
-    event.dataTransfer?.setData('text/plain', JSON.stringify(section));
-    const target = event.target as HTMLElement;
-    target.classList.add('dragging');
-  }
-
-  onDragOver(event: DragEvent) {
-    event.preventDefault();
-  }
-
-  onDrop(event: DragEvent, targetSection: any) {
-    event.preventDefault();
-    const draggedSection = JSON.parse(event.dataTransfer?.getData('text/plain') || '{}');
-    
-    // Remove dragging class
-    const draggingElement = document.querySelector('.dragging');
-    if (draggingElement) {
-      draggingElement.classList.remove('dragging');
-    }
-    
-    // Implement reordering logic
-    const draggedIndex = this.usedSections.findIndex(s => s.id === draggedSection.id);
-    const targetIndex = this.usedSections.findIndex(s => s.id === targetSection.id);
-    
-    if (draggedIndex !== -1 && targetIndex !== -1) {
-      // Swap sections
-      [this.usedSections[draggedIndex], this.usedSections[targetIndex]] = 
-      [this.usedSections[targetIndex], this.usedSections[draggedIndex]];
-      
-      // Update order numbers
-      this.usedSections.forEach((section, index) => {
-        section.order = index + 1;
-      });
-    }
-  }
-
-  // CV editing functionality
-  uploadAvatar() {
-    // Trigger file input from cv-preview component
-    const fileInput = document.querySelector('#cvFileInput') as HTMLInputElement;
-    if (fileInput) {
-      fileInput.click();
-    }
-  }
-
-  onFileSelected(event: any) {
-    const file = event.target.files[0];
-    if (file) {
-      // Validate file type
-      if (!file.type.startsWith('image/')) {
-        alert('Vui lòng chọn file hình ảnh!');
-        return;
-      }
-      
-      // Validate file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        alert('Kích thước file không được vượt quá 5MB!');
-        return;
-      }
-      
-      // Create preview URL
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        this.selectedAvatarUrl = e.target?.result as string;
-      };
-      reader.readAsDataURL(file);
-    }
-  }
-
-  updateField(fieldName: string, event: any) {
-    const value = event.target.innerText || event.target.textContent;
-    console.log(`Updating ${fieldName}:`, value);
-    // Here you would save the updated field value to your CV data model
-  }
-
-  // Preview controls
   zoomCV() {
     this.isZoomed = !this.isZoomed;
   }
 
-  downloadCV() {
-    console.log('Downloading CV...');
-    // Here you would implement CV download functionality
-    // For example, converting to PDF using jsPDF or similar library
-  }
-  
-  // Edit toolbar methods
-  hideEditToolbar() {
-    this.showEditToolbar = false;
-    this.activeEditElement = null;
-  }
-  
-  // Toolbar actions
-  makeBold() {
-    document.execCommand('bold', false);
-    this.focusActiveElement();
-  }
-  
-  makeItalic() {
-    document.execCommand('italic', false);
-    this.focusActiveElement();
-  }
-  
-  makeUnderline() {
-    document.execCommand('underline', false);
-    this.focusActiveElement();
-  }
-  
-  createBulletList() {
-    if (this.activeEditElement) {
-      // Ensure element is properly focused and editable
-      this.activeEditElement.contentEditable = 'true';
-      this.activeEditElement.focus();
-      
-      // Wait for focus to be established
-      setTimeout(() => {
-        // Try to restore selection or create a new one
-        const selection = window.getSelection();
-        if (!selection || selection.rangeCount === 0) {
-          const range = document.createRange();
-          range.selectNodeContents(this.activeEditElement!);
-          range.collapse(false); // Collapse to end
-          selection?.removeAllRanges();
-          selection?.addRange(range);
-        }
-        
-        // Execute the command
-        document.execCommand('insertUnorderedList', false);
-        this.activeEditElement!.focus();
-      }, 10);
+  async downloadCV() {
+    if (this.isExporting) {
+      this.messageService.add({
+        severity: "warn",
+        summary: "Export in Progress",
+        detail: "Please wait for the current export to complete",
+      });
+      return;
     }
-  }
-  
-  createNumberList() {
-    if (this.activeEditElement) {
-      // Ensure element is properly focused and editable
-      this.activeEditElement.contentEditable = 'true';
-      this.activeEditElement.focus();
-      
-      // Wait for focus to be established
-      setTimeout(() => {
-        // Try to restore selection or create a new one
-        const selection = window.getSelection();
-        if (!selection || selection.rangeCount === 0) {
-          const range = document.createRange();
-          range.selectNodeContents(this.activeEditElement!);
-          range.collapse(false); // Collapse to end
-          selection?.removeAllRanges();
-          selection?.addRange(range);
-        }
-        
-        // Execute the command
-        document.execCommand('insertOrderedList', false);
-        this.activeEditElement!.focus();
-      }, 10);
-    }
-  }
-  
-  changeFontSize(size: string) {
-    // Use CSS style for precise font size control
-    if (this.activeEditElement) {
-      const selection = window.getSelection();
-      if (selection && selection.rangeCount > 0) {
-        const range = selection.getRangeAt(0);
-        if (!range.collapsed) {
-          const span = document.createElement('span');
-          span.style.fontSize = size + 'px';
-          try {
-            range.surroundContents(span);
-          } catch (e) {
-            span.appendChild(range.extractContents());
-            range.insertNode(span);
-          }
-          selection.removeAllRanges();
-        } else {
-          this.activeEditElement.style.fontSize = size + 'px';
-        }
-      } else {
-        this.activeEditElement.style.fontSize = size + 'px';
+
+    this.isExporting = true;
+
+    try {
+      // Get all sections from store
+      const sections = this.cvTemplateStore.sections();
+
+      // Validate all fields
+      const validation = this.pdfExportService.validateFields(sections);
+
+      // Show validation errors if any
+      if (!validation.isValid) {
+        this.showValidationErrors(validation);
+        this.isExporting = false;
+        return;
       }
+
+      // Show validation warnings if any
+      if (validation.warnings.length > 0) {
+        this.showValidationWarnings(validation);
+      }
+
+      // Get CV element from preview component
+      const cvElement = this.cvPreviewComponent?.cvPaper?.nativeElement;
+
+      if (!cvElement) {
+        this.messageService.add({
+          severity: "error",
+          summary: "Export Failed",
+          detail: "Could not find CV preview element",
+        });
+        this.isExporting = false;
+        return;
+      }
+
+      // Show loading message
+      this.messageService.add({
+        severity: "info",
+        summary: "Exporting...",
+        detail: "Generating PDF file, please wait...",
+        life: 3000,
+      });
+
+      // Export to PDF
+      const result = await this.pdfExportService.exportToPdf(
+        cvElement,
+        sections,
+        {
+          filename: this.cvTemplateStore.template().name || "CV-Template",
+          format: "a4",
+          orientation: "portrait",
+          quality: 2,
+          includeMetadata: true,
+        },
+      );
+
+      if (result.success) {
+        this.messageService.add({
+          severity: "success",
+          summary: "Export Successful",
+          detail: "CV has been exported to PDF successfully",
+        });
+      } else {
+        this.messageService.add({
+          severity: "error",
+          summary: "Export Failed",
+          detail: result.error || "Unknown error occurred",
+        });
+      }
+    } catch (error) {
+      this.messageService.add({
+        severity: "error",
+        summary: "Export Failed",
+        detail:
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred",
+      });
+    } finally {
+      this.isExporting = false;
     }
-    this.focusActiveElement();
   }
-  
-  onToolbarFontSizeChange(event: any) {
-    this.changeFontSize(event.target.value);
-  }
-  
-  alignLeft() {
-    document.execCommand('justifyLeft', false);
-    this.focusActiveElement();
-  }
-  
-  alignCenter() {
-    document.execCommand('justifyCenter', false);
-    this.focusActiveElement();
-  }
-  
-  alignRight() {
-    document.execCommand('justifyRight', false);
-    this.focusActiveElement();
-  }
-  
-  alignJustify() {
-    document.execCommand('justifyFull', false);
-    this.focusActiveElement();
-  }
-  
-  private focusActiveElement() {
-    if (this.activeEditElement) {
-      this.activeEditElement.focus();
+
+  /**
+   * Show validation errors as toast messages
+   */
+  private showValidationErrors(validation: ValidationResult) {
+    this.messageService.add({
+      severity: "error",
+      summary: "Validation Failed",
+      detail: `Found ${validation.errors.length} error(s). Please fix them before exporting.`,
+      life: 5000,
+    });
+
+    // Show first 3 errors in detail
+    validation.errors.slice(0, 3).forEach((error, index) => {
+      setTimeout(
+        () => {
+          this.messageService.add({
+            severity: "error",
+            summary: `${error.sectionName}`,
+            detail: `${error.fieldLabel}: ${error.message}`,
+            life: 5000,
+          });
+        },
+        (index + 1) * 200,
+      );
+    });
+
+    if (validation.errors.length > 3) {
+      setTimeout(() => {
+        this.messageService.add({
+          severity: "warn",
+          summary: "More Errors",
+          detail: `And ${validation.errors.length - 3} more error(s)...`,
+          life: 5000,
+        });
+      }, 800);
     }
   }
-  
-  // Safe click handler for edit toolbar
-  onEditableClick(event: MouseEvent, fieldName: string = '') {
+
+  /**
+   * Show validation warnings as toast messages
+   */
+  private showValidationWarnings(validation: ValidationResult) {
+    this.messageService.add({
+      severity: "warn",
+      summary: "Validation Warnings",
+      detail: `Found ${validation.warnings.length} warning(s)`,
+      life: 4000,
+    });
+  }
+
+  // ========== Edit Toolbar ==========
+
+  onEditableClick(event: MouseEvent, fieldName: string = "") {
     event.stopPropagation();
     const target = event.target as HTMLElement;
     if (target) {
-      this.showEditToolbarAt(event, target);
+      this.editToolbar.showToolbarAt(event, target);
     }
   }
-  
-  // Show edit toolbar at specific position
-  showEditToolbarAt(event: MouseEvent, element: HTMLElement) {
-    event.stopPropagation();
-    this.activeEditElement = element;
-    
-    // Ensure the element is editable
-    element.contentEditable = 'true';
-    
-    // Store current selection for later restoration
-    const selection = window.getSelection();
-    if (selection && selection.rangeCount > 0) {
-      // Selection exists, store it
-    }
-    
-    // Smart positioning of the toolbar
-    const rect = element.getBoundingClientRect();
-    const toolbarWidth = 450; // Increased width for more buttons
-    const toolbarHeight = 50;
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-    
-    // Calculate horizontal position
-    let xPos = rect.left + (rect.width / 2) - (toolbarWidth / 2);
-    if (xPos + toolbarWidth > viewportWidth - 20) {
-      xPos = viewportWidth - toolbarWidth - 20;
-    }
-    if (xPos < 20) {
-      xPos = 20;
-    }
-    
-    // Calculate vertical position (above the element)
-    let yPos = rect.top - toolbarHeight - 10;
-    if (yPos < 20) {
-      yPos = rect.bottom + 10; // Show below if not enough space above
-    }
-    
-    this.editToolbarPosition.x = xPos;
-    this.editToolbarPosition.y = yPos;
-    this.showEditToolbar = true;
-    
-    // Add click listener to hide toolbar when clicking outside
-    setTimeout(() => {
-      document.addEventListener('click', this.handleOutsideClick.bind(this), { capture: true });
-    }, 100);
-  }
-  
-  private handleOutsideClick(event: Event) {
-    const target = event.target as HTMLElement;
-    const toolbar = document.querySelector('.edit-toolbar');
-    
-    if (toolbar && !toolbar.contains(target) && !this.activeEditElement?.contains(target)) {
-      this.hideEditToolbar();
-      document.removeEventListener('click', this.handleOutsideClick, { capture: true });
-    }
-  }
-  
-  // Section management methods
-  addExperience() {
-    this.sectionManager.addExperience();
-  }
-  
-  removeExperience(index: number) {
-    this.sectionManager.removeExperience(index);
-  }
-  
-  addResponsibility(expIndex: number) {
-    this.sectionManager.addResponsibility(expIndex);
-  }
-  
-  removeResponsibility(data: {expIndex: number, respIndex: number}) {
-    this.sectionManager.removeResponsibility(data.expIndex, data.respIndex);
-  }
-  
-  addEducation() {
-    this.sectionManager.addEducation();
-  }
-  
-  removeEducation(index: number) {
-    this.sectionManager.removeEducation(index);
-  }
-  
-  addActivity() {
-    this.sectionManager.addActivity();
-  }
-  
-  removeActivity(index: number) {
-    this.sectionManager.removeActivity(index);
-  }
-  
-  addCertificate() {
-    this.sectionManager.addCertificate();
-  }
-  
-  removeCertificate(index: number) {
-    this.sectionManager.removeCertificate(index);
-  }
-  
-  addProject() {
-    this.sectionManager.addProject();
-  }
-  
-  removeProject(index: number) {
-    this.sectionManager.removeProject(index);
-  }
-  
-  addReference() {
-    this.sectionManager.addReference();
-  }
-  
-  removeReference(index: number) {
-    this.sectionManager.removeReference(index);
-  }
-  
-  // Category Management Methods
-  openManagementModal() {
+
+  // ========== Section Management Modal ==========
+
+  openSectionManagementModal() {
     this.showManagementModal = true;
   }
-  
-  closeManagementModal() {
+
+  closeSectionManagementModal() {
     this.showManagementModal = false;
-    // Also close any sub-modals
-    this.showCategoryModal = false;
-    this.showSectionModal = false;
   }
 
-  // Layout Management Methods
-  openLayoutConfigModal() {
-    this.showLayoutConfigModal = true;
-    this.currentLayoutConfig = null; // Start with new layout
-  }
+  // ========== Layout Configuration Modal ==========
 
   openLayoutManagementModal() {
-    if (!this.currentLayoutConfig) {
-      alert('Vui lòng tạo layout configuration trước');
-      this.openLayoutConfigModal();
-      return;
-    }
-    this.showLayoutManagementModal = true;
-  }
-
-  closeLayoutConfigModal() {
-    this.showLayoutConfigModal = false;
-    this.currentLayoutConfig = null;
+    this.showLayoutConfigModal = true;
   }
 
   closeLayoutManagementModal() {
-    this.showLayoutManagementModal = false;
+    this.showLayoutConfigModal = false;
   }
 
-  onLayoutConfigSave(layoutConfig: LayoutConfiguration) {
-    // Save to layouts list
-    const existingIndex = this.layoutConfigurations.findIndex(l => l.id === layoutConfig.id);
-    if (existingIndex >= 0) {
-      this.layoutConfigurations[existingIndex] = layoutConfig;
-    } else {
-      this.layoutConfigurations.push(layoutConfig);
+  // ========== Layout Change Handler ==========
+
+  /**
+   * Handle layout changes from the Layout Panel
+   * This is called whenever sections are dragged, added, or removed
+   */
+  onLayoutChange(updatedConfig: LayoutConfiguration) {
+    // Update the store with the new layout configuration
+    this.cvTemplateStore.updateLayoutConfiguration(updatedConfig);
+  }
+
+  // ========== Save Template ==========
+
+  /**
+   * Open save template dialog
+   */
+  openSaveTemplateDialog(): void {
+    if (this.isSaving()) {
+      return;
     }
 
-    // Set as current if it's default or first one
-    if (layoutConfig.isDefault || !this.currentLayoutConfig) {
-      this.currentLayoutConfig = layoutConfig;
+    if (!this.isAdmin()) {
+      this.messageService.add({
+        severity: "error",
+        summary: "Unauthorized",
+        detail: "Only administrators can save templates",
+      });
+      return;
     }
 
-    this.closeLayoutConfigModal();
-    console.log('Layout saved:', layoutConfig);
+    this.showSaveTemplateDialog = true;
   }
 
-  onLayoutUpdated(layoutConfig: LayoutConfiguration) {
-    this.currentLayoutConfig = layoutConfig;
-    console.log('Layout updated:', layoutConfig);
+  /**
+   * Close save template dialog
+   */
+  closeSaveTemplateDialog(): void {
+    this.showSaveTemplateDialog = false;
   }
 
-  onSectionPlaced(dragData: DragDropData) {
-    console.log('Section placed:', dragData);
-    // Update CV data based on section placement
-    this.updateCVFromLayout();
+  /**
+   * Handle save template data from dialog
+   */
+  onSaveTemplateData(saveData: { name: string; description?: string; type: CvTemplateType }): void {
+    this.closeSaveTemplateDialog();
+    this.performSave(saveData);
   }
 
-  updateCVFromLayout() {
-    if (!this.currentLayoutConfig) return;
+  /**
+   * Save CV template configuration to backend
+   * Saves: layout, rows, columns, sections, fields, style for fields, design settings
+   */
+  private async performSave(saveData: { name: string; description?: string; type: CvTemplateType }): Promise<void> {
+    if (this.isSaving()) {
+      return;
+    }
+
+    this.isSaving.set(true);
+
+    try {
+      const template = this.cvTemplateStore.template();
+      const currentLayout = this.layoutConfiguration || { rows: [] };
+      const allSections = this.allSections || [];
+
+      // Prepare the template data with all configurations
+      const templateData = {
+        name: saveData.name,
+        type: saveData.type,
+        description: saveData.description || "",
+        sampleFileUrl: template.sampleFileUrl || "",
+        layoutConfiguration: currentLayout,
+        section: allSections,
+        designSettings: {
+          selectedFont: this.designSettings.selectedFont,
+          fontSize: this.designSettings.fontSize,
+          lineSpacing: this.designSettings.lineSpacing,
+          selectedColor: this.designSettings.selectedColor,
+          selectedBackground: this.designSettings.selectedBackground,
+        },
+        isPublished: template.isPublished || false,
+      };
+
+      // Determine if this is create or update
+      const isUpdate = template.templateCode && template.templateCode.trim() !== "";
+
+      if (isUpdate) {
+        // Update existing template
+        this.cvTemplateService
+          .updateTemplate(template.templateCode, templateData)
+          .subscribe({
+            next: (updatedTemplate) => {
+              // Merge API response with current state to preserve all data
+              // API might return incomplete data or JSON strings that need parsing
+              const mergedTemplate = this.mergeTemplateWithCurrentState(updatedTemplate, templateData);
+              this.cvTemplateStore.setTemplate(mergedTemplate);
+              
+              // Update design settings if they were changed
+              if (mergedTemplate.designSettings) {
+                this.designSettings = {
+                  selectedFont: mergedTemplate.designSettings.selectedFont || this.designSettings.selectedFont,
+                  fontSize: mergedTemplate.designSettings.fontSize || this.designSettings.fontSize,
+                  lineSpacing: mergedTemplate.designSettings.lineSpacing || this.designSettings.lineSpacing,
+                  selectedColor: mergedTemplate.designSettings.selectedColor || this.designSettings.selectedColor,
+                  selectedBackground: mergedTemplate.designSettings.selectedBackground || this.designSettings.selectedBackground,
+                };
+                
+                // Apply font size changes
+                setTimeout(() => {
+                  this.designHandler.applyFontSizeChange(this.designSettings.fontSize);
+                }, 100);
+              }
+
+              this.messageService.add({
+                severity: "success",
+                summary: "Lưu thành công",
+                detail: "Template đã được cập nhật thành công",
+              });
+              this.isSaving.set(false);
+            },
+            error: (error) => {
+              this.messageService.add({
+                severity: "error",
+                summary: "Lỗi",
+                detail:
+                  error.error?.message ||
+                  "Đã xảy ra lỗi khi cập nhật template. Vui lòng thử lại.",
+              });
+              this.isSaving.set(false);
+            },
+          });
+      } else {
+        // Create new template
+        this.cvTemplateService.createTemplate(templateData).subscribe({
+          next: (createdTemplate) => {
+            this.messageService.add({
+              severity: "success",
+              summary: "Lưu thành công",
+              detail: "Template đã được tạo thành công",
+            });
+            this.isSaving.set(false);
+            
+            // Navigate to template list after successful creation
+            this.router.navigate(['/cv-template']);
+          },
+          error: (error) => {
+            this.messageService.add({
+              severity: "error",
+              summary: "Lỗi",
+              detail:
+                error.error?.message ||
+                "Đã xảy ra lỗi khi tạo template. Vui lòng thử lại.",
+            });
+            this.isSaving.set(false);
+          },
+        });
+      }
+    } catch (error) {
+      this.messageService.add({
+        severity: "error",
+        summary: "Lỗi",
+        detail: "Đã xảy ra lỗi không mong đợi. Vui lòng thử lại.",
+      });
+      this.isSaving.set(false);
+    }
+  }
+
+  /**
+   * Merge API response template with current state to preserve all data
+   * Handles cases where API returns incomplete data or JSON strings
+   */
+  private mergeTemplateWithCurrentState(
+    apiTemplate: CvTemplate,
+    currentTemplateData: any
+  ): CvTemplate {
+    const rawTemplate = apiTemplate as any;
+    let layoutConfiguration = apiTemplate.layoutConfiguration;
+    let sections = apiTemplate.section;
+    let designSettings = apiTemplate.designSettings;
+
+    // Parse layoutConfiguration if it's a string
+    if (!layoutConfiguration && rawTemplate.layoutConfiguration) {
+      try {
+        if (typeof rawTemplate.layoutConfiguration === 'string') {
+          layoutConfiguration = JSON.parse(rawTemplate.layoutConfiguration);
+        } else if (rawTemplate.layoutConfiguration && typeof rawTemplate.layoutConfiguration === 'object') {
+          layoutConfiguration = rawTemplate.layoutConfiguration;
+        }
+      } catch (e) {
+        layoutConfiguration = currentTemplateData.layoutConfiguration;
+      }
+    }
+
+    // Parse sections - check both 'sections' (plural) and 'section' (singular) field names
+    const sectionsValue = rawTemplate.sections !== undefined 
+      ? rawTemplate.sections 
+      : rawTemplate.section !== undefined 
+        ? rawTemplate.section 
+        : undefined;
     
-    // Update usedSections based on layout
-    const placedSections: string[] = [];
-    this.currentLayoutConfig.rows.forEach(row => {
-      row.columns.forEach(column => {
-        placedSections.push(...column.sections);
+    if (!sections && sectionsValue !== undefined && sectionsValue !== null) {
+      try {
+        if (typeof sectionsValue === 'string') {
+          sections = JSON.parse(sectionsValue);
+        } else if (Array.isArray(sectionsValue)) {
+          sections = sectionsValue;
+        }
+      } catch (e) {
+        sections = currentTemplateData.sections;
+      }
+    } else if (sectionsValue === null) {
+      sections = [];
+    }
+
+    // Parse designSettings if it's a string
+    if (!designSettings && rawTemplate.designSettings) {
+      try {
+        if (typeof rawTemplate.designSettings === 'string') {
+          designSettings = JSON.parse(rawTemplate.designSettings);
+        } else if (rawTemplate.designSettings && typeof rawTemplate.designSettings === 'object') {
+          designSettings = rawTemplate.designSettings;
+        }
+      } catch (e) {
+        designSettings = currentTemplateData.designSettings;
+      }
+    }
+
+    // Merge: Use API response as base, but preserve current data if API response is incomplete
+    return {
+      ...apiTemplate,
+      layoutConfiguration: layoutConfiguration ?? currentTemplateData.layoutConfiguration,
+      section: sections ?? currentTemplateData.sections,
+      designSettings: designSettings ?? currentTemplateData.designSettings,
+    };
+  }
+
+  // ========== Legacy Layout Support ==========
+
+  /**
+   * Build legacy flat layout structure for backward compatibility
+   * This maintains the old usedSections/availableLayoutSections format
+   * while the new grid-based system is being adopted
+   */
+  private rebuildLegacyLayout(
+    sections: CVSection[],
+    layoutConfig: LayoutConfiguration | { rows: LayoutRow[] },
+  ) {
+    const orderedIds = this.extractOrderedSectionIds(layoutConfig);
+
+    let used: UsedSection[] = [];
+
+    if (orderedIds.length > 0) {
+      used = orderedIds
+        .map((id, index): UsedSection | undefined => {
+          const section = sections.find((s) => s.id === id);
+          return section
+            ? {
+                id: section.id,
+                name: section.name,
+                order: index + 1,
+                locked: section.locked,
+              }
+            : undefined;
+        })
+        .filter((s): s is UsedSection => !!s);
+    } else {
+      // If no layout configuration yet, default to all sections in their current order
+      used = sections.map(
+        (section, index): UsedSection => ({
+          id: section.id,
+          name: section.name,
+          order: index + 1,
+          locked: section.locked,
+        }),
+      );
+    }
+
+    this.usedSections = used;
+    this.syncAvailableSections(sections);
+  }
+
+  /**
+   * Sync available (unused) sections for legacy layout
+   */
+  private syncAvailableSections(sections: CVSection[]) {
+    const usedIds = new Set(this.usedSections.map((s) => s.id));
+
+    this.availableLayoutSections = sections
+      .filter((section) => !usedIds.has(section.id))
+      .map((section, index) => ({
+        id: section.id,
+        name: section.name,
+        order: index + 1,
+        locked: section.locked,
+      }));
+  }
+
+  /**
+   * Extract ordered section IDs from layout configuration
+   * Iterates through rows → columns → sections to build a flat ordered list
+   */
+  private extractOrderedSectionIds(
+    layoutConfig: LayoutConfiguration | { rows: LayoutRow[] },
+  ): string[] {
+    if (!layoutConfig || !layoutConfig.rows || layoutConfig.rows.length === 0) {
+      return [];
+    }
+
+    const ids: string[] = [];
+    layoutConfig.rows.forEach((row: LayoutRow) => {
+      row.columns?.forEach((col: LayoutColumn) => {
+        (col.sections || []).forEach((sectionId) => ids.push(sectionId));
       });
     });
 
-    // Update used sections list
-    this.usedSections = placedSections.map(sectionId => {
-      const section = this.availableSections.find((s: CVSection) => s.id === sectionId);
-      return section ? {
-        id: section.id,
-        name: section.name,
-        icon: section.icon,
-        isVisible: true,
-        order: 0
-      } : null;
-    }).filter(Boolean) as UsedSection[];
-  }
-
-  // Initialize default layout
-  initializeDefaultLayout() {
-    if (this.layoutConfigurations.length === 0) {
-      const defaultLayout: LayoutConfiguration = {
-        id: 'default_layout_1',
-        name: 'Layout Cơ Bản',
-        description: 'Layout 2 cột cơ bản cho CV',
-        rows: [
-          {
-            id: 'row_1',
-            columns: [
-              {
-                id: 'col_1_1',
-                widthPercentage: 35,
-                sections: [],
-                minWidth: 25,
-                maxWidth: 45
-              },
-              {
-                id: 'col_1_2', 
-                widthPercentage: 65,
-                sections: [],
-                minWidth: 55,
-                maxWidth: 75
-              }
-            ],
-            order: 0
-          }
-        ],
-        totalColumns: 2,
-        isDefault: true,
-        createdDate: new Date(),
-        modifiedDate: new Date()
-      };
-
-      this.layoutConfigurations.push(defaultLayout);
-      this.currentLayoutConfig = defaultLayout;
-    }
-  }
-  
-  openCategoryModal(mode: 'add' | 'edit' = 'add', category?: CVCategory) {
-    this.modalMode = mode;
-    this.showCategoryModal = true;
-    
-    if (mode === 'edit' && category) {
-      this.editingCategory = { ...category };
-      this.newCategoryForm = {
-        name: category.name,
-        icon: category.icon,
-        description: category.description || '',
-        allowMultiple: category.allowMultiple
-      };
-    } else {
-      this.editingCategory = null;
-      this.resetCategoryForm();
-    }
-  }
-  
-  closeCategoryModal() {
-    this.showCategoryModal = false;
-    this.editingCategory = null;
-    this.resetCategoryForm();
-    // Don't close management modal, just the category form modal
-  }
-  
-  openSectionModal(mode: 'add' | 'edit' = 'add', categoryId: string = '', section?: CVSection) {
-    this.modalMode = mode;
-    this.showSectionModal = true;
-    this.currentCategoryId = categoryId;
-    
-    if (mode === 'edit' && section) {
-      this.editingSection = { ...section };
-      this.newSectionForm = {
-        name: section.name,
-        icon: section.icon,
-        categoryId: section.categoryId || categoryId,
-        allowMultiple: section.allowMultiple || false
-      };
-    } else {
-      this.editingSection = null;
-      this.newSectionForm = {
-        name: '',
-        icon: '',
-        categoryId: categoryId,
-        allowMultiple: false
-      };
-    }
-  }
-  
-  closeSectionModal() {
-    this.showSectionModal = false;
-    this.editingSection = null;
-    this.currentCategoryId = '';
-    this.resetSectionForm();
-    // Don't close management modal, just the section form modal
-  }
-  
-  addCategory() {
-    if (!this.newCategoryForm.name.trim()) {
-      alert('Tên danh mục không được để trống!');
-      return;
-    }
-    
-    const newCategory: CVCategory = {
-      id: this.generateId(),
-      name: this.newCategoryForm.name,
-      icon: this.newCategoryForm.icon || '📁',
-      description: this.newCategoryForm.description,
-      allowMultiple: this.newCategoryForm.allowMultiple,
-      isSystemCategory: false,
-      order: this.categories.length + 1,
-      sections: []
-    };
-    
-    this.categories.push(newCategory);
-    this.closeCategoryModal();
-    console.log('Category added:', newCategory);
-  }
-  
-  editCategory(category: CVCategory) {
-    this.openCategoryModal('edit', category);
-  }
-  
-  updateCategory() {
-    if (!this.editingCategory || !this.newCategoryForm.name.trim()) {
-      alert('Tên danh mục không được để trống!');
-      return;
-    }
-    
-    const index = this.categories.findIndex(cat => cat.id === this.editingCategory!.id);
-    if (index !== -1) {
-      this.categories[index] = {
-        ...this.editingCategory,
-        name: this.newCategoryForm.name,
-        icon: this.newCategoryForm.icon || '📁',
-        description: this.newCategoryForm.description,
-        allowMultiple: this.newCategoryForm.allowMultiple
-      };
-    }
-    
-    this.closeCategoryModal();
-    console.log('Category updated');
-  }
-  
-  deleteCategory(categoryId: string) {
-    const category = this.categories.find(cat => cat.id === categoryId);
-    if (category?.isSystemCategory) {
-      alert('Không thể xóa danh mục hệ thống!');
-      return;
-    }
-    
-    if (confirm('Bạn có chắc chắn muốn xóa danh mục này?')) {
-      this.categories = this.categories.filter(cat => cat.id !== categoryId);
-      // Remove sections from this category from available sections
-      this.availableSections = this.availableSections.filter(section => 
-        !category?.sections.some(catSection => catSection.id === section.id)
-      );
-      // Update order
-      this.categories.forEach((cat, index) => {
-        cat.order = index + 1;
-      });
-      console.log('Category deleted:', categoryId);
-    }
-  }
-  
-  // Section Management Methods
-  addSectionToCategory(categoryId?: string) {
-    const targetCategoryId = categoryId || this.currentCategoryId;
-    if (!this.newSectionForm.name.trim()) {
-      alert('Tên mục không được để trống!');
-      return;
-    }
-    
-    const category = this.categories.find(cat => cat.id === targetCategoryId);
-    if (!category) {
-      alert('Không tìm thấy danh mục!');
-      return;
-    }
-    
-    const newSection: CVSection = {
-      id: this.generateId(),
-      name: this.newSectionForm.name,
-      icon: this.newSectionForm.icon || '📄',
-      categoryId: targetCategoryId,
-      allowMultiple: this.newSectionForm.allowMultiple
-    };
-    
-    category.sections.push(newSection);
-    this.availableSections.push(newSection);
-    this.closeSectionModal();
-    console.log('Section added to category:', newSection);
-  }
-  
-  editSection(section: CVSection) {
-    this.openSectionModal('edit', section.categoryId || '', section);
-  }
-  
-  updateSection() {
-    if (!this.editingSection || !this.newSectionForm.name.trim()) {
-      alert('Tên mục không được để trống!');
-      return;
-    }
-    
-    // Update in category
-    const category = this.categories.find(cat => 
-      cat.sections.some(s => s.id === this.editingSection!.id)
-    );
-    
-    if (category) {
-      const sectionIndex = category.sections.findIndex(s => s.id === this.editingSection!.id);
-      if (sectionIndex !== -1) {
-        category.sections[sectionIndex] = {
-          ...this.editingSection,
-          name: this.newSectionForm.name,
-          icon: this.newSectionForm.icon || '📄',
-          allowMultiple: this.newSectionForm.allowMultiple
-        };
-      }
-    }
-    
-    // Update in available sections
-    const availableIndex = this.availableSections.findIndex(s => s.id === this.editingSection!.id);
-    if (availableIndex !== -1) {
-      this.availableSections[availableIndex] = {
-        ...this.editingSection,
-        name: this.newSectionForm.name,
-        icon: this.newSectionForm.icon || '📄',
-        allowMultiple: this.newSectionForm.allowMultiple
-      };
-    }
-    
-    this.closeSectionModal();
-    console.log('Section updated');
-  }
-  
-  deleteSectionFromCategory(categoryId: string, sectionId: string) {
-    if (confirm('Bạn có chắc chắn muốn xóa mục này?')) {
-      const category = this.categories.find(cat => cat.id === categoryId);
-      if (category) {
-        category.sections = category.sections.filter(s => s.id !== sectionId);
-        this.availableSections = this.availableSections.filter(s => s.id !== sectionId);
-        // Also remove from used sections if exists
-        this.usedSections = this.usedSections.filter(s => s.id !== sectionId);
-        console.log('Section deleted from category:', sectionId);
-      }
-    }
-  }
-  
-  // Helper Methods
-  generateId(): string {
-    return 'id_' + Math.random().toString(36).substr(2, 9);
-  }
-  
-  resetCategoryForm() {
-    this.newCategoryForm = {
-      name: '',
-      icon: '',
-      description: '',
-      allowMultiple: false
-    };
-  }
-  
-  resetSectionForm() {
-    this.newSectionForm = {
-      name: '',
-      icon: '',
-      categoryId: '',
-      allowMultiple: false
-    };
-  }
-  
-  // Performance optimization methods
-  trackByCategory(index: number, category: CVCategory): string {
-    return category.id;
-  }
-  
-  trackBySection(index: number, section: CVSection): string {
-    return section.id;
-  }
-
-  // Utility function for modal stats
-  getTotalSections(): number {
-    return this.categories.reduce((total, category) => total + category.sections.length, 0);
+    return ids;
   }
 }

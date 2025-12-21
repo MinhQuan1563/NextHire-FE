@@ -1,7 +1,8 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnInit, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LayoutColumn, LayoutConfiguration, LayoutRow } from '@app/models/cv-builder/cv-template.model';
+import { CvTemplateStore } from '../../stores/cv-template.store';
 
 @Component({
   selector: 'app-layout-config-modal',
@@ -10,23 +11,31 @@ import { LayoutColumn, LayoutConfiguration, LayoutRow } from '@app/models/cv-bui
   templateUrl: './layout-config-modal.component.html',
   styleUrls: ['./layout-config-modal.component.scss']
 })
-export class LayoutConfigModalComponent {
-  @Input() show: boolean = false;
-  @Input() layoutConfig: LayoutConfiguration | null = null;
+export class LayoutConfigModalComponent implements OnInit {
+  @Output() save = new EventEmitter<void>();
   @Output() close = new EventEmitter<void>();
-  @Output() save = new EventEmitter<LayoutConfiguration>();
+  
+  constructor(private store: CvTemplateStore) {
+    // React to layout configuration changes
+    effect(() => {
+      const layoutConfig = this.store.layoutConfiguration();
+      if (layoutConfig && layoutConfig.rows && layoutConfig.rows.length > 0) {
+        this.configForm = { ...layoutConfig };
+        this.updateTotalColumns();
+      }
+    });
+  }
 
   configForm: Partial<LayoutConfiguration> = {
-    name: '',
-    description: '',
     rows: [],
     totalColumns: 1,
-    isDefault: false
   };
 
   ngOnInit() {
-    if (this.layoutConfig) {
-      this.configForm = { ...this.layoutConfig };
+    const layoutConfig = this.store.layoutConfiguration();
+    if (layoutConfig && layoutConfig.rows && layoutConfig.rows.length > 0) {
+      this.configForm = { ...layoutConfig };
+      this.updateTotalColumns();
     } else {
       this.resetForm();
     }
@@ -34,14 +43,8 @@ export class LayoutConfigModalComponent {
 
   resetForm() {
     this.configForm = {
-      id: this.generateId(),
-      name: '',
-      description: '',
       rows: [this.createDefaultRow()],
       totalColumns: 1,
-      isDefault: false,
-      createdDate: new Date(),
-      modifiedDate: new Date()
     };
   }
 
@@ -173,23 +176,13 @@ export class LayoutConfigModalComponent {
   }
 
   onSave() {
-    if (!this.configForm.name?.trim()) {
-      alert('Vui lòng nhập tên layout');
-      return;
-    }
-
     const layout: LayoutConfiguration = {
       ...this.configForm as LayoutConfiguration,
-      modifiedDate: new Date()
     };
-
-    this.save.emit(layout);
+    this.store.updateLayoutConfiguration(layout);
+    
+    this.save.emit();
   }
-
-  onClose() {
-    this.close.emit();
-  }
-
   // Utility methods
   getTotalWidth(row: LayoutRow): number {
     return row.columns.reduce((total, col) => total + col.widthPercentage, 0);
