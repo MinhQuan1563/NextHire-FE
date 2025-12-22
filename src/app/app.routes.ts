@@ -9,6 +9,10 @@ import { InvitationsComponent } from './pages/network/invitations/invitations.co
 import { JobsComponent } from './pages/jobs/jobs.component';
 import { MessagingComponent } from './pages/messaging/messaging.component';
 import { NotificationsComponent } from './pages/notifications/notifications.component';
+import { GamesComponent } from './pages/games/games.component';
+import { Game2048Component } from './pages/games/2048/game2048.component';
+import { TangoComponent } from './pages/games/tango/tango.component';
+import { QueensComponent } from './pages/games/queens/queens.component';
 import { LoginComponent } from './pages/auth/login/login.component';
 import { RegisterComponent } from './pages/auth/register/register.component';
 import { ForgotPasswordComponent } from './pages/auth/forgot-password/forgot-password.component';
@@ -86,6 +90,10 @@ export const routes: Routes = [
           }
         ]
       },
+      { path: 'games', component: GamesComponent },               // Games list
+      { path: 'games/2048', component: Game2048Component },       // 2048 game
+      { path: 'games/tango', component: TangoComponent },         // Tango game
+      { path: 'games/queens', component: QueensComponent },       // Queens game
       // ... Các route khác sử dụng layout này
     ]
   },

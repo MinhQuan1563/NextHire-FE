@@ -1,0 +1,35 @@
+<div class="games-container">
+  <div class="games-header">
+    <h1 class="title">Puzzle Games</h1>
+    <p class="subtitle">Challenge your mind with these daily puzzles</p>
+  </div>
+
+  <ul class="games-list">
+    <li 
+      *ngFor="let game of games" 
+      class="game-card"
+      [style.border-color]="game.color"
+      (click)="navigateToGame(game.route)">
+      
+      <div class="game-icon" [style.background]="game.color">
+        {{ game.icon }}
+      </div>
+      
+      <div class="game-content">
+        <div class="game-header-info">
+          <h2 class="game-name">{{ game.name }}</h2>
+          <span class="game-number">#{{ game.gameNumber }}</span>
+        </div>
+        
+        <p class="game-description">{{ game.description }}</p>
+        
+        <button class="play-button" [style.background]="game.color">
+          Play Now
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M6 3L11 8L6 13" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+    </li>
+  </ul>
+</div>
