@@ -64,6 +64,32 @@ export const routes: Routes = [
       { path: 'jobs', component: JobsComponent },                 // Việc làm
       { path: 'messaging', component: MessagingComponent },       // Nhắn tin
       { path: 'notifications', component: NotificationsComponent }, // Thông báo
+      {
+        path: 'profile',
+        children: [
+          {
+            path: '',
+            pathMatch: 'full',
+            loadComponent: () => import('./pages/user-profile/my-profile/my-profile.component')
+              .then(m => m.MyProfileComponent)
+          },
+          {
+            path: 'edit',
+            loadComponent: () => import('./pages/user-profile/edit-profile/edit-profile.component')
+              .then(m => m.EditProfileComponent)
+          },
+          {
+            path: 'cvs',
+            loadComponent: () => import('./pages/user-profile/user-cv/user-cv.component')
+              .then(m => m.UserCvComponent)
+          },
+          {
+            path: ':userCode',
+            loadComponent: () => import('./pages/user-profile/other-user-profile/other-user-profile.component')
+              .then(m => m.OtherUserProfileComponent)
+          }
+        ]
+      },
       { path: 'games', component: GamesComponent },               // Games list
       { path: 'games/2048', component: Game2048Component },       // 2048 game
       { path: 'games/tango', component: TangoComponent },         // Tango game

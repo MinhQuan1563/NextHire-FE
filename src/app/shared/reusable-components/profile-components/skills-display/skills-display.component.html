@@ -1,0 +1,28 @@
+@if (skills.length > 0) {
+  <div class="skills-display space-y-3">
+    @for (skill of skills; track skill.name) {
+      <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+        <div class="flex-1">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="font-semibold text-gray-900">{{ skill.name }}</span>
+            <p-tag 
+              [value]="getSkillLevelLabel(skill.level)" 
+              [severity]="getSkillLevelSeverity(skill.level)"
+              styleClass="text-xs">
+            </p-tag>
+          </div>
+          @if (skill.yearsOfExperience !== undefined && skill.yearsOfExperience !== null) {
+            <p class="text-sm text-gray-600">
+              {{ formatYearsOfExperience(skill.yearsOfExperience) }} of experience
+            </p>
+          }
+        </div>
+      </div>
+    }
+  </div>
+} @else {
+  <div class="text-center py-8 text-gray-500">
+    <p>No skills added yet</p>
+  </div>
+}
+

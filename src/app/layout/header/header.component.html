@@ -54,7 +54,7 @@
         <p-tieredMenu #userMenuPopup [model]="userMenuItems" [popup]="true"></p-tieredMenu>
         <button class="user-button flex flex-col items-center justify-center text-center" 
                 (click)="userMenuPopup.toggle($event)">
-          <p-avatar label="" shape="circle" styleClass="user-avatar"></p-avatar>
+          <p-avatar [image]="currentUser?.avatarUrl" label="" shape="circle" styleClass="user-avatar"></p-avatar>
           <span class="nav-text text-xs mt-1">Tôi <i class="pi pi-caret-down text-xs ml-1"></i></span>
         </button>
       </div>

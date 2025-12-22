@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
@@ -8,6 +8,8 @@ import { MenuItem } from 'primeng/api';
 import { TieredMenuModule } from 'primeng/tieredmenu';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '@app/services/auth/auth.service';
+import { User } from '@app/models/auth/auth.model';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-header',
@@ -24,9 +26,10 @@ import { AuthService } from '@app/services/auth/auth.service';
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss',
 })
-export class HeaderComponent {
+export class HeaderComponent implements OnInit {
   userMenuItems: MenuItem[];
-  currentUser$ = this.authService.currentUser$;
+  currentUser : User | null = null
+  private destroyRef = inject(DestroyRef);
   constructor(
     private authService: AuthService,
     private router: Router,
@@ -49,10 +52,21 @@ export class HeaderComponent {
       },
     ];
   }
+  ngOnInit(): void {
+    this.authService.currentUser$
+    .pipe(
+      takeUntilDestroyed(this.destroyRef)
+    )
+    .subscribe({
+      next: (user : User | null) => {
+        console.log(user)
+        this.currentUser = user;
+      }
+    })
+  }
 
   navigateToProfile() {
-    console.log('Navigate to profile');
-    // router.navigate(['/profile']);
+    this.router.navigate(['/profile']);
   }
 
   logout() {
@@ -68,6 +82,5 @@ export class HeaderComponent {
 
   onSearch(event: Event) {
     const query = (event.target as HTMLInputElement).value;
-    console.log('Searching for:', query);
   }
 }
