@@ -1,0 +1,522 @@
+<div class="json-field-editor">
+  <div class="mb-4">
+    <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ config.label }}</h3>
+    <button
+      type="button"
+      pButton
+      label="{{ config.addButtonLabel || 'Add Item' }}"
+      icon="pi pi-plus"
+      class="p-button-sm p-button-outlined"
+      (click)="addItem()"
+    ></button>
+  </div>
+
+  @if (formArray.length === 0) {
+    <div class="text-center py-8 text-gray-500 bg-gray-50 rounded-lg">
+      <p>{{ config.emptyMessage || 'No items added yet. Click "Add Item" to get started.' }}</p>
+    </div>
+  }
+
+  <div class="space-y-4">
+    @for (control of formArray.controls; track i; let i = $index) {
+      <div class="border border-gray-200 rounded-lg p-4 bg-white">
+        <!-- Skills Form -->
+        @if (config.type === 'skills') {
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Skill Name *</label>
+              <input
+                pInputText
+                type="text"
+                [formControl]="$any(control.get('name'))"
+                placeholder="e.g., JavaScript"
+                class="w-full"
+                (blur)="onFormChange()"
+              />
+              @if (control.get('name')?.hasError('required') && control.get('name')?.touched) {
+                <small class="p-error">Skill name is required</small>
+              }
+              @if (control.get('name')?.hasError('maxlength')) {
+                <small class="p-error">Maximum 100 characters</small>
+              }
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Level *</label>
+              <p-dropdown
+                [options]="skillLevelOptions"
+                [formControl]="$any(control.get('level'))"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="Select level"
+                class="w-full"
+                (onChange)="onFormChange()"
+              ></p-dropdown>
+              @if (control.get('level')?.hasError('required') && control.get('level')?.touched) {
+                <small class="p-error">Skill level is required</small>
+              }
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Years of Experience</label>
+              <input
+                pInputText
+                type="number"
+                [formControl]="$any(control.get('yearsOfExperience'))"
+                placeholder="e.g., 5"
+                min="0"
+                class="w-full"
+                (blur)="onFormChange()"
+              />
+              @if (control.get('yearsOfExperience')?.hasError('min')) {
+                <small class="p-error">Must be non-negative</small>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Experience Form -->
+        @if (config.type === 'experience') {
+          <div class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Company *</label>
+                <input
+                  pInputText
+                  type="text"
+                  [formControl]="$any(control.get('company'))"
+                  placeholder="Company name"
+                  class="w-full"
+                  (blur)="onFormChange()"
+                />
+                @if (control.get('company')?.hasError('required') && control.get('company')?.touched) {
+                  <small class="p-error">Company is required</small>
+                }
+                @if (control.get('company')?.hasError('maxlength')) {
+                  <small class="p-error">Maximum 200 characters</small>
+                }
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Position *</label>
+                <input
+                  pInputText
+                  type="text"
+                  [formControl]="$any(control.get('position'))"
+                  placeholder="Job title"
+                  class="w-full"
+                  (blur)="onFormChange()"
+                />
+                @if (control.get('position')?.hasError('required') && control.get('position')?.touched) {
+                  <small class="p-error">Position is required</small>
+                }
+                @if (control.get('position')?.hasError('maxlength')) {
+                  <small class="p-error">Maximum 200 characters</small>
+                }
+              </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Start Date *</label>
+                <p-calendar
+                  [formControl]="$any(control.get('startDate'))"
+                  dateFormat="yy-mm-dd"
+                  [showIcon]="true"
+                  class="w-full"
+                  (onSelect)="onFormChange()"
+                ></p-calendar>
+                @if (control.get('startDate')?.hasError('required') && control.get('startDate')?.touched) {
+                  <small class="p-error">Start date is required</small>
+                }
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+                <p-calendar
+                  [formControl]="$any(control.get('endDate'))"
+                  dateFormat="yy-mm-dd"
+                  [showIcon]="true"
+                  [disabled]="control.get('isCurrent')?.value"
+                  class="w-full"
+                  (onSelect)="onFormChange()"
+                ></p-calendar>
+              </div>
+              <div class="flex items-end">
+                <p-checkbox
+                  [formControl]="$any(control.get('isCurrent'))"
+                  label="Current Position"
+                  (onChange)="onIsCurrentChange(i)"
+                ></p-checkbox>
+              </div>
+            </div>
+            @if (control.hasError('dateRangeInvalid')) {
+              <small class="p-error">End date must be after start date</small>
+            }
+            @if (control.hasError('currentPositionHasEndDate')) {
+              <small class="p-error">End date should be empty for current positions</small>
+            }
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+              <textarea
+                pInputTextarea
+                [formControl]="$any(control.get('description'))"
+                placeholder="Describe your role and responsibilities"
+                rows="4"
+                class="w-full"
+                (blur)="onFormChange()"
+              ></textarea>
+              @if (control.get('description')?.hasError('maxlength') && control.get('description')?.touched) {
+                <small class="p-error">Maximum 2000 characters</small>
+              }
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Achievements</label>
+              @for (achievementControl of getNestedArray(i, 'achievements').controls; track ai; let ai = $index) {
+                <div class="flex gap-2 mb-2">
+                  <div class="flex-1">
+                    <input
+                      pInputText
+                      type="text"
+                      [formControl]="$any(achievementControl)"
+                      placeholder="Enter achievement"
+                      class="w-full"
+                      (blur)="onFormChange()"
+                    />
+                    @if (achievementControl.hasError('maxlength') && achievementControl.touched) {
+                      <small class="p-error">Maximum 500 characters</small>
+                    }
+                  </div>
+                  <button
+                    type="button"
+                    pButton
+                    icon="pi pi-times"
+                    class="p-button-danger p-button-text p-button-sm"
+                    (click)="removeNestedItem(i, 'achievements', ai)"
+                    [attr.aria-label]="'Remove achievement ' + (ai + 1)"
+                  ></button>
+                </div>
+              }
+              <button
+                type="button"
+                pButton
+                label="Add Achievement"
+                icon="pi pi-plus"
+                class="p-button-sm p-button-text"
+                (click)="addNestedItem(i, 'achievements')"
+              ></button>
+            </div>
+          </div>
+        }
+
+        <!-- Education Form -->
+        @if (config.type === 'education') {
+          <div class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Institution *</label>
+                <input
+                  pInputText
+                  type="text"
+                  [formControl]="$any(control.get('institution'))"
+                  placeholder="School/University name"
+                  class="w-full"
+                  (blur)="onFormChange()"
+                />
+                @if (control.get('institution')?.hasError('required') && control.get('institution')?.touched) {
+                  <small class="p-error">Institution is required</small>
+                }
+                @if (control.get('institution')?.hasError('maxlength')) {
+                  <small class="p-error">Maximum 200 characters</small>
+                }
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Degree *</label>
+                <input
+                  pInputText
+                  type="text"
+                  [formControl]="$any(control.get('degree'))"
+                  placeholder="e.g., Bachelor of Science"
+                  class="w-full"
+                  (blur)="onFormChange()"
+                />
+                @if (control.get('degree')?.hasError('required') && control.get('degree')?.touched) {
+                  <small class="p-error">Degree is required</small>
+                }
+                @if (control.get('degree')?.hasError('maxlength')) {
+                  <small class="p-error">Maximum 200 characters</small>
+                }
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Field of Study</label>
+              <input
+                pInputText
+                type="text"
+                [formControl]="$any(control.get('fieldOfStudy'))"
+                placeholder="e.g., Computer Science"
+                class="w-full"
+                (blur)="onFormChange()"
+              />
+              @if (control.get('fieldOfStudy')?.hasError('maxlength')) {
+                <small class="p-error">Maximum 200 characters</small>
+              }
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Start Date *</label>
+                <p-calendar
+                  [formControl]="$any(control.get('startDate'))"
+                  dateFormat="yy-mm-dd"
+                  [showIcon]="true"
+                  class="w-full"
+                  (onSelect)="onFormChange()"
+                ></p-calendar>
+                @if (control.get('startDate')?.hasError('required') && control.get('startDate')?.touched) {
+                  <small class="p-error">Start date is required</small>
+                }
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+                <p-calendar
+                  [formControl]="$any(control.get('endDate'))"
+                  dateFormat="yy-mm-dd"
+                  [showIcon]="true"
+                  [disabled]="control.get('isCurrent')?.value"
+                  class="w-full"
+                  (onSelect)="onFormChange()"
+                ></p-calendar>
+              </div>
+              <div class="flex items-end gap-4">
+                <p-checkbox
+                  [formControl]="$any(control.get('isCurrent'))"
+                  label="Currently Studying"
+                  (onChange)="onIsCurrentChange(i)"
+                ></p-checkbox>
+              </div>
+            </div>
+            @if (control.hasError('dateRangeInvalid')) {
+              <small class="p-error">End date must be after start date</small>
+            }
+            @if (control.hasError('currentPositionHasEndDate')) {
+              <small class="p-error">End date should be empty for current studies</small>
+            }
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Grade</label>
+                <input
+                  pInputText
+                  type="text"
+                  [formControl]="$any(control.get('grade'))"
+                  placeholder="e.g., 3.8/4.0"
+                  class="w-full"
+                  (blur)="onFormChange()"
+                />
+                @if (control.get('grade')?.hasError('maxlength')) {
+                  <small class="p-error">Maximum 50 characters</small>
+                }
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+              <textarea
+                pInputTextarea
+                [formControl]="$any(control.get('description'))"
+                placeholder="Additional details"
+                rows="3"
+                class="w-full"
+                (blur)="onFormChange()"
+              ></textarea>
+              @if (control.get('description')?.hasError('maxlength') && control.get('description')?.touched) {
+                <small class="p-error">Maximum 1000 characters</small>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Personal Projects Form -->
+        @if (config.type === 'personalProjects') {
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Project Name *</label>
+              <input
+                pInputText
+                type="text"
+                [formControl]="$any(control.get('name'))"
+                placeholder="Project name"
+                class="w-full"
+                (blur)="onFormChange()"
+              />
+              @if (control.get('name')?.hasError('required') && control.get('name')?.touched) {
+                <small class="p-error">Project name is required</small>
+              }
+              @if (control.get('name')?.hasError('maxlength')) {
+                <small class="p-error">Maximum 200 characters</small>
+              }
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+              <textarea
+                pInputTextarea
+                [formControl]="$any(control.get('description'))"
+                placeholder="Describe your project"
+                rows="4"
+                class="w-full"
+                (blur)="onFormChange()"
+              ></textarea>
+              @if (control.get('description')?.hasError('maxlength') && control.get('description')?.touched) {
+                <small class="p-error">Maximum 2000 characters</small>
+              }
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Technologies</label>
+              @for (techControl of getNestedArray(i, 'technologies').controls; track ti; let ti = $index) {
+                <div class="flex gap-2 mb-2">
+                  <div class="flex-1">
+                    <input
+                      pInputText
+                      type="text"
+                      [formControl]="$any(techControl)"
+                      placeholder="Technology name"
+                      class="w-full"
+                      (blur)="onFormChange()"
+                    />
+                    @if (techControl.hasError('maxlength') && techControl.touched) {
+                      <small class="p-error">Maximum 100 characters</small>
+                    }
+                  </div>
+                  <button
+                    type="button"
+                    pButton
+                    icon="pi pi-times"
+                    class="p-button-danger p-button-text p-button-sm"
+                    (click)="removeNestedItem(i, 'technologies', ti)"
+                    [attr.aria-label]="'Remove technology ' + (ti + 1)"
+                  ></button>
+                </div>
+              }
+              <button
+                type="button"
+                pButton
+                label="Add Technology"
+                icon="pi pi-plus"
+                class="p-button-sm p-button-text"
+                (click)="addNestedItem(i, 'technologies')"
+              ></button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Start Date *</label>
+                <p-calendar
+                  [formControl]="$any(control.get('startDate'))"
+                  dateFormat="yy-mm-dd"
+                  [showIcon]="true"
+                  class="w-full"
+                  (onSelect)="onFormChange()"
+                ></p-calendar>
+                @if (control.get('startDate')?.hasError('required') && control.get('startDate')?.touched) {
+                  <small class="p-error">Start date is required</small>
+                }
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+                <p-calendar
+                  [formControl]="$any(control.get('endDate'))"
+                  dateFormat="yy-mm-dd"
+                  [showIcon]="true"
+                  [disabled]="control.get('isCurrent')?.value"
+                  class="w-full"
+                  (onSelect)="onFormChange()"
+                ></p-calendar>
+              </div>
+              <div class="flex items-end">
+                <p-checkbox
+                  [formControl]="$any(control.get('isCurrent'))"
+                  label="Ongoing Project"
+                  (onChange)="onIsCurrentChange(i)"
+                ></p-checkbox>
+              </div>
+            </div>
+            @if (control.hasError('dateRangeInvalid')) {
+              <small class="p-error">End date must be after start date</small>
+            }
+            @if (control.hasError('currentPositionHasEndDate')) {
+              <small class="p-error">End date should be empty for ongoing projects</small>
+            }
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Project URL</label>
+                <input
+                  pInputText
+                  type="url"
+                  [formControl]="$any(control.get('url'))"
+                  placeholder="https://example.com"
+                  class="w-full"
+                  (blur)="onFormChange()"
+                />
+                @if (control.get('url')?.hasError('pattern') && control.get('url')?.touched) {
+                  <small class="p-error">Please enter a valid URL (must start with http:// or https://)</small>
+                }
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">GitHub URL</label>
+                <input
+                  pInputText
+                  type="url"
+                  [formControl]="$any(control.get('githubUrl'))"
+                  placeholder="https://github.com/user/repo"
+                  class="w-full"
+                  (blur)="onFormChange()"
+                />
+                @if (control.get('githubUrl')?.hasError('pattern') && control.get('githubUrl')?.touched) {
+                  <small class="p-error">Please enter a valid URL (must start with http:// or https://)</small>
+                }
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- Saved Jobs Form -->
+        @if (config.type === 'savedJobs') {
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Job Code *</label>
+              <input
+                pInputText
+                type="text"
+                [formControl]="$any(control.get('jobCode'))"
+                placeholder="Enter job code"
+                class="w-full"
+                (blur)="onFormChange()"
+              />
+              @if (control.get('jobCode')?.hasError('required') && control.get('jobCode')?.touched) {
+                <small class="p-error">Job code is required</small>
+              }
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Saved Date *</label>
+              <p-calendar
+                [formControl]="$any(control.get('savedDate'))"
+                dateFormat="yy-mm-dd"
+                [showIcon]="true"
+                class="w-full"
+                (onSelect)="onFormChange()"
+              ></p-calendar>
+              @if (control.get('savedDate')?.hasError('required') && control.get('savedDate')?.touched) {
+                <small class="p-error">Saved date is required</small>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Remove Button -->
+        <div class="mt-4 flex justify-end">
+          <button
+            type="button"
+            pButton
+            label="Remove"
+            icon="pi pi-trash"
+            class="p-button-danger p-button-text p-button-sm"
+            (click)="removeItem(i)"
+          ></button>
+        </div>
+      </div>
+    }
+  </div>
+</div>
+
