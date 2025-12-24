@@ -1,38 +1,368 @@
+<p-toast></p-toast>
+
 <div class="container mx-auto px-4 py-6">
   <div class="bg-white rounded-lg shadow-md p-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between border-b pb-4 mb-6">
+      <h1 class="text-2xl font-bold text-gray-800">My CVs</h1>
+      <p-button
+        label="Upload New CV"
+        icon="pi pi-upload"
+        (onClick)="openUploadDialog()"
+        [disabled]="loading()"
+      ></p-button>
+    </div>
+
     <!-- Loading State -->
     @if (loading()) {
-      <div class="flex justify-center items-center py-12">
-        <p class="text-gray-500">Loading CVs...</p>
+      <div class="flex flex-col justify-center items-center py-12">
+        <p-progressSpinner
+          styleClass="w-16 h-16"
+          strokeWidth="4"
+          animationDuration="1s"
+        ></p-progressSpinner>
+        <p class="text-gray-500 mt-4">Loading CVs...</p>
       </div>
     }
-    
+
     <!-- Error State -->
-    @if (error()) {
-      <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
-        <p class="text-red-800">{{ error() }}</p>
+    @if (error() && !loading()) {
+      <div class="space-y-4">
+        <p-message
+          severity="error"
+          [text]="error()!"
+          styleClass="w-full"
+        ></p-message>
+        <div class="flex justify-center">
+          <p-button
+            label="Retry"
+            icon="pi pi-refresh"
+            (onClick)="retry()"
+            severity="secondary"
+          ></p-button>
+        </div>
       </div>
     }
-    
-    <!-- CV List Content -->
-    @if (!loading()) {
-      <div class="space-y-6">
-        <!-- Header -->
-        <div class="flex items-center justify-between border-b pb-4">
-          <h1 class="text-2xl font-bold text-gray-800">My CVs</h1>
-          <button
-            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            Upload New CV
-          </button>
-        </div>
-        
-        <!-- CV List Placeholder -->
-        <div class="py-8 text-center text-gray-500">
-          CV list will be displayed here
-        </div>
+
+    <!-- Empty State -->
+    @if (!loading() && !error() && cvList().length === 0) {
+      <div class="flex flex-col items-center justify-center py-12 space-y-4">
+        <i class="pi pi-file text-6xl text-gray-300"></i>
+        <h3 class="text-xl font-semibold text-gray-600">No CVs Found</h3>
+        <p class="text-gray-500 text-center max-w-md">
+          You haven't uploaded any CVs yet. Upload your first CV to get started.
+        </p>
+        <p-button
+          label="Upload Your First CV"
+          icon="pi pi-upload"
+          (onClick)="openUploadDialog()"
+        ></p-button>
+      </div>
+    }
+
+    <!-- CV List -->
+    @if (!loading() && !error() && cvList().length > 0) {
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        @for (cv of cvList(); track cv.cvId) {
+          <p-card styleClass="h-full">
+            <ng-template pTemplate="header">
+              <div class="p-4 bg-gradient-to-r from-blue-500 to-blue-600">
+                <div class="flex items-center justify-between">
+                  <i class="pi pi-file-pdf text-white text-3xl"></i>
+                  @if (cv.isDefault) {
+                    <span class="bg-yellow-400 text-yellow-900 text-xs font-semibold px-2 py-1 rounded">
+                      Default
+                    </span>
+                  }
+                </div>
+              </div>
+            </ng-template>
+
+            <div class="space-y-3">
+              <h3 class="text-lg font-semibold text-gray-800 truncate" [title]="cv.cvName || 'Untitled CV'">
+                {{ cv.cvName || 'Untitled CV' }}
+              </h3>
+
+              <div class="space-y-2 text-sm text-gray-600">
+                <div class="flex items-center">
+                  <i class="pi pi-calendar mr-2 text-gray-400"></i>
+                  <span>{{ formatDate(cv.createdAt) }}</span>
+                </div>
+                <div class="flex items-center">
+                  <i class="pi pi-tag mr-2 text-gray-400"></i>
+                  <span>Version {{ cv.version }}</span>
+                </div>
+              </div>
+            </div>
+
+            <ng-template pTemplate="footer">
+              <div class="flex flex-wrap gap-2">
+                <p-button
+                  label="Edit"
+                  icon="pi pi-pencil"
+                  size="small"
+                  severity="secondary"
+                  [outlined]="true"
+                  (onClick)="openEditDialog(cv)"
+                ></p-button>
+
+                @if (!cv.isDefault) {
+                  <p-button
+                    label="Set Default"
+                    icon="pi pi-star"
+                    size="small"
+                    severity="warning"
+                    [outlined]="true"
+                    (onClick)="setDefaultCv(cv)"
+                    [disabled]="operationInProgress()"
+                  ></p-button>
+                }
+
+                <p-button
+                  icon="pi pi-download"
+                  size="small"
+                  severity="info"
+                  [outlined]="true"
+                  [title]="'Download ' + (cv.cvName || 'CV')"
+                  (onClick)="downloadCv(cv)"
+                  [disabled]="operationInProgress()"
+                ></p-button>
+
+                <p-button
+                  icon="pi pi-trash"
+                  size="small"
+                  severity="danger"
+                  [outlined]="true"
+                  [title]="'Delete ' + (cv.cvName || 'CV')"
+                  (onClick)="confirmDeleteCv(cv)"
+                  [disabled]="operationInProgress()"
+                ></p-button>
+              </div>
+            </ng-template>
+          </p-card>
+        }
       </div>
     }
   </div>
 </div>
+
+<!-- Upload Dialog -->
+<p-dialog
+  header="Upload New CV"
+  [(visible)]="uploadDialogVisible"
+  [modal]="true"
+  [style]="{ width: '550px' }"
+  [draggable]="false"
+  [resizable]="false"
+  (onHide)="closeUploadDialog()"
+>
+  <form [formGroup]="uploadForm" (ngSubmit)="uploadCv()" class="space-y-4">
+    <!-- CV Name Input -->
+    <div class="space-y-2">
+      <label for="cvName" class="block text-sm font-semibold text-gray-700">
+        CV Name <span class="text-red-500">*</span>
+      </label>
+      <input
+        id="cvName"
+        type="text"
+        pInputText
+        formControlName="cvName"
+        placeholder="Enter CV name (e.g., Software Engineer Resume)"
+        class="w-full"
+        [class.ng-invalid]="uploadForm.get('cvName')?.invalid && uploadForm.get('cvName')?.touched"
+      />
+      @if (uploadForm.get('cvName')?.invalid && uploadForm.get('cvName')?.touched) {
+        <small class="text-red-500">
+          @if (uploadForm.get('cvName')?.errors?.['required']) {
+            CV name is required.
+          }
+          @if (uploadForm.get('cvName')?.errors?.['maxlength']) {
+            CV name must not exceed 200 characters.
+          }
+        </small>
+      }
+    </div>
+
+    <!-- File Upload -->
+    <div class="space-y-2">
+      <label for="cvFile" class="block text-sm font-semibold text-gray-700">
+        Select CV File <span class="text-red-500">*</span>
+      </label>
+      <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-400 transition-colors">
+        <input
+          id="cvFile"
+          type="file"
+          accept=".pdf,.docx"
+          (change)="onFileSelect($event)"
+          class="hidden"
+          #fileInput
+        />
+        <button
+          type="button"
+          pButton
+          label="Choose File"
+          icon="pi pi-upload"
+          class="p-button-outlined"
+          (click)="fileInput.click()"
+          [disabled]="uploadLoading()"
+        ></button>
+        <p class="text-xs text-gray-500 mt-2">
+          Accepted formats: PDF, DOCX (Max size: 10MB)
+        </p>
+      </div>
+
+      <!-- File Info Display -->
+      @if (fileInfo()) {
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center justify-between">
+          <div class="flex items-center space-x-3">
+            <i class="pi pi-file text-blue-600 text-xl"></i>
+            <div>
+              <p class="text-sm font-medium text-gray-800">{{ fileInfo()!.name }}</p>
+              <p class="text-xs text-gray-600">{{ fileInfo()!.size }}</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            pButton
+            icon="pi pi-times"
+            class="p-button-rounded p-button-text p-button-sm"
+            (click)="selectedFile.set(null); fileInput.value = ''"
+            [disabled]="uploadLoading()"
+          ></button>
+        </div>
+      }
+
+      <!-- Upload Error -->
+      @if (uploadError()) {
+        <p-message
+          severity="error"
+          [text]="uploadError()!"
+          styleClass="w-full"
+        ></p-message>
+      }
+    </div>
+
+    <!-- Set as Default Checkbox -->
+    <div class="flex items-center space-x-2">
+      <p-checkbox
+        formControlName="setAsDefault"
+        [binary]="true"
+        inputId="setAsDefault"
+      ></p-checkbox>
+      <label for="setAsDefault" class="text-sm text-gray-700 cursor-pointer">
+        Set as default CV
+      </label>
+    </div>
+
+    <!-- Upload Progress -->
+    @if (uploadLoading()) {
+      <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+        <div class="flex items-center space-x-3">
+          <p-progressSpinner
+            styleClass="w-8 h-8"
+            strokeWidth="6"
+            animationDuration="1s"
+          ></p-progressSpinner>
+          <span class="text-sm text-gray-600">Uploading CV...</span>
+        </div>
+      </div>
+    }
+  </form>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end space-x-2">
+      <p-button
+        label="Cancel"
+        icon="pi pi-times"
+        (onClick)="closeUploadDialog()"
+        severity="secondary"
+        [outlined]="true"
+        [disabled]="uploadLoading()"
+      ></p-button>
+      <p-button
+        label="Upload"
+        icon="pi pi-upload"
+        (onClick)="uploadCv()"
+        [disabled]="!canUpload()"
+        [loading]="uploadLoading()"
+      ></p-button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- Edit Dialog -->
+<p-dialog
+  header="Edit CV"
+  [(visible)]="editDialogVisible"
+  [modal]="true"
+  [style]="{ width: '500px' }"
+  [draggable]="false"
+  [resizable]="false"
+  (onHide)="closeEditDialog()"
+>
+  <form [formGroup]="editForm" (ngSubmit)="updateCv()" class="space-y-4">
+    <!-- CV Name Input -->
+    <div class="space-y-2">
+      <label for="editCvName" class="block text-sm font-semibold text-gray-700">
+        CV Name <span class="text-red-500">*</span>
+      </label>
+      <input
+        id="editCvName"
+        type="text"
+        pInputText
+        formControlName="cvName"
+        placeholder="Enter CV name"
+        class="w-full"
+        [class.ng-invalid]="editForm.get('cvName')?.invalid && editForm.get('cvName')?.touched"
+      />
+      @if (editForm.get('cvName')?.invalid && editForm.get('cvName')?.touched) {
+        <small class="text-red-500">
+          @if (editForm.get('cvName')?.errors?.['required']) {
+            CV name is required.
+          }
+          @if (editForm.get('cvName')?.errors?.['maxlength']) {
+            CV name must not exceed 200 characters.
+          }
+        </small>
+      }
+    </div>
+
+    <!-- Loading Indicator -->
+    @if (editLoading()) {
+      <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+        <div class="flex items-center space-x-3">
+          <p-progressSpinner
+            styleClass="w-8 h-8"
+            strokeWidth="6"
+            animationDuration="1s"
+          ></p-progressSpinner>
+          <span class="text-sm text-gray-600">Updating CV...</span>
+        </div>
+      </div>
+    }
+  </form>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end space-x-2">
+      <p-button
+        label="Cancel"
+        icon="pi pi-times"
+        (onClick)="closeEditDialog()"
+        severity="secondary"
+        [outlined]="true"
+        [disabled]="editLoading()"
+      ></p-button>
+      <p-button
+        label="Save"
+        icon="pi pi-check"
+        (onClick)="updateCv()"
+        [disabled]="!editForm.valid || editLoading()"
+        [loading]="editLoading()"
+      ></p-button>
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- Confirmation Dialog -->
+<p-confirmDialog></p-confirmDialog>
 

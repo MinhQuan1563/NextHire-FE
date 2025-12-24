@@ -36,17 +36,22 @@ export class HeaderComponent implements OnInit {
   ) {
     this.userMenuItems = [
       {
-        label: 'Xem hồ sơ',
+        label: 'View Profile',
         icon: 'pi pi-fw pi-user',
         command: () => this.navigateToProfile(),
       },
       {
-        label: 'Cài đặt',
+        label: 'Manage CV',
+        icon: 'pi pi-fw pi-user',
+        command: () => this.navigateToCVPage(),
+      },
+      {
+        label: 'Settings',
         icon: 'pi pi-fw pi-cog',
       },
       { separator: true },
       {
-        label: 'Đăng xuất',
+        label: 'Log out',
         icon: 'pi pi-fw pi-sign-out',
         command: () => this.logout(),
       },
@@ -68,7 +73,9 @@ export class HeaderComponent implements OnInit {
   navigateToProfile() {
     this.router.navigate(['/profile']);
   }
-
+  navigateToCVPage() {
+    this.router.navigate(['/profile/cvs']);
+  }
   logout() {
     this.authService.logout().subscribe({
       next: () => {

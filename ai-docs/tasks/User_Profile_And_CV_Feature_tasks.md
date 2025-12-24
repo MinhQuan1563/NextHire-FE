@@ -330,81 +330,81 @@ This document provides a comprehensive breakdown of all tasks and subtasks for t
 ## 6. User CV Page Implementation
 
 ### 6.1 Component Setup
-- [ ] 6.1.1 Create user-cv.component.ts
-- [ ] 6.1.2 Create user-cv.component.html
-- [ ] 6.1.3 Create user-cv.component.scss
-- [ ] 6.1.4 Implement standalone component structure
-- [ ] 6.1.5 Set up signals for reactive state
+- [x] 6.1.1 Create user-cv.component.ts
+- [x] 6.1.2 Create user-cv.component.html
+- [x] 6.1.3 Create user-cv.component.scss
+- [x] 6.1.4 Implement standalone component structure
+- [x] 6.1.5 Set up signals for reactive state
 
 ### 6.2 CV List Display (FR-CV-001 to FR-CV-003)
-- [ ] 6.2.1 Fetch CV list from API on init - FR-CV-001
-- [ ] 6.2.2 Display CV ID, Name, Created Date, Default Status, Version - FR-CV-002
-- [ ] 6.2.3 Highlight default CV clearly - FR-CV-003
-- [ ] 6.2.4 Handle empty state (no CVs) - EC-CV-001
-- [ ] 6.2.5 Implement loading state
-- [ ] 6.2.6 Implement error state
+- [x] 6.2.1 Fetch CV list from API on init - FR-CV-001
+- [x] 6.2.2 Display CV ID, Name, Created Date, Default Status, Version - FR-CV-002
+- [x] 6.2.3 Highlight default CV clearly - FR-CV-003
+- [x] 6.2.4 Handle empty state (no CVs) - EC-CV-001
+- [x] 6.2.5 Implement loading state
+- [x] 6.2.6 Implement error state
 
 ### 6.3 Upload New CV (FR-CV-004 to FR-CV-015)
-- [ ] 6.3.1 Add "Upload New CV" button - FR-CV-004
-- [ ] 6.3.2 Open upload dialog/form - FR-CV-005
-- [ ] 6.3.3 Implement file selection (PDF, DOCX only) - FR-CV-006
-- [ ] 6.3.4 Validate file type before upload - FR-CV-007
-- [ ] 6.3.5 Validate file size before upload (max 10MB) - FR-CV-008
-- [ ] 6.3.6 Require CV Name input - FR-CV-009
-- [ ] 6.3.7 Add "Set as Default" checkbox option - FR-CV-010
-- [ ] 6.3.8 Show file name and size after selection - FR-CV-011
-- [ ] 6.3.9 Handle multipart/form-data upload - FR-CV-012
-- [ ] 6.3.10 Display upload progress indicator - FR-CV-013
-- [ ] 6.3.11 Handle upload success and refresh list - FR-CV-014
-- [ ] 6.3.12 Handle upload errors with messages - FR-CV-015
-- [ ] 6.3.13 Prevent invalid file type upload - EC-CV-003
-- [ ] 6.3.14 Prevent file size exceeding 10MB - EC-CV-002
-- [ ] 6.3.15 Handle upload failures - EC-CV-004
+- [x] 6.3.1 Add "Upload New CV" button - FR-CV-004
+- [x] 6.3.2 Open upload dialog/form - FR-CV-005
+- [x] 6.3.3 Implement file selection (PDF, DOCX only) - FR-CV-006
+- [x] 6.3.4 Validate file type before upload - FR-CV-007
+- [x] 6.3.5 Validate file size before upload (max 10MB) - FR-CV-008
+- [x] 6.3.6 Require CV Name input - FR-CV-009
+- [x] 6.3.7 Add "Set as Default" checkbox option - FR-CV-010
+- [x] 6.3.8 Show file name and size after selection - FR-CV-011
+- [x] 6.3.9 Handle multipart/form-data upload - FR-CV-012
+- [x] 6.3.10 Display upload progress indicator - FR-CV-013
+- [x] 6.3.11 Handle upload success and refresh list - FR-CV-014
+- [x] 6.3.12 Handle upload errors with messages - FR-CV-015
+- [x] 6.3.13 Prevent invalid file type upload - EC-CV-003
+- [x] 6.3.14 Prevent file size exceeding 10MB - EC-CV-002
+- [x] 6.3.15 Handle upload failures - EC-CV-004
 
 ### 6.4 Edit CV Metadata (FR-CV-016 to FR-CV-019)
-- [ ] 6.4.1 Add "Edit" action for each CV - FR-CV-016
-- [ ] 6.4.2 Open edit dialog with current CV name - FR-CV-017
-- [ ] 6.4.3 Allow updating CV Name only - FR-CV-018
-- [ ] 6.4.4 Save updates via PUT API - FR-CV-019
-- [ ] 6.4.5 Refresh CV list after update
+- [x] 6.4.1 Add "Edit" action for each CV - FR-CV-016
+- [x] 6.4.2 Open edit dialog with current CV name - FR-CV-017
+- [x] 6.4.3 Allow updating CV Name only - FR-CV-018
+- [x] 6.4.4 Save updates via PUT API - FR-CV-019
+- [x] 6.4.5 Refresh CV list after update
 
 ### 6.5 Delete CV (FR-CV-020 to FR-CV-024)
-- [ ] 6.5.1 Add "Delete" action for each CV - FR-CV-020
-- [ ] 6.5.2 Show confirmation dialog before delete - FR-CV-021
-- [ ] 6.5.3 Prevent deletion of only CV if it's default - FR-CV-022
-- [ ] 6.5.4 Handle deletion via DELETE API - FR-CV-023
-- [ ] 6.5.5 Refresh CV list after deletion - FR-CV-024
-- [ ] 6.5.6 Handle deletion of only CV - EC-CV-005
-- [ ] 6.5.7 Handle deletion of default CV (if only one) - EC-CV-006
+- [x] 6.5.1 Add "Delete" action for each CV - FR-CV-020
+- [x] 6.5.2 Show confirmation dialog before delete - FR-CV-021
+- [x] 6.5.3 Prevent deletion of only CV if it's default - FR-CV-022
+- [x] 6.5.4 Handle deletion via DELETE API - FR-CV-023
+- [x] 6.5.5 Refresh CV list after deletion - FR-CV-024
+- [x] 6.5.6 Handle deletion of only CV - EC-CV-005
+- [x] 6.5.7 Handle deletion of default CV (if only one) - EC-CV-006
 
 ### 6.6 Set Default CV (FR-CV-025 to FR-CV-027)
-- [ ] 6.6.1 Add "Set as Default" action for non-default CVs - FR-CV-025
-- [ ] 6.6.2 Handle set default via POST API - FR-CV-026
-- [ ] 6.6.3 Update default status in UI immediately - FR-CV-027
-- [ ] 6.6.4 Handle set default for non-existent CV - EC-CV-010
+- [x] 6.6.1 Add "Set as Default" action for non-default CVs - FR-CV-025
+- [x] 6.6.2 Handle set default via POST API - FR-CV-026
+- [x] 6.6.3 Update default status in UI immediately - FR-CV-027
+- [x] 6.6.4 Handle set default for non-existent CV - EC-CV-010
 
 ### 6.7 Preview & Download CV (FR-CV-028 to FR-CV-030)
 - [ ] 6.7.1 Add "Preview" action - FR-CV-028
 - [ ] 6.7.2 Display CV preview (thumbnail/embedded viewer)
-- [ ] 6.7.3 Add "Download" action - FR-CV-029
-- [ ] 6.7.4 Handle download via GET API - FR-CV-030
-- [ ] 6.7.5 Handle corrupted/unreadable CV files - EC-CV-007
-- [ ] 6.7.6 Handle download failures - EC-CV-009
+- [x] 6.7.3 Add "Download" action - FR-CV-029
+- [x] 6.7.4 Handle download via GET API - FR-CV-030
+- [x] 6.7.5 Handle corrupted/unreadable CV files - EC-CV-007
+- [x] 6.7.6 Handle download failures - EC-CV-009
 
 ### 6.8 Concurrent Operations (EC-CV-011)
-- [ ] 6.8.1 Disable other actions during active operation
-- [ ] 6.8.2 Queue operations if needed
-- [ ] 6.8.3 Handle multiple CVs with same name - EC-CV-008
+- [x] 6.8.1 Disable other actions during active operation
+- [x] 6.8.2 Queue operations if needed
+- [x] 6.8.3 Handle multiple CVs with same name - EC-CV-008
 
 ### 6.9 UI Layout & Styling
-- [ ] 6.9.1 Design CV list layout (table or card view)
-- [ ] 6.9.2 Style CV items with metadata
-- [ ] 6.9.3 Design upload dialog
-- [ ] 6.9.4 Design edit dialog
-- [ ] 6.9.5 Design confirmation dialogs
-- [ ] 6.9.6 Implement responsive design
-- [ ] 6.9.7 Apply TailwindCSS styling
-- [ ] 6.9.8 Use PrimeNG components (Dialog, FileUpload, etc.)
+- [x] 6.9.1 Design CV list layout (table or card view)
+- [x] 6.9.2 Style CV items with metadata
+- [x] 6.9.3 Design upload dialog
+- [x] 6.9.4 Design edit dialog
+- [x] 6.9.5 Design confirmation dialogs
+- [x] 6.9.6 Implement responsive design
+- [x] 6.9.7 Apply TailwindCSS styling
+- [x] 6.9.8 Use PrimeNG components (Dialog, FileUpload, etc.)
 
 ## Dependencies & Requirements
 

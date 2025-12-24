@@ -10,7 +10,7 @@
       </ng-container>
       <div class="absolute left-1/2 transform -translate-x-1/2 -bottom-8">
         <p-avatar
-          [image]="currentUser?.avatarUrl"
+          [image]="currentUser.avatarUrl"
           styleClass="w-16 h-16 text-xl border-2 border-white"
           shape="circle"
         >
@@ -22,7 +22,7 @@
       <h3 class="font-semibold text-gray-800 hover:underline cursor-pointer">
         {{ currentUser.fullName! }}
       </h3>
-      <p class="text-xs text-gray-500 mt-1">{{ currentUser?.email || currentUser?.username }}</p>
+      <p class="text-xs text-gray-500 mt-1">{{ currentUser.email || currentUser.username }}</p>
     </div>
 
     <div class="py-3 px-4 text-xs text-gray-500 border-b border-gray-200 space-y-1">
