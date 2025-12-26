@@ -5,21 +5,7 @@ import { ButtonModule } from 'primeng/button';
 import { MenuModule } from 'primeng/menu';
 import { MenuItem } from 'primeng/api';
 import { PostActionsComponent } from '../post-actions/post-actions.component'; 
-
-
-export interface PostData {
-  id: string | number;
-  userAvatar?: string;
-  userInitial?: string;
-  userName: string;
-  userTitle?: string; 
-  postedTime: Date;
-  content: string; 
-  imageUrl?: string; 
-  likeCount: number;
-  commentCount: number;
-  repostCount?: number; 
-}
+import { PostResponse } from '@app/models/post/post.model';
 
 @Component({
   selector: 'app-post-card',
@@ -36,10 +22,10 @@ export interface PostData {
   styleUrls: ['./post-card.component.scss']
 })
 export class PostCardComponent {
-  @Input() post!: PostData;
+  @Input() post!: PostResponse;
 
   postMenuItems: MenuItem[];
-  selectedPostId: string | number | null = null;
+  selectedPostId: string | null = null;
 
   constructor() {
     this.postMenuItems = [
@@ -51,16 +37,23 @@ export class PostCardComponent {
     ];
   }
 
-  showPostMenu(menu: any, event: Event, postId: string | number): void {
+  showPostMenu(menu: any, event: Event, postId: string): void {
     this.selectedPostId = postId;
     menu.toggle(event);
     event.stopPropagation();
-    // logic xử lý command cho menu items nếu cần
+    // Logic xử lý command cho menu items
   }
 
   // Hàm xử lý khi nhấn vào action (ví dụ like)
+  // Cập nhật type để postId chấp nhận string | number, khớp với $event từ PostActionsComponent
   handlePostAction(action: { type: string, postId: string | number }) {
-      console.log(`Action '${action.type}' triggered for post ID: ${action.postId}`);
-      // logic xử lý (like, comment,...)
+    console.log(`Action '${action.type}' triggered for post ID: ${action.postId}`);
+    // Logic xử lý (like, comment,...)
+    // Nếu cần, bạn có thể cast postId thành string: const postIdStr = action.postId.toString();
+  }
+
+  // Helper: Lấy ảnh đầu tiên nếu có (có thể mở rộng thành gallery cho nhiều ảnh)
+  getFirstImageUrl(): string | null {
+    return this.post.imageBase64s && this.post.imageBase64s.length > 0 ? this.post.imageBase64s[0] : null;
   }
 }

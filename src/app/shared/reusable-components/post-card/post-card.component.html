@@ -2,51 +2,55 @@
   <div class="p-4">
     <div class="flex items-start mb-3">
       <div class="mr-3 flex-shrink-0">
+        <!-- Giả sử avatar từ userCode hoặc API khác; tạm dùng initial từ userCode -->
         <p-avatar
-          [image]="post.userAvatar"
-          [label]="!post.userAvatar ? post.userInitial : ''"
+          [label]="post.userCode.charAt(0).toUpperCase()"
           size="large"
           shape="circle">
         </p-avatar>
       </div>
       <div class="flex-1">
         <div class="flex items-center justify-between">
-           <div>
-              <a href="#" class="font-semibold text-sm text-gray-800 hover:underline">{{ post.userName }}</a>
-              <p class="text-xs text-gray-500">{{ post.userTitle }}</p>
-              <p class="text-xs text-gray-500">
-                {{ post.postedTime | date:'dd/MM/yyyy HH:mm' }} <i class="pi pi-globe ml-1" pTooltip="Công khai" tooltipPosition="top"></i> </p>
-           </div>
-            <div class="ml-auto">
-                <p-menu #postMenu [model]="postMenuItems" [popup]="true"></p-menu>
-                <button pButton type="button" icon="pi pi-ellipsis-h"
-                        (click)="showPostMenu(postMenu, $event, post.id)"
-                        class="p-button-rounded p-button-text p-button-sm text-gray-500">
-                </button>
-            </div>
+          <div>
+            <!-- Dùng userCode làm tên người dùng tạm thời; có thể thay bằng userName từ API user -->
+            <a href="#" class="font-semibold text-sm text-gray-800 hover:underline">{{ post.userCode }}</a>
+            <p class="text-xs text-gray-500">User</p> <!-- Placeholder cho title; có thể lấy từ API -->
+            <p class="text-xs text-gray-500">
+              {{ post.createdAt | date:'dd/MM/yyyy HH:mm' }} 
+              <i class="pi pi-globe ml-1" pTooltip="Công khai" tooltipPosition="top"></i>
+            </p>
+          </div>
+          <div class="ml-auto">
+            <p-menu #postMenu [model]="postMenuItems" [popup]="true"></p-menu>
+            <button pButton type="button" icon="pi pi-ellipsis-h"
+                    (click)="showPostMenu(postMenu, $event, post.postCode)"
+                    class="p-button-rounded p-button-text p-button-sm text-gray-500">
+            </button>
+          </div>
         </div>
       </div>
     </div>
 
-    <div class="post-content text-sm text-gray-700 mb-3" [innerHTML]="post.content">
-      </div>
-  </div> <div *ngIf="post.imageUrl" class="post-image-container">
-    <img [src]="post.imageUrl" alt="Post image" class="w-full h-auto max-h-96 object-contain bg-gray-100">
+    <div class="post-content text-sm text-gray-700 mb-3" [innerHTML]="post.content || ''">
+    </div>
+  </div>
+  
+  <!-- Hiển thị ảnh đầu tiên nếu có; mở rộng thành gallery nếu nhiều ảnh -->
+  <div *ngIf="getFirstImageUrl()" class="post-image-container">
+    <img [src]="getFirstImageUrl()" alt="Post image" class="w-full h-auto max-h-96 object-contain bg-gray-100">
   </div>
 
-  <div class="px-4 py-2 flex justify-between items-center text-xs text-gray-500 border-t border-b border-gray-100" *ngIf="post.likeCount > 0 || post.commentCount > 0">
-     <span class="hover:underline cursor-pointer" *ngIf="post.likeCount > 0">
-        <i class="pi pi-thumbs-up text-blue-500 mr-1"></i> {{ post.likeCount }} lượt thích
-     </span>
-     <span class="hover:underline cursor-pointer" *ngIf="post.commentCount > 0">
-        {{ post.commentCount }} bình luận
-        <span *ngIf="post.repostCount"> · {{ post.repostCount }} lượt chia sẻ</span>
-     </span>
+  <div class="px-4 py-2 flex justify-between items-center text-xs text-gray-500 border-t border-b border-gray-100" 
+       *ngIf="post.likeCount > 0 || post.commentCount > 0">
+    <span class="hover:underline cursor-pointer" *ngIf="post.likeCount > 0">
+      <i class="pi pi-thumbs-up text-blue-500 mr-1"></i> {{ post.likeCount }} lượt thích
+    </span>
+    <span class="hover:underline cursor-pointer" *ngIf="post.commentCount > 0">
+      {{ post.commentCount }} bình luận
+    </span>
   </div>
-
 
   <div class="p-2">
-     <app-post-actions [postId]="post.id" (action)="handlePostAction($event)"></app-post-actions>
+    <app-post-actions [postId]="post.postCode" (action)="handlePostAction($event)"></app-post-actions>
   </div>
-
 </div>

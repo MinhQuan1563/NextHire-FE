@@ -1,20 +1,22 @@
 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-    <div class="col-span-1">
-        <app-info-sidebar></app-info-sidebar>
-    </div>
+  <div class="col-span-1">
+    <app-info-sidebar></app-info-sidebar>
+  </div>
 
-    <div class="col-span-1 md:col-span-3 space-y-4">
-        <div class="bg-white rounded-lg shadow p-4">
-            <h2 class="text-lg font-semibold mb-2">Tạo bài viết</h2>
-        </div>
-        
-        <!-- <div class="bg-white rounded-lg shadow p-4">
-            <h2 class="text-lg font-semibold mb-2">Bảng tin</h2>
-            <p class="text-gray-600 text-sm">Nội dung feed chính...</p>
-        </div> -->
-        <div class="feed-list space-y-4">
-         <app-post-card *ngFor="let post of feedPosts" [post]="post"></app-post-card>
-     </div>
+  <div class="col-span-1 md:col-span-3 space-y-4">
+    <div class="bg-white rounded-lg shadow p-4">
+      <h2 class="text-lg font-semibold mb-2">Tạo bài viết</h2>
+      <!-- Form tạo bài viết ở đây -->
     </div>
-
+    
+    <div class="feed-list space-y-4">
+      <app-post-card *ngFor="let post of feedPosts" [post]="post"></app-post-card>
+      <div *ngIf="isLoading" class="text-center py-4">Đang tải...</div>
+      <button *ngIf="hasMore && !isLoading" 
+              (click)="loadMore()" 
+              class="w-full py-2 bg-blue-500 text-white rounded">
+        Tải thêm
+      </button>
+    </div>
+  </div>
 </div>

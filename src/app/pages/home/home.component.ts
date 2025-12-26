@@ -1,7 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { InfoSidebarComponent } from '@shared/reusable-components/info-sidebar/info-sidebar.component';
-import { PostCardComponent, PostData } from '@shared/reusable-components/post-card/post-card.component';
+import { PostCardComponent } from '@shared/reusable-components/post-card/post-card.component';
+import { PostService } from '@app/services/posts/post.service';
+import { PostResponse } from '@app/models/post/post.model';
 
 @Component({
   selector: 'app-home',
@@ -10,31 +12,49 @@ import { PostCardComponent, PostData } from '@shared/reusable-components/post-ca
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss']
 })
-export class HomeComponent {
+export class HomeComponent implements OnInit {
+  feedPosts: PostResponse[] = [];
+  currentUserCode = 'USR1002';
+  pageSize = 10;
+  lastCreatedAt?: string;
+  lastPostCode?: string;
+  isLoading = false;
+  hasMore = true;
 
-  feedPosts: PostData[] = [
-    {
-      id: 'post1',
-      userName: 'Minh Quan',
-      userTitle: 'Software Engineer | Angular | .NET',
-      userInitial: 'M',
-      postedTime: new Date(Date.now() - 3 * 3600 * 1000),
-      content: 'Vừa hoàn thành xong module notification cho dự án NextHire! Sử dụng Angular 17, PrimeNG và Tailwind thật tuyệt vời. 🎉 #angular #primeng #tailwindcss',
-      imageUrl: 'favicon.ico',
-      likeCount: 15,
-      commentCount: 3
-    },
-    {
-      id: 'post2',
-      userName: 'Một Công Ty Khác',
-      userAvatar: 'favicon.ico',
-      userTitle: 'Công ty · Công nghệ thông tin',
-      postedTime: new Date(Date.now() - 2 * 86400000),
-      content: 'Chúng tôi đang tuyển dụng vị trí Senior Frontend Developer, làm việc với các công nghệ mới nhất. Xem chi tiết tại link...',
-      likeCount: 52,
-      commentCount: 11,
-      repostCount: 5
-    },
-    
-  ];
+  constructor(private postService: PostService) {}
+
+  ngOnInit() {
+    this.loadFeeds();
+  }
+
+  loadFeeds(loadMore = false) {
+    if (this.isLoading || (!loadMore && !this.hasMore)) return;
+
+    this.isLoading = true;
+    this.postService.getHomeFeed(this.currentUserCode, this.pageSize, this.lastCreatedAt, this.lastPostCode)
+      .subscribe({
+        next: (posts: PostResponse[]) => {
+          if (loadMore) {
+            this.feedPosts = [...this.feedPosts, ...posts];
+          } else {
+            this.feedPosts = posts;
+          }
+          this.hasMore = posts.length === this.pageSize;
+          if (posts.length > 0) {
+            const lastPost = posts[posts.length - 1];
+            this.lastCreatedAt = lastPost.createdAt;
+            this.lastPostCode = lastPost.postCode;
+          }
+          this.isLoading = false;
+        },
+        error: (err) => {
+          console.error('Error loading feeds:', err);
+          this.isLoading = false;
+        }
+      });
+  }
+
+  loadMore() {
+    this.loadFeeds(true);
+  }
 }
