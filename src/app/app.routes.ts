@@ -97,15 +97,8 @@ export const routes: Routes = [
       // ... Các route khác sử dụng layout này
     ]
   },
-  // { path: 'login', component: LoginComponent },
-  // { path: '**', component: NotFoundComponent },
-  // {
-  //   path: 'admin',
-  //   component: AdminLayoutComponent, // Ví dụ layout khác cho trang admin
-  //   children: [
-  //     // ... admin routes
-  //   ]
-  // },
-  // { path: 'login', component: LoginComponent }, // Trang login có thể không cần layout
-  // { path: '**', component: NotFoundComponent } // Trang 404
+  {
+    path: 'admin',
+    loadChildren: () => import('./pages/admin/admin.routes').then(m => m.adminRoutes)
+  }
 ];
