@@ -1,0 +1,52 @@
+<p-card class="statistic-card h-full">
+  <ng-template pTemplate="header">
+    <div class="card-header flex items-center gap-3 p-4 border-b border-gray-200">
+      <div [class]="'icon-container rounded-lg p-3 ' + iconBackground">
+        <i [class]="icon + ' text-2xl ' + iconColor"></i>
+      </div>
+      <h3 class="text-lg font-semibold text-gray-800 flex-1">{{ title }}</h3>
+    </div>
+  </ng-template>
+
+  <div class="card-content p-4">
+    <div *ngIf="state === 'loading'" class="loading-state">
+      <div class="space-y-4">
+        <div class="flex justify-between items-center">
+          <p-skeleton width="40%" height="1.5rem"></p-skeleton>
+          <p-skeleton width="30%" height="2rem"></p-skeleton>
+        </div>
+        <div class="flex justify-between items-center">
+          <p-skeleton width="45%" height="1.5rem"></p-skeleton>
+          <p-skeleton width="25%" height="2rem"></p-skeleton>
+        </div>
+        <div class="flex justify-between items-center">
+          <p-skeleton width="50%" height="1.5rem"></p-skeleton>
+          <p-skeleton width="28%" height="2rem"></p-skeleton>
+        </div>
+        <p-skeleton width="100%" height="200px" styleClass="mt-4"></p-skeleton>
+      </div>
+    </div>
+
+    <div *ngIf="state === 'success'" class="success-state">
+      <ng-content></ng-content>
+    </div>
+
+    <div *ngIf="state === 'empty'" class="empty-state flex flex-col items-center justify-center py-12">
+      <i class="pi pi-inbox text-6xl text-gray-300 mb-4"></i>
+      <p class="text-gray-500 text-center">{{ emptyMessage }}</p>
+    </div>
+
+    <div *ngIf="state === 'error'" class="error-state flex flex-col items-center justify-center py-12">
+      <i class="pi pi-exclamation-circle text-6xl text-red-400 mb-4"></i>
+      <p class="text-gray-700 font-medium mb-2">Error Loading Data</p>
+      <p class="text-gray-500 text-sm text-center mb-4">{{ errorMessage }}</p>
+      <p-button 
+        label="Retry" 
+        icon="pi pi-refresh" 
+        (onClick)="onRetry()"
+        severity="secondary"
+        size="small"
+      ></p-button>
+    </div>
+  </div>
+</p-card>
