@@ -10,7 +10,7 @@ The agent **must not generate the PRD immediately**. It must first collect and c
 ## Output Specification (Target File)
 - **File name:** `{FEATURE_NAME}_Feature_prd.md`
 - **Content:** A detailed, structured, production-ready PRD for the specified feature
-
+- **Location:** `/ai-docs/prds`
 ---
 
 ## Mandatory Workflow (Strict)

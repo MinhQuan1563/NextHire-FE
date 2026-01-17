@@ -18,6 +18,7 @@ import { RegisterComponent } from './pages/auth/register/register.component';
 import { ForgotPasswordComponent } from './pages/auth/forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './pages/auth/reset-password/reset-password.component';
 import { AuthGuard } from './guards/auth.guard';
+import { gameAccessGuard } from './guards/game-access.guard';
 
 export const routes: Routes = [
   {
@@ -91,9 +92,9 @@ export const routes: Routes = [
         ]
       },
       { path: 'games', component: GamesComponent },               // Games list
-      { path: 'games/2048', component: Game2048Component },       // 2048 game
-      { path: 'games/tango', component: TangoComponent },         // Tango game
-      { path: 'games/queens', component: QueensComponent },       // Queens game
+      { path: 'games/2048', component: Game2048Component, canActivate: [gameAccessGuard] },       // 2048 game
+      { path: 'games/tango', component: TangoComponent, canActivate: [gameAccessGuard] },         // Tango game
+      { path: 'games/queens', component: QueensComponent, canActivate: [gameAccessGuard] },       // Queens game
       // ... Các route khác sử dụng layout này
     ]
   },
