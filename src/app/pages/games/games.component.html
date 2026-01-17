@@ -6,7 +6,7 @@
 
   <ul class="games-list">
     <li 
-      *ngFor="let game of games" 
+      *ngFor="let game of games()" 
       class="game-card"
       [style.border-color]="game.color"
       (click)="navigateToGame(game.route)">

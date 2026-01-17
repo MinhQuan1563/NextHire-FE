@@ -1,0 +1,72 @@
+<div class="game-form">
+  @if (errorMessage()) {
+  <p-message severity="error" [text]="errorMessage()!" styleClass="w-full mb-4"></p-message>
+  }
+
+  <form [formGroup]="gameForm" (ngSubmit)="onSubmit()">
+    <div class="field mb-4">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Game Code</label>
+      <input type="text" [class.ng-invalid]="isFieldInvalid('gameCode')" [class.ng-dirty]="isFieldInvalid('gameCode')" appSanitizeInput formControlName="gameCode" pInputText [value]="game?.gameCode" [disabled]="isEditMode" class="w-full bg-gray-100" />
+      @if (isEditMode) {
+        <small class="text-gray-500">Game code cannot be changed</small>
+      }
+    </div>
+
+
+    <div class="field mb-4">
+      <label for="name" class="block text-sm font-medium text-gray-700 mb-1">
+        Name <span class="text-red-500">*</span>
+      </label>
+      <input id="name" type="text" pInputText formControlName="name" appSanitizeInput class="w-full"
+        [class.ng-invalid]="isFieldInvalid('name')" [class.ng-dirty]="isFieldInvalid('name')"
+        placeholder="Enter game name" maxlength="50" aria-required="true" [attr.aria-invalid]="isFieldInvalid('name')"
+        [attr.aria-describedby]="isFieldInvalid('name') ? 'name-error' : 'name-hint'" />
+      <div class="flex justify-between mt-1">
+        @if (isFieldInvalid('name')) {
+        <small id="name-error" class="text-red-500" role="alert">{{ getFieldError('name') }}</small>
+        } @else {
+        <small id="name-hint" class="text-gray-500">&nbsp;</small>
+        }
+        <small class="text-gray-400" aria-live="polite">{{ nameCharCount }}/50</small>
+      </div>
+    </div>
+
+    <div class="field mb-4">
+      <label for="description" class="block text-sm font-medium text-gray-700 mb-1">
+        Description <span class="text-red-500">*</span>
+      </label>
+      <textarea id="description" pInputTextarea formControlName="description" appSanitizeInput class="w-full"
+        [class.ng-invalid]="isFieldInvalid('description')" [class.ng-dirty]="isFieldInvalid('description')"
+        placeholder="Enter game description" rows="4" [autoResize]="true" aria-required="true"
+        [attr.aria-invalid]="isFieldInvalid('description')"
+        [attr.aria-describedby]="isFieldInvalid('description') ? 'description-error' : null"></textarea>
+      @if (isFieldInvalid('description')) {
+      <small id="description-error" class="text-red-500" role="alert">{{ getFieldError('description') }}</small>
+      }
+    </div>
+
+    @if (isEditMode) {
+    <div class="field mb-4">
+      <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+      <div class="flex items-center gap-3">
+        <p-inputSwitch formControlName="isActive" inputId="isActive"
+          [attr.aria-label]="'Game status toggle'"></p-inputSwitch>
+        <span [class]="gameForm.get('isActive')?.value ? 'text-green-600' : 'text-gray-500'">
+          {{ gameForm.get('isActive')?.value ? 'Active' : 'Inactive' }}
+        </span>
+      </div>
+      <small class="text-gray-500 mt-1 block">
+        Inactive games are not accessible to new users
+      </small>
+    </div>
+    }
+
+    <div class="form-actions flex justify-end gap-3 pt-4 border-t">
+      <p-button type="button" label="Cancel" severity="secondary" [outlined]="true" (onClick)="onCancel()"
+        [disabled]="isSubmitting()"></p-button>
+      <p-button type="submit" [label]="isEditMode ? 'Update Game' : 'Create Game'" [loading]="isSubmitting()"
+        [disabled]="gameForm.invalid || isSubmitting()"></p-button>
+    </div>
+  </form>
+</div>
+ 
