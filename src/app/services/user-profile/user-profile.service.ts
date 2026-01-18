@@ -21,11 +21,10 @@ export class UserProfileService {
 
   /**
    * Get user profile by user code (public profile)
-   * GET /api/UserProfile/Get/{userCode}
-   * Note: This endpoint may not be implemented yet in the backend
+   * GET /api/AppUser/{userCode}
    */
   getUserProfileByCode(userCode: string): Observable<UserProfileDto> {
-    return this.http.get<UserProfileDto>(`${this.apiUrl}/Get/${userCode}`);
+    return this.http.get<UserProfileDto>(`${environment.apiUrl}/AppUser/${userCode}`);
   }
 
   /**
