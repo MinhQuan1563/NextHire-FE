@@ -34,10 +34,8 @@
               [outlined]="true"
             ></p-button>
           </div>
-        }
-
-        <!-- Access Restricted -->
-        @else if (accessRestricted()) {
+        } @else if (accessRestricted()) {
+          <!-- Access Restricted -->
           <div class="text-center py-12">
             <i class="pi pi-lock text-6xl text-gray-300 mb-4"></i>
             <h2 class="text-2xl font-semibold text-gray-700 mb-2">Access Restricted</h2>
@@ -49,10 +47,8 @@
               [outlined]="true"
             ></p-button>
           </div>
-        }
-
-        <!-- Generic Error -->
-        @else {
+        } @else {
+          <!-- Generic Error -->
           <p-message
             severity="error"
             [text]="error()!"
