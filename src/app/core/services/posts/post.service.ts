@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { BaseApiService } from '../base-api.service';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { PostCreateForm, PostResponse, PostUpdateForm } from '@app/models/post/post.model';
+import { PostCreateForm, PostResponse, PostUpdateForm } from '@core/models/post/post.model';
 
 @Injectable({
   providedIn: 'root'
@@ -17,7 +17,6 @@ export class PostService extends BaseApiService<PostResponse> {
   }
 
   override getById(code: string): Observable<PostResponse> {
-    // Sử dụng helper mới từ Base
     const params = this.buildHttpParams({ code });
     return this.http.get<PostResponse>(this.getUrl(), { params });
   }

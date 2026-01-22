@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { PagedResultDto } from '@app/models/page.model';
+import { PagedResultDto } from '@core/models/page.model';
 import { environment } from '@env/environment';
 import { Observable } from 'rxjs';
 

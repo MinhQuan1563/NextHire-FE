@@ -1,8 +1,8 @@
 import { Component, OnInit, Pipe, PipeTransform } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { CvTemplate, CvTemplateType } from '@app/models/cv-builder/cv-template.model';
-import { CvTemplateService } from '@app/services/cv-builder/cv-template.service';
+import { CvTemplate, CvTemplateType } from '@core/models/cv-builder/cv-template.model';
+import { CvTemplateService } from '@core/services/cv-builder/cv-template.service';
 
 @Pipe({
   name: 'cvTemplateType',

@@ -5,7 +5,7 @@ import {
   CVCategory, 
   CVSection, 
   LayoutConfiguration 
-} from '../../../../models/cv-builder/cv-template.model';
+} from '@core/models/cv-builder/cv-template.model';
 import { DesignSettings } from '../services/design-settings.service';
 
 /**

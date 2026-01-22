@@ -4,7 +4,7 @@ import { map } from 'rxjs/operators';
 import { 
   CVCategory, 
   CVSection 
-} from '../../../../models/cv-builder/cv-template.model';
+} from '@core/models/cv-builder/cv-template.model';
 import { CVData, SectionManagerService } from './section-manager.service';
 
 export interface UsedSection {

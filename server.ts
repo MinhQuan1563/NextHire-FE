@@ -45,6 +45,7 @@ export function app(): express.Express {
 
 function run(): void {
   const port = process.env['PORT'] || 4000;
+  process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0';
 
   // Start up the Node server
   const server = app();

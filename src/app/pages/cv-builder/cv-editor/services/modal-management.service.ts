@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
+import { CVCategory, CVSection } from '@core/models/cv-builder/cv-template.model';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { CVCategory, CVSection } from '../../../../models/cv-builder/cv-template.model';
 
 export interface ModalState {
   showCategoryModal: boolean;

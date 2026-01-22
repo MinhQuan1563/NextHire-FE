@@ -17,7 +17,7 @@ import {
   LayoutRow, 
   LayoutColumn, 
   DragDropData 
-} from '../../../models/cv-builder/cv-template.model';
+} from '@core/models/cv-builder/cv-template.model';
 
 @Component({
   selector: 'app-admin-template',

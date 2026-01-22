@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../../environments/environment';
-import { CvTemplate, CreateCvTemplate, UpdateCvTemplate, GetCvTemplatesInput } from '../../models/cv-builder/cv-template.model';
-import { PagedResultDto } from '@app/models/page.model';
+import { PagedResultDto } from '@core/models/page.model';
+import { CreateCvTemplate, CvTemplate, GetCvTemplatesInput, UpdateCvTemplate } from '@core/models/cv-builder/cv-template.model';
+import { environment } from '@env/environment';
 
 @Injectable({
   providedIn: 'root'

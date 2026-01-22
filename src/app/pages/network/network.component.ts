@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { PersonCardComponent, Person } from '../../shared/reusable-components/person-card/person-card.component';
-import { CompanyCardComponent, Company } from '../../shared/reusable-components/company-card/company-card.component';
+import { Person, PersonCardComponent } from '@shared/reusable-components/person-card/person-card.component';
+import { Company, CompanyCardComponent } from '@shared/reusable-components/company-card/company-card.component';
 
 // Type aliases for better readability
 type SuggestedPerson = Person;

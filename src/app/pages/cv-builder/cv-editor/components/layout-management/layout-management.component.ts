@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DragDropModule, CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
-import { CVSection, DragDropData, LayoutColumn, LayoutConfiguration, LayoutRow, LayoutZone } from '@app/models/cv-builder/cv-template.model';
+import { CVSection, DragDropData, LayoutColumn, LayoutConfiguration, LayoutRow, LayoutZone } from '@core/models/cv-builder/cv-template.model';
 
 
 @Component({

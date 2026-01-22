@@ -7,7 +7,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
-import { AuthService } from '../../../services/auth/auth.service';
+import { AuthService } from '@core/services/auth/auth.service';
 
 @Component({
   selector: 'app-reset-password',

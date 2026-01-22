@@ -6,7 +6,7 @@ import {
   LayoutColumn, 
   DragDropData,
   CVSection 
-} from '../../../../models/cv-builder/cv-template.model';
+} from '@core/models/cv-builder/cv-template.model';
 
 export interface LayoutManagementState {
   configurations: LayoutConfiguration[];

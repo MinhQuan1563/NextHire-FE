@@ -27,7 +27,7 @@ import {
   CVSection, 
   LayoutConfiguration,
   DragDropData 
-} from '../../../models/cv-builder/cv-template.model';
+} from '@core/models/cv-builder/cv-builder.model';
 
 /**
  * Refactored CV Editor Component - Clean và maintainable

@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { InvitationCardComponent } from '../../../shared/reusable-components/invitation-card/invitation-card.component';
-import { Person } from '../../../shared/reusable-components/person-card/person-card.component';
+import { InvitationCardComponent } from '@shared/reusable-components/invitation-card/invitation-card.component';
+import { Person } from '@shared/reusable-components/person-card/person-card.component';
 
 @Component({
   selector: 'app-invitations',

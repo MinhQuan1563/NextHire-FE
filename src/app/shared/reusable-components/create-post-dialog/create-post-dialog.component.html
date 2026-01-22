@@ -1,0 +1,94 @@
+<p-dialog 
+  header="Tạo bài viết" 
+  [(visible)]="visible" 
+  [modal]="true" 
+  [style]="{ width: '500px', maxWidth: '95vw' }" 
+  [draggable]="false" 
+  [resizable]="false"
+  (onHide)="close()">
+  
+  <div class="flex flex-col gap-4">
+    <div class="flex items-center gap-3">
+      <p-avatar [image]="currentUserAvatar || 'assets/images/default-avatar.png'" shape="circle" size="large"></p-avatar>
+      <div>
+        <h4 class="font-bold text-gray-800 text-sm">{{ currentUserName }}</h4>
+        <p-dropdown 
+          [options]="privacyOptions" 
+          [(ngModel)]="selectedPrivacy" 
+          optionLabel="label" 
+          optionValue="value"
+          appendTo="body" 
+          styleClass="w-32 text-xs h-8 flex items-center bg-gray-100 border-none">
+          <ng-template pTemplate="selectedItem" let-selectedOption>
+             <div class="flex items-center gap-2">
+                <i [class]="selectedOption.icon"></i>
+                <span>{{ selectedOption.label }}</span>
+             </div>
+          </ng-template>
+          <ng-template let-option pTemplate="item">
+            <div class="flex items-center gap-2">
+                <i [class]="option.icon"></i>
+                <span>{{ option.label }}</span>
+             </div>
+          </ng-template>
+        </p-dropdown>
+      </div>
+    </div>
+
+    <textarea 
+      pInputTextarea 
+      [(ngModel)]="newPostContent"
+      rows="4" 
+      placeholder="Bạn đang nghĩ gì thế?" 
+      class="w-full border-none focus:ring-0 text-lg resize-none p-0 !shadow-none"
+      [autoResize]="true">
+    </textarea>
+
+    <div *ngIf="previewImages.length > 0" class="grid grid-cols-2 gap-2 mt-2">
+      <div *ngFor="let img of previewImages; let i = index" class="relative group">
+        <img [src]="img" class="w-full h-32 object-cover rounded-lg border border-gray-200">
+        <button 
+          (click)="removeImage(i)"
+          class="absolute top-1 right-1 bg-gray-800 text-white rounded-full p-1 w-6 h-6 flex items-center justify-center opacity-70 hover:opacity-100 transition-opacity">
+          <i class="pi pi-times text-xs"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="border border-gray-300 rounded-lg p-3 flex items-center justify-between mt-2">
+      <span class="text-sm font-semibold text-gray-700">Thêm vào bài viết</span>
+      <div class="flex gap-2">
+        <input 
+          type="file" 
+          #fileInput 
+          multiple 
+          accept="image/*" 
+          (change)="onFileSelected($event)" 
+          class="hidden">
+        
+        <button 
+          pTooltip="Ảnh/Video" 
+          tooltipPosition="top"
+          (click)="fileInput.click()" 
+          class="w-9 h-9 rounded-full hover:bg-gray-100 flex items-center justify-center transition-colors text-green-500">
+          <i class="pi pi-image text-xl"></i>
+        </button>
+        <button class="w-9 h-9 rounded-full hover:bg-gray-100 flex items-center justify-center transition-colors text-blue-500">
+          <i class="pi pi-user-plus text-xl"></i>
+        </button>
+        <button class="w-9 h-9 rounded-full hover:bg-gray-100 flex items-center justify-center transition-colors text-yellow-500">
+          <i class="pi pi-face-smile text-xl"></i>
+        </button>
+      </div>
+    </div>
+
+    <button 
+      pButton 
+      label="Đăng" 
+      class="w-full mt-2" 
+      [disabled]="!newPostContent && selectedFiles.length === 0"
+      [loading]="isPosting"
+      (click)="submitPost()">
+    </button>
+  </div>
+</p-dialog>

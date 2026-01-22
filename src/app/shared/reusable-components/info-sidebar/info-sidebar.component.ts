@@ -2,8 +2,8 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AvatarModule } from 'primeng/avatar';
 import { Observable } from 'rxjs';
-import { AuthService } from '../../../services/auth/auth.service';
-import { User } from '../../../models/auth/auth.model';
+import { User } from '@core/models/auth/auth.model';
+import { AuthService } from '@core/services/auth/auth.service';
 
 @Component({
   selector: 'app-info-sidebar',
@@ -13,7 +13,6 @@ import { User } from '../../../models/auth/auth.model';
   styleUrls: ['./info-sidebar.component.scss']
 })
 export class InfoSidebarComponent {
-  // Fallback values shown when no user is available
   userName = 'Tên Người Dùng';
   userTitle = 'Chức danh công việc tại Công ty';
   profileViews = 120;

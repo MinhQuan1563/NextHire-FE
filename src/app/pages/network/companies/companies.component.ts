@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { DividerModule } from 'primeng/divider';
-import { CompanyLogoComponent } from '../../../shared/reusable-components/company-logo/company-logo.component';
+import { CompanyLogoComponent } from '@shared/reusable-components/company-logo/company-logo.component';
 
 interface CompanyPage {
   id: string;

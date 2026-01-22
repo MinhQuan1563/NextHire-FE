@@ -17,7 +17,7 @@ import { LoginComponent } from './pages/auth/login/login.component';
 import { RegisterComponent } from './pages/auth/register/register.component';
 import { ForgotPasswordComponent } from './pages/auth/forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './pages/auth/reset-password/reset-password.component';
-import { AuthGuard } from './guards/auth.guard';
+import { AuthGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   {
@@ -32,7 +32,7 @@ export const routes: Routes = [
   {
     path: '',
     component: MainLayoutComponent,
-    // canActivate: [AuthGuard],
+    canActivate: [AuthGuard],
     children: [
       { path: '', component: HomeComponent, pathMatch: 'full' },
       { path: 'network', component: NetworkComponent },

@@ -7,7 +7,7 @@ import { MenuModule } from 'primeng/menu';
 import { MenuItem } from 'primeng/api';
 import { TieredMenuModule } from 'primeng/tieredmenu';
 import { Router, RouterLink } from '@angular/router';
-import { AuthService } from '@app/services/auth/auth.service';
+import { AuthService } from '@core/services/auth/auth.service';
 
 @Component({
   selector: 'app-header',
