@@ -113,8 +113,6 @@ export interface CvTemplate {
   description: string;
   sampleFileUrl: string;
   isPublished: boolean;
-  createDate: Date;
-  modifiedDate: Date;
   layoutConfiguration?: LayoutConfiguration; // Changed to proper interface
   section?: CVSection[];
   designSettings?: DesignSettings; // Design settings (fonts, colors, etc.)
@@ -146,6 +144,8 @@ export interface GetCvTemplatesInput {
   maxResultCount?: number;
   sorting?: string;
   filter?: string;
+  type?: CvTemplateType;
+  isPublished?: boolean;
 }
 
 // Design Settings Interface

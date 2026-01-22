@@ -1,0 +1,462 @@
+// Color Variables - matching PRD specifications
+$color-published: #10B981;
+$color-unpublished: #6B7280;
+$color-resume: #3B82F6;
+$color-cover-letter: #8B5CF6;
+$color-portfolio: #F59E0B;
+
+$transition-fast: 0.15s ease-in-out;
+$transition-normal: 0.2s ease-in-out;
+$transition-slow: 0.3s ease-in-out;
+
+$shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+$shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+$shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+
+$focus-ring: 0 0 0 3px rgba(59, 130, 246, 0.3);
+
+.manage-cv-templates {
+  min-height: calc(100vh - 200px);
+
+  // Header Section
+  .header-section {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: $shadow-sm;
+    transition: box-shadow $transition-normal;
+
+    &:hover {
+      box-shadow: $shadow-md;
+    }
+
+    h1 {
+      color: #111827;
+      letter-spacing: -0.025em;
+    }
+
+    p {
+      color: #6B7280;
+    }
+  }
+
+  // Content Section
+  .content-section {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: $shadow-sm;
+    transition: box-shadow $transition-normal;
+  }
+
+  // Template Card Styles
+  .template-card {
+    transition: transform $transition-normal, box-shadow $transition-normal;
+
+    &:hover {
+      transform: translateY(-6px);
+      
+      ::ng-deep .p-card {
+        box-shadow: $shadow-lg;
+      }
+    }
+
+    &:focus-within {
+      outline: none;
+      
+      ::ng-deep .p-card {
+        box-shadow: $focus-ring, $shadow-md;
+      }
+    }
+
+    ::ng-deep .p-card {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      border-radius: 12px;
+      overflow: hidden;
+      transition: box-shadow $transition-normal;
+      border: 1px solid #E5E7EB;
+
+      .p-card-header {
+        padding: 0;
+      }
+
+      .p-card-body {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        padding: 1rem;
+      }
+
+      .p-card-content {
+        flex: 1;
+        padding: 0;
+      }
+
+      .p-card-footer {
+        padding: 0.75rem 1rem;
+        background: #F9FAFB;
+        border-top: 1px solid #E5E7EB;
+      }
+    }
+  }
+
+  // Card header gradient based on template type
+  .card-header-resume {
+    background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+  }
+
+  .card-header-cover-letter {
+    background: linear-gradient(135deg, #F5F3FF 0%, #EDE9FE 100%);
+  }
+
+  .card-header-portfolio {
+    background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%);
+  }
+
+  // Line clamp utility
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  // Action buttons
+  .action-btn {
+    transition: all $transition-fast;
+    
+    &:hover:not(:disabled) {
+      transform: scale(1.1);
+    }
+
+    &:focus {
+      box-shadow: $focus-ring;
+      outline: none;
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+
+  // PrimeNG Overrides
+  ::ng-deep {
+    // Table styles
+    .p-datatable {
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid #E5E7EB;
+
+      .p-datatable-thead > tr > th {
+        background-color: #F9FAFB;
+        font-weight: 600;
+        color: #374151;
+        border-bottom: 2px solid #E5E7EB;
+        padding: 1rem;
+        transition: background-color $transition-fast;
+
+        &:hover {
+          background-color: #F3F4F6;
+        }
+
+        // Sortable column focus state
+        &.p-sortable-column:focus {
+          box-shadow: inset $focus-ring;
+          outline: none;
+        }
+      }
+
+      .p-datatable-tbody > tr {
+        transition: background-color $transition-fast;
+
+        &:hover {
+          background-color: #F9FAFB;
+        }
+
+        &:focus-within {
+          background-color: #EFF6FF;
+        }
+
+        > td {
+          padding: 0.875rem 1rem;
+          border-bottom: 1px solid #F3F4F6;
+        }
+      }
+
+      // Sort icon styling
+      .p-sortable-column-icon {
+        color: #9CA3AF;
+        transition: color $transition-fast;
+      }
+
+      .p-sortable-column:hover .p-sortable-column-icon {
+        color: #6B7280;
+      }
+    }
+
+    // Paginator styles
+    .p-paginator {
+      border-top: 1px solid #E5E7EB;
+      padding: 1rem;
+      margin-top: 0;
+      background: #F9FAFB;
+      border-radius: 0 0 8px 8px;
+
+      .p-paginator-element {
+        transition: all $transition-fast;
+
+        &:focus {
+          box-shadow: $focus-ring;
+          outline: none;
+        }
+      }
+    }
+
+    // Tag styles with custom colors
+    .p-tag {
+      font-weight: 500;
+      font-size: 0.75rem;
+      padding: 0.25rem 0.625rem;
+      border-radius: 9999px;
+
+      &.p-tag-success {
+        background-color: rgba($color-published, 0.1);
+        color: darken($color-published, 10%);
+      }
+
+      &.p-tag-secondary {
+        background-color: rgba($color-unpublished, 0.1);
+        color: $color-unpublished;
+      }
+
+      &.p-tag-info {
+        background-color: rgba($color-resume, 0.1);
+        color: darken($color-resume, 10%);
+      }
+
+      &.p-tag-warning {
+        background-color: rgba($color-portfolio, 0.1);
+        color: darken($color-portfolio, 15%);
+      }
+    }
+
+    // Button focus states
+    .p-button {
+      transition: all $transition-fast;
+
+      &:focus {
+        box-shadow: $focus-ring;
+        outline: none;
+      }
+
+      &.p-button-rounded {
+        &:hover:not(:disabled) {
+          transform: scale(1.05);
+        }
+      }
+    }
+
+    // Input focus states
+    .p-inputtext {
+      transition: all $transition-fast;
+
+      &:focus {
+        box-shadow: $focus-ring;
+        border-color: #3B82F6;
+      }
+    }
+
+    // Dropdown focus states
+    .p-dropdown {
+      transition: all $transition-fast;
+
+      &:focus,
+      &.p-focus {
+        box-shadow: $focus-ring;
+        border-color: #3B82F6;
+      }
+    }
+
+    // Chip styles
+    .p-chip {
+      background-color: #EFF6FF;
+      color: #1E40AF;
+      font-size: 0.875rem;
+      transition: all $transition-fast;
+
+      &:hover {
+        background-color: #DBEAFE;
+      }
+
+      .p-chip-remove-icon {
+        transition: color $transition-fast;
+
+        &:hover {
+          color: #DC2626;
+        }
+
+        &:focus {
+          box-shadow: $focus-ring;
+          outline: none;
+          border-radius: 50%;
+        }
+      }
+    }
+
+    // Select button styles
+    .p-selectbutton {
+      .p-button {
+        padding: 0.5rem 0.75rem;
+
+        &:focus {
+          box-shadow: $focus-ring;
+        }
+
+        &.p-highlight {
+          background-color: #3B82F6;
+          border-color: #3B82F6;
+        }
+      }
+    }
+
+    // Confirm dialog styles
+    .p-confirm-dialog {
+      .p-dialog-header {
+        padding: 1.25rem 1.5rem;
+      }
+
+      .p-dialog-content {
+        padding: 0 1.5rem 1.5rem;
+      }
+
+      .p-dialog-footer {
+        padding: 1rem 1.5rem;
+        background: #F9FAFB;
+      }
+    }
+
+    // Toast styles
+    .p-toast {
+      .p-toast-message {
+        border-radius: 8px;
+        box-shadow: $shadow-lg;
+      }
+    }
+  }
+
+  // Loading and Error States
+  .loading-state,
+  .error-state {
+    background: white;
+    border-radius: 12px;
+    box-shadow: $shadow-sm;
+  }
+
+  .loading-state {
+    padding: 1.5rem;
+  }
+
+  .error-state {
+    padding: 3rem;
+
+    i {
+      display: block;
+      margin-bottom: 1rem;
+    }
+  }
+
+  // Skeleton styles
+  .skeleton-table {
+    border: 1px solid #E5E7EB;
+    border-radius: 8px;
+    overflow: hidden;
+
+    .skeleton-header {
+      border-bottom: 2px solid #E5E7EB;
+      background: #F9FAFB;
+    }
+
+    .skeleton-row {
+      background: white;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      &:nth-child(even) {
+        background: #FAFAFA;
+      }
+    }
+  }
+
+  .skeleton-card {
+    border: 1px solid #E5E7EB;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  // Responsive adjustments
+  @media (max-width: 1024px) {
+    padding: 1rem;
+
+    .header-section {
+      padding: 1rem;
+
+      h1 {
+        font-size: 1.5rem;
+      }
+    }
+
+    .content-section {
+      padding: 1rem;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .header-section {
+      .flex.justify-between.items-center.mb-4 {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+
+        button {
+          width: 100%;
+        }
+      }
+
+      .flex.justify-between.items-center.gap-4 {
+        flex-direction: column;
+        align-items: stretch;
+
+        .flex.gap-2.items-center.flex-1 {
+          flex-direction: column;
+          align-items: stretch;
+
+          .p-input-icon-left {
+            max-width: 100%;
+          }
+
+          ::ng-deep .p-dropdown {
+            width: 100% !important;
+          }
+        }
+
+        .flex.gap-2:last-child {
+          justify-content: center;
+        }
+      }
+    }
+
+    ::ng-deep .p-datatable {
+      .p-datatable-thead > tr > th,
+      .p-datatable-tbody > tr > td {
+        padding: 0.5rem;
+        font-size: 0.875rem;
+      }
+    }
+  }
+}

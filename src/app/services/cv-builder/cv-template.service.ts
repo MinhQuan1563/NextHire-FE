@@ -28,6 +28,12 @@ export class CvTemplateService {
     if (input.filter) {
       params = params.append('filter', input.filter);
     }
+    if (input.type !== undefined) {
+      params = params.append('type', input.type.toString());
+    }
+    if (input.isPublished !== undefined) {
+      params = params.append('isPublished', input.isPublished.toString());
+    }
 
     return this.http.get<PagedResultDto<CvTemplate>>(this.apiUrl, { params });
   }
@@ -66,5 +72,13 @@ export class CvTemplateService {
 
   deleteTemplate(templateCode: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${templateCode}`);
+  }
+
+  publishTemplate(templateCode: string): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/${templateCode}/publish`, { isPublished: true });
+  }
+
+  unpublishTemplate(templateCode: string): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/${templateCode}/publish`, { isPublished: false });
   }
 }

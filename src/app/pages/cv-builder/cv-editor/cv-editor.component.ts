@@ -142,6 +142,9 @@ export class CvEditorComponent implements OnInit, OnDestroy {
   isAdmin = signal<boolean>(false);
   isSaving = signal<boolean>(false);
   isLoading = signal<boolean>(false);
+  
+  // Track if we're in admin context (for navigation after save)
+  private isAdminContext = false;
 
   // Expose template store for template access
   cvTemplateStore = inject(CvTemplateStore);
@@ -194,6 +197,9 @@ export class CvEditorComponent implements OnInit, OnDestroy {
    * Handle route parameters to load template or clear state for new template
    */
   private handleRouteParams(): void {
+    // Detect if we're in admin context based on URL
+    this.isAdminContext = this.router.url.startsWith('/admin');
+    
     this.route.paramMap.subscribe((params) => {
       const templateCode = params.get('templateCode');
 
@@ -268,7 +274,7 @@ export class CvEditorComponent implements OnInit, OnDestroy {
           detail: error.error?.message || 'Failed to load template. Please try again.',
         });
         // Navigate back to template list on error
-        this.router.navigate(['/cv-template']);
+        this.router.navigate([this.isAdminContext ? '/admin/cv-templates' : '/cv-template']);
       },
     });
   }
@@ -704,7 +710,7 @@ export class CvEditorComponent implements OnInit, OnDestroy {
             this.isSaving.set(false);
             
             // Navigate to template list after successful creation
-            this.router.navigate(['/cv-template']);
+            this.router.navigate([this.isAdminContext ? '/admin/cv-templates' : '/cv-template']);
           },
           error: (error) => {
             this.messageService.add({
