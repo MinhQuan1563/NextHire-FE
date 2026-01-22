@@ -9,8 +9,6 @@ const initialTemplate: CvTemplate = {
   description: '',
   sampleFileUrl: '',
   isPublished: false,
-  createDate: new Date(),
-  modifiedDate: new Date(),
   section: [],
 } 
 

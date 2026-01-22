@@ -29,6 +29,16 @@ export const adminRoutes: Routes = [
         data: { breadcrumb: 'Manage CV Templates' }
       },
       {
+        path: 'cv-template/new',
+        loadComponent: () => import('../cv-builder/cv-editor/cv-editor.component').then(m => m.CvEditorComponent),
+        data: { breadcrumb: 'Create CV Template' }
+      },
+      {
+        path: 'cv-template/:templateCode',
+        loadComponent: () => import('../cv-builder/cv-editor/cv-editor.component').then(m => m.CvEditorComponent),
+        data: { breadcrumb: 'Edit CV Template' }
+      },
+      {
         path: 'games',
         loadComponent: () => import('./games/manage-games.component').then(m => m.ManageGamesComponent),
         data: { breadcrumb: 'Manage Games' }
