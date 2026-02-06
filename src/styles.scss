@@ -34,3 +34,9 @@ html, body {
     outline-offset: 2px;
   }
 }
+
+.p-button:focus,
+.p-button:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}

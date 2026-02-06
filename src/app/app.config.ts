@@ -8,10 +8,13 @@ import { authInterceptor } from './interceptors/auth.interceptor';
 import { provideAbpCore, withOptions } from '@abp/ng.core';
 import { registerLocale } from '@abp/ng.core/locale';
 import { provideAbpOAuth } from '@abp/ng.oauth';
+import { errorInterceptor } from './interceptors/error.interceptor';
+import { provideStore } from '@ngrx/store';
+import { MessageService } from 'primeng/api';
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideRouter(routes), 
+    provideRouter(routes),
     provideClientHydration(),
     provideHttpClient(withInterceptors([authInterceptor]), withFetch()),
     provideAnimations(),
@@ -42,5 +45,8 @@ export const appConfig: ApplicationConfig = {
       })
     ),
     provideAbpOAuth(),
+    provideHttpClient(withInterceptors([authInterceptor, errorInterceptor]), withFetch()),
+    provideStore(),
+    MessageService
   ],
 };

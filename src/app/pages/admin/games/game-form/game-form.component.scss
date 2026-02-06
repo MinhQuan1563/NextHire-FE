@@ -1,0 +1,24 @@
+.game-form {
+  .field {
+    label {
+      display: block;
+      margin-bottom: 0.25rem;
+    }
+  }
+
+  .form-actions {
+    margin-top: 1rem;
+  }
+
+  :host ::ng-deep {
+    .p-inputtext.ng-invalid.ng-dirty,
+    .p-inputtextarea.ng-invalid.ng-dirty {
+      border-color: #ef4444;
+    }
+
+    .p-inputtext:disabled {
+      background-color: #f3f4f6;
+      cursor: not-allowed;
+    }
+  }
+}

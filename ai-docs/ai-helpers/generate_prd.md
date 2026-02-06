@@ -10,7 +10,7 @@ The agent **must not generate the PRD immediately**. It must first collect and c
 ## Output Specification (Target File)
 - **File name:** `{FEATURE_NAME}_Feature_prd.md`
 - **Content:** A detailed, structured, production-ready PRD for the specified feature
-
+- **Location:** `/ai-docs/prds`
 ---
 
 ## Mandatory Workflow (Strict)
@@ -63,7 +63,7 @@ A short confirmation question is sufficient.
 Once confirmed, generate:
 
 **File name:** `{FEATURE_NAME}_Feature_prd.md`
-**Location**
+**Location** `/ai-docs/prds`
 ---
 
 ## Required PRD Structure
@@ -89,20 +89,11 @@ The generated PRD **must include** the following sections:
 6. **Non-Functional Requirements**
    - Performance, security, scalability, reliability, accessibility, etc.
 
-7. **User Flow / Journey Description**
-   - Step-by-step behavior
+7. **Out of Scope**
 
-8. **Edge Cases & Error Handling**
+8. **Dependencies & Assumptions**
 
-9. **Out of Scope**
-
-10. **Dependencies & Assumptions**
-
-11. **Risks & Mitigations**
-
-12. **Open Questions (if any)**
-
-13. **Acceptance Criteria**
+9. **Acceptance Criteria**
    - Clear, testable conditions for completion
 
 ---

@@ -1,0 +1,51 @@
+::ng-deep .statistic-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  .p-card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .p-card-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .p-card-content {
+    flex: 1;
+  }
+}
+
+.card-header {
+  .icon-container {
+    transition: all 0.3s ease;
+    
+    &:hover {
+      transform: scale(1.05);
+    }
+  }
+}
+
+.card-content {
+  min-height: 300px;
+}
+
+.loading-state,
+.success-state,
+.empty-state,
+.error-state {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

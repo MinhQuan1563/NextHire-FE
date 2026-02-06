@@ -1,0 +1,64 @@
+<div class="admin-layout-wrapper">
+  <app-header></app-header>
+  <div class="admin-layout">
+    <div 
+      *ngIf="showOverlay()" 
+      class="sidebar-overlay"
+      (click)="onOverlayClick()"
+      [@fadeIn]>
+    </div>
+
+    <aside 
+      class="admin-sidebar" 
+      [ngClass]="sidebarClass()"
+      role="navigation"
+      [attr.aria-label]="'Admin navigation sidebar'">
+      <div class="sidebar-header">
+        <h2 *ngIf="!sidebarCollapsed()">Admin Panel</h2>
+        <button 
+          pButton 
+          type="button" 
+          [icon]="sidebarCollapsed() ? 'pi pi-angle-right' : 'pi pi-angle-left'"
+          class="p-button-text p-button-rounded toggle-btn"
+          (click)="toggleSidebar()"
+          [attr.aria-label]="sidebarCollapsed() ? 'Expand sidebar' : 'Collapse sidebar'"
+          [attr.aria-expanded]="!sidebarCollapsed()">
+        </button>
+      </div>
+  
+      <nav class="sidebar-nav" role="menu">
+        <ul class="menu-list">
+          <li 
+            *ngFor="let item of menuItems" 
+            class="menu-item"
+            [class.active]="isActiveRoute(item.route)"
+            (click)="navigateTo(item.route)"
+            (keydown.enter)="navigateTo(item.route)"
+            (keydown.space)="navigateTo(item.route)"
+            role="menuitem"
+            tabindex="0"
+            [attr.aria-label]="item.label"
+            [attr.aria-current]="isActiveRoute(item.route) ? 'page' : null">
+            <i [class]="item.icon" aria-hidden="true"></i>
+            <span *ngIf="!sidebarCollapsed()" class="menu-label">{{ item.label }}</span>
+          </li>
+        </ul>
+      </nav>
+    </aside>
+  
+    <main class="admin-content" [ngClass]="sidebarClass()" role="main">
+      <div class="content-header">
+        <p-breadcrumb 
+          [model]="breadcrumbItems()" 
+          [home]="breadcrumbHome"
+          styleClass="admin-breadcrumb"
+          [attr.aria-label]="'Breadcrumb navigation'">
+        </p-breadcrumb>
+      </div>
+  
+      <div class="content-body">
+        <router-outlet></router-outlet>
+      </div>
+    </main>
+  </div>
+</div>

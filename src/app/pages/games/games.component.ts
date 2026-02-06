@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { GameConfigService } from '../../services/game/game-config.service';
 
 interface GameCard {
   id: string;
@@ -19,38 +20,50 @@ interface GameCard {
   templateUrl: './games.component.html',
   styleUrls: ['./games.component.scss']
 })
-export class GamesComponent {
-  games: GameCard[] = [
-    {
-      id: '2048',
-      name: '2048',
-      description: 'Slide tiles to combine numbers and reach 2048. A addictive number puzzle!',
+export class GamesComponent implements OnInit {
+  private readonly router = inject(Router);
+  private readonly gameConfigService = inject(GameConfigService);
+
+  private readonly gameMetadata: Record<string, Omit<GameCard, 'id' | 'name' | 'description'>> = {
+    '2048': {
       gameNumber: 128,
       route: '/games/2048',
       color: '#F59E0B',
       icon: '🎲'
     },
-    {
-      id: 'tango',
-      name: 'Tango',
-      description: 'Fill the grid by placing numbered tiles in sequence. Plan your moves carefully!',
+    'TANGO': {
       gameNumber: 436,
       route: '/games/tango',
       color: '#EC4899',
       icon: '🎯'
     },
-    {
-      id: 'queens',
-      name: 'Queens',
-      description: 'Place queens on the board so none can attack each other. A classic puzzle!',
+    'QUEENS': {
       gameNumber: 596,
       route: '/games/queens',
       color: '#10B981',
       icon: '👑'
     }
-  ];
+  };
 
-  constructor(private router: Router) {}
+  games = computed(() => {
+    const activeGames = this.gameConfigService.activeGames();
+    return activeGames
+      .map(game => {
+        const metadata = this.gameMetadata[game.gameCode.toUpperCase()];
+        if (!metadata) return null;
+        return {
+          id: game.gameCode,
+          name: game.name,
+          description: game.description,
+          ...metadata
+        };
+      })
+      .filter((game): game is GameCard => game !== null);
+  });
+
+  ngOnInit(): void {
+    this.gameConfigService.loadGames();
+  }
 
   navigateToGame(route: string): void {
     this.router.navigate([route]);

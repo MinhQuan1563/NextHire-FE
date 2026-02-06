@@ -1,0 +1,79 @@
+<p-dialog
+  [(visible)]="visible"
+  modal
+  [resizable]="false"
+  [style]="{ width: '500px' }"
+  header="Lưu Template CV"
+  (onHide)="close()"
+>
+  <form [formGroup]="form" class="flex flex-col gap-4">
+    <!-- Template Name -->
+    <div class="flex flex-col gap-1">
+      <label class="block text-sm font-medium">
+        Tên Template <span class="text-red-500">*</span>
+      </label>
+      <input
+        pInputText
+        formControlName="name"
+        placeholder="Nhập tên template"
+        class="w-full"
+        [ngClass]="{ 'border-red-500': isFieldInvalid(form, 'name') }"
+      />
+      <app-form-error
+        [form]="form"
+        fieldName="name"
+        [messages]="{ required: 'Tên template là bắt buộc' }"
+      ></app-form-error>
+    </div>
+
+    <!-- Template Type -->
+    <div class="flex flex-col gap-1">
+      <label class="block text-sm font-medium">
+        Loại Template <span class="text-red-500">*</span>
+      </label>
+      <p-dropdown
+        formControlName="type"
+        [options]="templateTypes"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Chọn loại template"
+        class="w-full"
+        [ngClass]="{ 'border-red-500': isFieldInvalid(form, 'type') }"
+      ></p-dropdown>
+      <app-form-error
+        [form]="form"
+        fieldName="type"
+        [messages]="{ required: 'Loại template là bắt buộc' }"
+      ></app-form-error>
+    </div>
+
+    <!-- Template Description -->
+    <div class="flex flex-col gap-1">
+      <label class="block text-sm font-medium">Mô tả</label>
+      <textarea
+        pInputTextarea
+        formControlName="description"
+        placeholder="Nhập mô tả template (tùy chọn)"
+        rows="3"
+        class="w-full"
+      ></textarea>
+    </div>
+  </form>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-2">
+      <p-button
+        label="Hủy"
+        severity="secondary"
+        (onClick)="close()"
+        [outlined]="true"
+      ></p-button>
+      <p-button
+        label="Lưu"
+        (onClick)="save()"
+        [disabled]="form.invalid"
+      ></p-button>
+    </div>
+  </ng-template>
+</p-dialog>
+

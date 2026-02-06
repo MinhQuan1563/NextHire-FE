@@ -1,0 +1,461 @@
+<div class="container mx-auto px-4 py-6 max-w-4xl" role="main">
+  <div class="bg-white rounded-lg shadow-lg p-6 md:p-8">
+    <!-- Loading State -->
+    @if (loading()) {
+      <div class="flex justify-center items-center py-16" role="status" aria-live="polite">
+        <div class="text-center">
+          <p-progressSpinner
+            styleClass="w-12 h-12"
+            strokeWidth="4"
+            animationDuration=".8s"
+            ariaLabel="Loading profile data"
+          ></p-progressSpinner>
+          <p class="text-gray-600 mt-4 text-sm">Loading profile...</p>
+        </div>
+      </div>
+    }
+
+    <!-- Error State -->
+    @if (error() && !loading()) {
+      <div class="mb-6" role="alert" aria-live="assertive">
+        <p-message severity="error" [text]="error()!"></p-message>
+        <div class="mt-4 flex justify-end">
+          <p-button
+            label="Retry"
+            icon="pi pi-refresh"
+            (onClick)="retry()"
+            [outlined]="true"
+            severity="danger"
+            size="small"
+            [attr.aria-label]="'Retry loading profile'"
+          ></p-button>
+        </div>
+      </div>
+    }
+
+    <!-- Form Content -->
+    @if (!loading() && !error() && profileForm) {
+      <form [formGroup]="profileForm" (ngSubmit)="onSubmit()" class="space-y-8" novalidate aria-label="Edit profile form">
+        <!-- Form Header -->
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-gray-200 pb-6">
+          <div>
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-2">Edit Profile</h1>
+            <p class="text-sm md:text-base text-gray-600">Update your personal and professional information</p>
+          </div>
+        </div>
+
+        <!-- Form Fields -->
+        <p-accordion [multiple]="true" [activeIndex]="[0, 1, 2, 3, 4, 5]">
+          <!-- Avatar Upload Section -->
+          <p-accordionTab>
+            <ng-template pTemplate="header">
+              <div class="flex items-center gap-2">
+                <i class="pi pi-image text-blue-600"></i>
+                <span class="font-semibold">Profile Picture</span>
+              </div>
+            </ng-template>
+            <section aria-labelledby="avatar-section-heading">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center gap-6">
+              <!-- Avatar Display -->
+              <div class="flex-shrink-0">
+                <app-profile-avatar
+                  [avatarUrl]="getCurrentAvatarUrl()"
+                  [fullName]="profileForm.get('fullName')?.value"
+                  size="large"
+                  shape="circle"
+                ></app-profile-avatar>
+              </div>
+
+              <!-- Avatar Upload Controls -->
+              <div class="flex-1 space-y-4">
+                <!-- File Input -->
+                <div>
+                  <label
+                    for="avatarFileInput"
+                    class="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Upload New Avatar
+                  </label>
+                  <input
+                    id="avatarFileInput"
+                    type="file"
+                    accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                    (change)="onAvatarFileSelected($event)"
+                    class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                    [disabled]="avatarUploading()"
+                    aria-describedby="avatar-help avatar-error"
+                    [attr.aria-invalid]="avatarError() ? 'true' : 'false'"
+                  />
+                  <small id="avatar-help" class="text-gray-500 text-xs mt-1 block">
+                    Supported formats: JPEG, PNG, GIF, WebP. Maximum size: 5MB
+                  </small>
+                  @if (avatarError()) {
+                    <small
+                      id="avatar-error"
+                      class="text-red-600 text-xs mt-1 block"
+                      role="alert"
+                    >
+                      {{ avatarError() }}
+                    </small>
+                  }
+                </div>
+
+                <!-- Preview and Actions -->
+                @if (avatarPreview() || selectedAvatarFile()) {
+                  <div class="space-y-3">
+                    <div class="flex items-center gap-4">
+                      <p-button
+                        label="Upload Avatar"
+                        icon="pi pi-upload"
+                        (onClick)="uploadAvatar()"
+                        [loading]="avatarUploading()"
+                        [disabled]="avatarUploading()"
+                        severity="success"
+                        size="small"
+                      ></p-button>
+                      <p-button
+                        label="Cancel"
+                        icon="pi pi-times"
+                        (onClick)="cancelAvatarUpload()"
+                        [disabled]="avatarUploading()"
+                        [outlined]="true"
+                        severity="secondary"
+                        size="small"
+                      ></p-button>
+                    </div>
+                    @if (avatarUploading()) {
+                      <div class="flex items-center gap-2 text-sm text-gray-600">
+                        <p-progressSpinner
+                          styleClass="w-4 h-4"
+                          strokeWidth="4"
+                        ></p-progressSpinner>
+                        <span>Uploading avatar...</span>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+          </section>
+          </p-accordionTab>
+
+          <!-- Basic Information Section -->
+          <p-accordionTab>
+            <ng-template pTemplate="header">
+              <div class="flex items-center gap-2">
+                <i class="pi pi-user text-blue-600"></i>
+                <span class="font-semibold">Basic Information</span>
+              </div>
+            </ng-template>
+            <section aria-labelledby="basic-info-heading">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <!-- User ID (Read-only) -->
+              <div class="md:col-span-2">
+                <label for="userId" class="block text-sm font-medium text-gray-700 mb-2">
+                  User ID
+                </label>
+                <input
+                  id="userId"
+                  pInputText
+                  type="text"
+                  [value]="profileForm.get('id')?.value || ''"
+                  class="w-full bg-gray-50"
+                  readonly
+                  disabled
+                  aria-readonly="true"
+                  aria-describedby="userId-help"
+                />
+                <small id="userId-help" class="text-gray-500 text-xs mt-1 block">This field cannot be changed</small>
+              </div>
+
+              <!-- User Code (Read-only) -->
+              <div class="md:col-span-2">
+                <label for="userCode" class="block text-sm font-medium text-gray-700 mb-2">
+                  User Code
+                </label>
+                <input
+                  id="userCode"
+                  pInputText
+                  type="text"
+                  [value]="profileForm.get('userCode')?.value || ''"
+                  class="w-full bg-gray-50"
+                  readonly
+                  disabled
+                  aria-readonly="true"
+                  aria-describedby="userCode-help"
+                />
+                <small id="userCode-help" class="text-gray-500 text-xs mt-1 block">This field cannot be changed</small>
+              </div>
+
+              <!-- Full Name -->
+              <div>
+                <label
+                  for="fullName"
+                  class="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Full Name
+                </label>
+                <input
+                  id="fullName"
+                  pInputText
+                  type="text"
+                  formControlName="fullName"
+                  placeholder="Enter your full name"
+                  class="w-full"
+                  aria-describedby="fullName-help fullName-error"
+                  [attr.aria-invalid]="
+                    profileForm.get('fullName')?.invalid &&
+                    (profileForm.get('fullName')?.touched ||
+                      profileForm.get('fullName')?.dirty)
+                  "
+                  [ngClass]="{
+                    'ng-invalid ng-dirty':
+                      profileForm.get('fullName')?.invalid &&
+                      (profileForm.get('fullName')?.dirty ||
+                        profileForm.get('fullName')?.touched)
+                  }"
+                />
+                <small
+                  id="fullName-help"
+                  class="text-gray-500 text-xs mt-1 block"
+                >
+                  Your full name as you'd like it to appear on your profile
+                </small>
+                @if (getFieldErrorMessage('fullName')) {
+                  <small
+                    id="fullName-error"
+                    class="text-red-600 text-xs mt-1 block"
+                    role="alert"
+                  >
+                    {{ getFieldErrorMessage('fullName') }}
+                  </small>
+                }
+              </div>
+
+              <!-- Date of Birth -->
+              <div>
+                <label
+                  for="dateOfBirth-input"
+                  class="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Date of Birth
+                </label>
+                <p-calendar
+                  id="dateOfBirth"
+                  formControlName="dateOfBirth"
+                  [showIcon]="true"
+                  dateFormat="yy-mm-dd"
+                  [maxDate]="maxDate"
+                  placeholder="Select date of birth"
+                  styleClass="w-full"
+                  inputId="dateOfBirth-input"
+                  aria-describedby="dateOfBirth-help dateOfBirth-error"
+                  [attr.aria-invalid]="
+                    profileForm.get('dateOfBirth')?.invalid &&
+                    (profileForm.get('dateOfBirth')?.touched ||
+                      profileForm.get('dateOfBirth')?.dirty)
+                  "
+                ></p-calendar>
+                <small
+                  id="dateOfBirth-help"
+                  class="text-gray-500 text-xs mt-1 block"
+                >
+                  Your date of birth (optional)
+                </small>
+                @if (getFieldErrorMessage('dateOfBirth')) {
+                  <small
+                    id="dateOfBirth-error"
+                    class="text-red-600 text-xs mt-1 block"
+                    role="alert"
+                  >
+                    {{ getFieldErrorMessage('dateOfBirth') }}
+                  </small>
+                }
+              </div>
+
+              <!-- Gender -->
+              <div>
+                <label
+                  for="gender-input"
+                  class="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Gender
+                  @if (isFieldRequired('gender')) {
+                    <span class="text-red-500 ml-1" aria-label="required">*</span>
+                  }
+                </label>
+                <p-dropdown
+                  id="gender"
+                  formControlName="gender"
+                  [options]="genderOptions"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="Select gender"
+                  styleClass="w-full"
+                  inputId="gender-input"
+                  aria-describedby="gender-help gender-error"
+                  [attr.aria-required]="isFieldRequired('gender')"
+                  [attr.aria-invalid]="
+                    profileForm.get('gender')?.invalid &&
+                    (profileForm.get('gender')?.touched ||
+                      profileForm.get('gender')?.dirty)
+                  "
+                ></p-dropdown>
+                <small id="gender-help" class="text-gray-500 text-xs mt-1 block">
+                  Select your gender (required)
+                </small>
+                @if (getFieldErrorMessage('gender')) {
+                  <small
+                    id="gender-error"
+                    class="text-red-600 text-xs mt-1 block"
+                    role="alert"
+                  >
+                    {{ getFieldErrorMessage('gender') }}
+                  </small>
+                }
+              </div>
+
+              <!-- Portfolio URL -->
+              <div class="md:col-span-2">
+                <label
+                  for="portfolioUrl"
+                  class="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Portfolio URL
+                </label>
+                <input
+                  id="portfolioUrl"
+                  pInputText
+                  type="url"
+                  formControlName="portfolioUrl"
+                  placeholder="https://your-portfolio.com"
+                  class="w-full"
+                  aria-describedby="portfolioUrl-help portfolioUrl-error"
+                  [attr.aria-invalid]="
+                    profileForm.get('portfolioUrl')?.invalid &&
+                    (profileForm.get('portfolioUrl')?.touched ||
+                      profileForm.get('portfolioUrl')?.dirty)
+                  "
+                  [ngClass]="{
+                    'ng-invalid ng-dirty':
+                      profileForm.get('portfolioUrl')?.invalid &&
+                      (profileForm.get('portfolioUrl')?.dirty ||
+                        profileForm.get('portfolioUrl')?.touched)
+                  }"
+                />
+                <small
+                  id="portfolioUrl-help"
+                  class="text-gray-500 text-xs mt-1 block"
+                >
+                  Link to your portfolio or personal website (optional)
+                </small>
+                @if (getFieldErrorMessage('portfolioUrl')) {
+                  <small
+                    id="portfolioUrl-error"
+                    class="text-red-600 text-xs mt-1 block"
+                    role="alert"
+                  >
+                    {{ getFieldErrorMessage('portfolioUrl') }}
+                  </small>
+                }
+              </div>
+            </div>
+          </section>
+          </p-accordionTab>
+
+          <!-- Skills Section -->
+          <p-accordionTab>
+            <ng-template pTemplate="header">
+              <div class="flex items-center gap-2">
+                <i class="pi pi-star-fill text-blue-600"></i>
+                <span class="font-semibold">Skills</span>
+              </div>
+            </ng-template>
+            <section aria-labelledby="skills-section-heading">
+            <app-json-field-editor
+              [config]="skillsConfig"
+              [initialValue]="getSkillsJsonString()"
+              (valueChange)="onSkillsValueChange($event)"
+            ></app-json-field-editor>
+          </section>
+          </p-accordionTab>
+
+          <!-- Experience Section -->
+          <p-accordionTab>
+            <ng-template pTemplate="header">
+              <div class="flex items-center gap-2">
+                <i class="pi pi-briefcase text-blue-600"></i>
+                <span class="font-semibold">Work Experience</span>
+              </div>
+            </ng-template>
+            <section aria-labelledby="experience-section-heading">
+            <app-json-field-editor
+              [config]="experienceConfig"
+              [initialValue]="getExperienceJsonString()"
+              (valueChange)="onExperienceValueChange($event)"
+            ></app-json-field-editor>
+          </section>
+          </p-accordionTab>
+
+          <!-- Education Section -->
+          <p-accordionTab>
+            <ng-template pTemplate="header">
+              <div class="flex items-center gap-2">
+                <i class="pi pi-graduation-cap text-blue-600"></i>
+                <span class="font-semibold">Education</span>
+              </div>
+            </ng-template>
+            <section aria-labelledby="education-section-heading">
+            <app-json-field-editor
+              [config]="educationConfig"
+              [initialValue]="getEducationJsonString()"
+              (valueChange)="onEducationValueChange($event)"
+            ></app-json-field-editor>
+          </section>
+          </p-accordionTab>
+
+          <!-- Personal Projects Section -->
+          <p-accordionTab>
+            <ng-template pTemplate="header">
+              <div class="flex items-center gap-2">
+                <i class="pi pi-folder text-blue-600"></i>
+                <span class="font-semibold">Personal Projects</span>
+              </div>
+            </ng-template>
+            <section aria-labelledby="projects-section-heading">
+            <app-json-field-editor
+              [config]="personalProjectsConfig"
+              [initialValue]="getPersonalProjectsJsonString()"
+              (valueChange)="onPersonalProjectsValueChange($event)"
+            ></app-json-field-editor>
+          </section>
+          </p-accordionTab>
+        </p-accordion>
+
+        <!-- Form Actions -->
+        <div class="flex flex-col sm:flex-row justify-end gap-4 pt-8 border-t border-gray-200" role="group" aria-label="Form actions">
+          <p-button
+            label="Cancel"
+            icon="pi pi-times"
+            [routerLink]="['/profile']"
+            [outlined]="true"
+            styleClass="w-full sm:w-auto"
+            [attr.aria-label]="'Cancel editing and return to profile'"
+            severity="secondary"
+          ></p-button>
+          <p-button
+            label="Save Changes"
+            icon="pi pi-check"
+            type="submit"
+            [disabled]="!profileForm.valid || !isFormDirty() || submitting()"
+            [loading]="submitting()"
+            styleClass="w-full sm:w-auto"
+            [attr.aria-label]="'Save profile changes'"
+            [attr.aria-disabled]="!profileForm.valid || !isFormDirty() || submitting()"
+          ></p-button>
+        </div>
+      </form>
+    }
+  </div>
+</div>
+

@@ -1,0 +1,138 @@
+<app-statistic-card
+  title="Application Statistics"
+  icon="pi pi-file"
+  iconColor="text-orange-500"
+  iconBackground="bg-orange-100"
+  [state]="cardState()"
+  [errorMessage]="errorMessage() || 'Failed to load application statistics'"
+  emptyMessage="No application data available for the selected time range"
+  (retry)="onRetry()"
+>
+  <div class="application-statistics-content" *ngIf="statisticsData()">
+    <div class="metrics-grid grid grid-cols-2 gap-4 mb-6">
+      <div class="metric-item">
+        <div class="flex items-center justify-between">
+          <span class="text-sm text-gray-500">Total Applications</span>
+        </div>
+        <p class="text-3xl font-bold text-gray-800 mt-1">
+          {{ statisticsData()!.totalApplications | number }}
+        </p>
+      </div>
+
+      <div class="metric-item bg-yellow-50 border-2 border-yellow-200 highlighted">
+        <div class="flex items-center justify-between">
+          <span class="text-sm text-gray-600 font-medium">Pending</span>
+          <i class="pi pi-exclamation-circle text-yellow-600"></i>
+        </div>
+        <p class="text-3xl font-bold text-yellow-600 mt-1">
+          {{ statisticsData()!.pendingApplications | number }}
+        </p>
+        <p class="text-xs text-gray-500 mt-1">
+          {{ pendingPercentage() | number:'1.1-1' }}% of total
+        </p>
+      </div>
+
+      <div class="metric-item">
+        <div class="flex items-center justify-between">
+          <span class="text-sm text-gray-500">Applications Today</span>
+        </div>
+        <p class="text-2xl font-semibold text-gray-700 mt-1">
+          {{ statisticsData()!.applicationsToday | number }}
+        </p>
+      </div>
+
+      <div class="metric-item">
+        <div class="flex items-center justify-between">
+          <span class="text-sm text-gray-500">This Week</span>
+        </div>
+        <p class="text-2xl font-semibold text-gray-700 mt-1">
+          {{ statisticsData()!.applicationsThisWeek | number }}
+        </p>
+      </div>
+
+      <div class="metric-item">
+        <div class="flex items-center justify-between">
+          <span class="text-sm text-gray-500">This Month</span>
+        </div>
+        <p class="text-2xl font-semibold text-gray-700 mt-1">
+          {{ statisticsData()!.applicationsThisMonth | number }}
+        </p>
+      </div>
+
+      <div class="metric-item">
+        <div class="flex items-center justify-between">
+          <span class="text-sm text-gray-500">Reviewed</span>
+        </div>
+        <p class="text-2xl font-semibold text-blue-600 mt-1">
+          {{ statisticsData()!.reviewedApplications | number }}
+        </p>
+      </div>
+
+      <div class="metric-item">
+        <div class="flex items-center justify-between">
+          <span class="text-sm text-gray-500">Interviewed</span>
+        </div>
+        <p class="text-xl font-semibold text-purple-600 mt-1">
+          {{ statisticsData()!.interviewedApplications | number }}
+        </p>
+      </div>
+
+      <div class="metric-item">
+        <div class="flex items-center justify-between">
+          <span class="text-sm text-gray-500">Hired</span>
+        </div>
+        <p class="text-xl font-semibold text-green-600 mt-1">
+          {{ statisticsData()!.hiredApplications | number }}
+        </p>
+      </div>
+
+      <div class="metric-item">
+        <div class="flex items-center justify-between">
+          <span class="text-sm text-gray-500">Rejected</span>
+        </div>
+        <p class="text-xl font-semibold text-red-600 mt-1">
+          {{ statisticsData()!.rejectedApplications | number }}
+        </p>
+      </div>
+
+      <div class="metric-item">
+        <div class="flex items-center justify-between">
+          <span class="text-sm text-gray-500">Cancelled</span>
+        </div>
+        <p class="text-xl font-semibold text-gray-500 mt-1">
+          {{ statisticsData()!.cancelledApplications | number }}
+        </p>
+      </div>
+    </div>
+
+    <div class="charts-section space-y-6">
+      <div class="trend-chart" *ngIf="trendChartData()">
+        <h4 class="text-sm font-medium text-gray-700 mb-3">Application Trend</h4>
+        <app-line-chart
+          [data]="trendChartData()"
+          [color]="'#F59E0B'"
+          [height]="'200px'"
+          [showLegend]="false"
+          [showGrid]="true"
+        ></app-line-chart>
+      </div>
+
+      <div class="status-chart" *ngIf="statusChartData()">
+        <h4 class="text-sm font-medium text-gray-700 mb-3">Applications by Status</h4>
+        <app-bar-chart
+          [data]="statusChartData()"
+          [height]="'250px'"
+          [showLegend]="false"
+          [showGrid]="true"
+          [horizontal]="true"
+        ></app-bar-chart>
+      </div>
+
+      <div class="no-chart-message" *ngIf="!trendChartData() && !statusChartData()">
+        <p class="text-sm text-gray-400 text-center py-8">
+          No chart data available
+        </p>
+      </div>
+    </div>
+  </div>
+</app-statistic-card>

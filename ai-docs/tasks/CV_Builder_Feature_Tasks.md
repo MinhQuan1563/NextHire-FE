@@ -360,8 +360,37 @@ This document provides a comprehensive breakdown of all tasks and subtasks for t
 - [x] 8.4.3 Effects for side effects
 - [x] 8.4.4 Signal-based form state
 - [x] 8.4.5 Signal updates trigger change detection
+### 8.5 Template List & Navigation
+- [x] 8.5.1 Implement pagination for template-list
+  - [x] Add PrimeNG Paginator component
+  - [x] Track current page and page size
+  - [x] Load templates based on pagination parameters
+  - [x] Display total count
+  - [x] Handle page change events
+- [x] 8.5.2 Route parameter handling in cv-editor
+  - [x] Load template data when templateCode is provided
+  - [x] Apply template configuration to store
+  - [x] Apply template sections and layout
+  - [x] Apply design settings from template
+- [x] 8.5.3 Clear state when creating new template
+  - [x] Reset template store to initial state
+  - [x] Clear all sections and layout configuration
+  - [x] Reset design settings to defaults
+  - [x] Clear field values
+  - [x] Reset UI state (dialogs, modals, etc.)
+- [x] 8.5.4 Fix state persistence after API update
+  - [x] Ensure API response includes all template data
+  - [x] Update store with complete template data after save
+  - [x] Preserve layout configuration after update
+  - [x] Preserve sections and fields after update
+  - [x] Preserve design settings after update
+
 ### Priority Tasks (Not Yet Implemented)
 #### High Priority
+- [x] Template list pagination
+- [x] Route parameter handling for template loading
+- [x] Clear state on new template creation
+- [x] Fix state persistence after update
 - [ ] Multiple page PDF support
 - [ ] Inline field validation indicators
 - [ ] Advanced undo/redo functionality

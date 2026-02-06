@@ -1,0 +1,129 @@
+// Edit Profile Component Styles
+
+:host {
+  display: block;
+}
+
+// Accessibility: Enhanced focus states for keyboard navigation
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+button:focus-visible {
+  outline: 3px solid theme('colors.blue.600');
+  outline-offset: 2px;
+  border-radius: theme('borderRadius.md');
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+// Accessibility: Focus for PrimeNG components
+::ng-deep {
+  .p-inputtext:focus,
+  .p-dropdown:focus,
+  .p-calendar:focus {
+    outline: 3px solid theme('colors.blue.600');
+    outline-offset: 2px;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+
+  .p-button:focus-visible {
+    outline: 3px solid theme('colors.blue.600');
+    outline-offset: 2px;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+}
+
+// Form validation styles with better visual feedback
+.ng-invalid.ng-dirty,
+.ng-invalid.ng-touched {
+  border-color: theme('colors.red.500');
+  background-color: theme('colors.red.50');
+  
+  &:focus {
+    outline-color: theme('colors.red.600');
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+  }
+}
+
+// Smooth transitions for better UX
+form {
+  transition: opacity 0.2s ease-in-out;
+}
+
+input,
+textarea,
+select {
+  transition: border-color 0.15s ease-in-out, background-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+// Section headings with better visual hierarchy
+section h2 {
+  position: relative;
+  padding-bottom: 0.5rem;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 3rem;
+    height: 3px;
+    background: linear-gradient(to right, theme('colors.blue.600'), theme('colors.blue.400'));
+    border-radius: theme('borderRadius.full');
+  }
+}
+
+// Improved spacing for form fields
+.grid > div {
+  display: flex;
+  flex-direction: column;
+}
+
+// Better visual feedback for disabled fields
+input:disabled,
+input[readonly] {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+// Accessibility: Skip to main content link (if needed)
+.skip-to-main {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: theme('colors.blue.600');
+  color: white;
+  padding: 0.5rem 1rem;
+  text-decoration: none;
+  border-radius: theme('borderRadius.md');
+  z-index: 100;
+  
+  &:focus {
+    top: 0;
+  }
+}
+
+// Responsive improvements
+@media (max-width: 768px) {
+  section h2 {
+    font-size: 1.25rem;
+  }
+  
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+// Print styles for accessibility
+@media print {
+  button,
+  .no-print {
+    display: none;
+  }
+  
+  form {
+    box-shadow: none;
+    border: 1px solid theme('colors.gray.300');
+  }
+}
+

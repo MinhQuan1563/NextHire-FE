@@ -20,6 +20,7 @@ import { ResetPasswordComponent } from './pages/auth/reset-password/reset-passwo
 import { AuthGuard } from './guards/auth.guard';
 import { PermissionGuard } from './guards/permission.guard';
 import { PERMISSIONS } from '@shared/constants/permissions.constant';
+import { gameAccessGuard } from './guards/game-access.guard';
 
 export const routes: Routes = [
   {
@@ -40,12 +41,17 @@ export const routes: Routes = [
       { path: 'network', component: NetworkComponent },
       { path: 'network/connections', component: ConnectionsComponent },
       { 
-        path: 'cv-builder',
+        path: 'cv-template',
         children: [
           { 
             path: '', 
             loadComponent: () => import('./pages/cv-builder/template-list/template-list.component')
               .then(m => m.TemplateListComponent)
+          },
+          { 
+            path: 'editor/:templateCode', 
+            loadComponent: () => import('./pages/cv-builder/cv-editor/cv-editor.component')
+              .then(m => m.CvEditorComponent)
           },
           { 
             path: 'editor', 
@@ -66,10 +72,36 @@ export const routes: Routes = [
       },
       { path: 'messaging', component: MessagingComponent },       // Nhắn tin
       { path: 'notifications', component: NotificationsComponent }, // Thông báo
+      {
+        path: 'profile',
+        children: [
+          {
+            path: '',
+            pathMatch: 'full',
+            loadComponent: () => import('./pages/user-profile/my-profile/my-profile.component')
+              .then(m => m.MyProfileComponent)
+          },
+          {
+            path: 'edit',
+            loadComponent: () => import('./pages/user-profile/edit-profile/edit-profile.component')
+              .then(m => m.EditProfileComponent)
+          },
+          {
+            path: 'cvs',
+            loadComponent: () => import('./pages/user-profile/user-cv/user-cv.component')
+              .then(m => m.UserCvComponent)
+          },
+          {
+            path: ':userCode',
+            loadComponent: () => import('./pages/user-profile/other-user-profile/other-user-profile.component')
+              .then(m => m.OtherUserProfileComponent)
+          }
+        ]
+      },
       { path: 'games', component: GamesComponent },               // Games list
-      { path: 'games/2048', component: Game2048Component },       // 2048 game
-      { path: 'games/tango', component: TangoComponent },         // Tango game
-      { path: 'games/queens', component: QueensComponent },       // Queens game
+      { path: 'games/2048', component: Game2048Component, canActivate: [gameAccessGuard] },       // 2048 game
+      { path: 'games/tango', component: TangoComponent, canActivate: [gameAccessGuard] },         // Tango game
+      { path: 'games/queens', component: QueensComponent, canActivate: [gameAccessGuard] },       // Queens game
       // ... Các route khác sử dụng layout này
     ]
   },
@@ -90,5 +122,9 @@ export const routes: Routes = [
   {
     path: '**',
     loadComponent: () => import('./pages/not-found/not-found.component').then(m => m.NotFoundComponent)
+  },
+  {
+    path: 'admin',
+    loadChildren: () => import('./pages/admin/admin.routes').then(m => m.adminRoutes)
   }
 ];

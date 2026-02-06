@@ -1,0 +1,216 @@
+<div class="manage-games-container p-4 md:p-6">
+  <p-toast></p-toast>
+  <p-confirmDialog></p-confirmDialog>
+
+  <div class="header-section mb-6">
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-4">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-800 mb-2">Manage Games</h1>
+        <p class="text-gray-600">Manage mini-games available on the platform</p>
+      </div>
+      
+      <div class="flex items-center gap-3">
+        <p-button
+          icon="pi pi-refresh"
+          [loading]="isLoading()"
+          (onClick)="loadGames()"
+          severity="secondary"
+          [outlined]="true"
+          size="small"
+          pTooltip="Refresh"
+        ></p-button>
+        
+        <p-button
+          icon="pi pi-plus"
+          label="Add New Game"
+          (onClick)="openCreateDialog()"
+          severity="primary"
+        ></p-button>
+      </div>
+    </div>
+
+    <div class="filter-section flex flex-col md:flex-row gap-4 items-start md:items-center">
+      <div class="search-wrapper flex-1 w-full md:w-auto">
+        <span class="p-input-icon-right w-full">
+          <i class="pi pi-search"></i>
+          <input
+            type="text"
+            pInputText
+            [ngModel]="searchText()"
+            (ngModelChange)="onSearchChange($event)"
+            placeholder="Search by name or code..."
+            class="w-full"
+            aria-label="Search games by name or code"
+            role="searchbox"
+          />
+        </span>
+      </div>
+      
+      <div class="status-filter">
+        <p-dropdown
+          [options]="statusOptions"
+          [ngModel]="selectedStatus()"
+          (ngModelChange)="selectedStatus.set($event); onStatusChange()"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Filter by status"
+          [style]="{ minWidth: '180px' }"
+          ariaLabel="Filter games by status"
+        ></p-dropdown>
+      </div>
+      
+      @if (isSearching()) {
+        <p-button
+          icon="pi pi-filter-slash"
+          label="Clear Filters"
+          (onClick)="clearFilters()"
+          severity="secondary"
+          [outlined]="true"
+          size="small"
+        ></p-button>
+      }
+    </div>
+  </div>
+
+  @if (error()) {
+    <div class="error-section mb-6">
+      <div class="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <i class="pi pi-exclamation-circle text-red-500 text-xl"></i>
+          <span class="text-red-700">{{ error() }}</span>
+        </div>
+        <p-button
+          label="Retry"
+          icon="pi pi-refresh"
+          (onClick)="loadGames()"
+          severity="danger"
+          [text]="true"
+          size="small"
+        ></p-button>
+      </div>
+    </div>
+  }
+
+  <div class="games-table-section bg-white rounded-lg shadow">
+    <p-table
+      [value]="games()"
+      [loading]="isLoading()"
+      [paginator]="true"
+      [rows]="pageSize()"
+      [totalRecords]="totalRecords()"
+      [lazy]="true"
+      (onLazyLoad)="onPageChange($any($event))"
+      [rowsPerPageOptions]="pageSizeOptions"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="Showing {first} to {last} of {totalRecords} games"
+      styleClass="p-datatable-sm"
+      [tableStyle]="{ 'min-width': '60rem' }"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th pSortableColumn="gameCode">Game Code</th>
+          <th pSortableColumn="name">Name</th>
+          <th style="width: 120px">Status</th>
+          <th style="width: 220px">Actions</th>
+        </tr>
+      </ng-template>
+      
+      <ng-template pTemplate="body" let-game>
+        <tr>
+          <td>
+            <span class="font-mono text-sm bg-gray-100 px-2 py-1 rounded">{{ game.gameCode }}</span>
+          </td>
+          <td>
+            <span class="font-medium">{{ game.name }}</span>
+          </td>
+          <td>
+            <div class="flex items-center gap-2">
+              <p-inputSwitch
+                [ngModel]="game.isActive"
+                (ngModelChange)="onToggleStatus(game)"
+                [disabled]="isToggling(game.gameCode)"
+                [inputId]="'status-' + game.gameCode"
+                [attr.aria-label]="'Toggle status for ' + game.name"
+              ></p-inputSwitch>
+              <p-tag
+                [value]="getStatusLabel(game.isActive)"
+                [severity]="getStatusSeverity(game.isActive)"
+              ></p-tag>
+              @if (isToggling(game.gameCode)) {
+                <i class="pi pi-spin pi-spinner text-gray-500"></i>
+              }
+            </div>
+          </td>
+          <td>
+            <div class="flex items-center gap-2">
+              <p-button
+                icon="pi pi-pencil"
+                (onClick)="openEditDialog(game)"
+                severity="secondary"
+                [outlined]="true"
+                size="small"
+                pTooltip="Edit"
+                [attr.aria-label]="'Edit ' + game.name"
+              ></p-button>
+              <p-button
+                icon="pi pi-trash"
+                (onClick)="confirmDelete(game)"
+                severity="danger"
+                [outlined]="true"
+                size="small"
+                pTooltip="Delete"
+                [attr.aria-label]="'Delete ' + game.name"
+              ></p-button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+      
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="7">
+            <div class="text-center py-8">
+              <i class="pi pi-inbox text-4xl text-gray-300 mb-3"></i>
+              <p class="text-gray-500">
+                @if (isSearching()) {
+                  No games found matching your criteria
+                } @else {
+                  No games available. Click "Add New Game" to create one.
+                }
+              </p>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+      
+      <ng-template pTemplate="loadingbody">
+        <tr *ngFor="let _ of [1,2,3,4,5]">
+          <td><div class="w-12 h-12 bg-gray-200 rounded animate-pulse"></div></td>
+          <td><div class="h-4 bg-gray-200 rounded w-24 animate-pulse"></div></td>
+          <td><div class="h-4 bg-gray-200 rounded w-32 animate-pulse"></div></td>
+          <td><div class="h-4 bg-gray-200 rounded w-20 animate-pulse"></div></td>
+          <td><div class="h-6 bg-gray-200 rounded w-16 animate-pulse"></div></td>
+          <td><div class="h-4 bg-gray-200 rounded w-24 animate-pulse"></div></td>
+          <td><div class="h-8 bg-gray-200 rounded w-20 animate-pulse"></div></td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  <p-dialog
+    [header]="isEditMode() ? 'Edit Game' : 'Create New Game'"
+    [(visible)]="showGameDialog"
+    [modal]="true"
+    [style]="{ width: '500px' }"
+    [draggable]="false"
+    [resizable]="false"
+    (onHide)="closeDialog()"
+  >
+    <app-game-form
+      [game]="selectedGame()"
+      [isEditMode]="isEditMode()"
+      (saved)="onGameSaved()"
+      (cancelled)="closeDialog()"
+    ></app-game-form>
+  </p-dialog>
+</div>

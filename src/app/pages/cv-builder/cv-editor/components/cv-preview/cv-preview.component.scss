@@ -1,3 +1,5 @@
+// ========== CV Preview Area Container ==========
+
 .cv-preview-area {
   flex: 1;
   padding: 20px;
@@ -8,6 +10,8 @@
   position: relative;
   height: 100vh;
 }
+
+// ========== Preview Header ==========
 
 .preview-header {
   display: flex;
@@ -55,6 +59,12 @@
 
       &:hover {
         background-color: #5a6268;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      &:active {
+        transform: translateY(0);
       }
     }
 
@@ -64,10 +74,18 @@
 
       &:hover {
         background-color: #0056b3;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      &:active {
+        transform: translateY(0);
       }
     }
   }
 }
+
+// ========== CV Preview Container ==========
 
 .cv-preview {
   flex: 1;
@@ -81,7 +99,7 @@
 
   &.zoomed {
     padding-top: 60px;
-    
+
     .cv-paper {
       transform: scale(1.2);
       transform-origin: center top;
@@ -89,6 +107,8 @@
     }
   }
 }
+
+// ========== CV Paper (A4 Format) ==========
 
 .cv-paper {
   width: 210mm;
@@ -105,6 +125,7 @@
   overflow: visible;
   margin: 20px 0;
 
+  // Background colors
   &.bg-white {
     background-color: white;
   }
@@ -122,426 +143,616 @@
   }
 }
 
-.cv-header {
-  display: flex;
-  gap: 20mm;
-  margin-bottom: 20mm;
-  padding-bottom: 15mm;
-  border-bottom: 2px solid #e5e5e5;
-
-  .cv-avatar {
-    width: 25mm;
-    height: 25mm;
-    flex-shrink: 0;
-
-    .avatar-placeholder {
-      width: 100%;
-      height: 100%;
-      border: 2px dashed #ccc;
-      border-radius: 50%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      font-size: 10px;
-      color: #666;
-
-      &:hover {
-        border-color: #007bff;
-        color: #007bff;
-      }
-
-      i {
-        font-size: 16px;
-        margin-bottom: 4px;
-      }
-
-      span {
-        font-size: 8px;
-        text-align: center;
-      }
-    }
-
-    .avatar-image {
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
-      overflow: hidden;
-      position: relative;
-      cursor: pointer;
-
-      img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-      }
-
-      .avatar-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.5);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        opacity: 0;
-        transition: opacity 0.2s ease;
-        border-radius: 50%;
-
-        i {
-          color: white;
-          font-size: 14px;
-        }
-
-        &:hover {
-          opacity: 1;
-        }
-      }
-    }
-  }
-
-  .cv-personal-info {
-    flex: 1;
-
-    .cv-name {
-      font-size: 28px;
-      font-weight: 700;
-      color: #333;
-      margin: 0 0 8px 0;
-      line-height: 1.2;
-    }
-
-    .cv-title {
-      font-size: 18px;
-      color: #666;
-      margin-bottom: 15px;
-      font-weight: 500;
-    }
-
-    .cv-contact {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-
-      .contact-item {
-        font-size: 14px;
-        color: #555;
-      }
-    }
-  }
-}
+// ========== CV Body Layout ==========
 
 .cv-body {
-  .cv-section {
-    margin-bottom: 20mm;
+  width: 100%;
+  height: 100%;
+}
 
-    &:last-child {
-      margin-bottom: 0;
-    }
+// ========== Row & Column Layout ==========
 
-    .section-title {
-      font-size: 16px;
-      font-weight: 700;
-      color: #00B14F;
-      margin: 0 0 12px 0;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      border-bottom: 1px solid #e5e5e5;
-      padding-bottom: 6px;
-    }
+.cv-row {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 24px;
 
-    .section-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
-
-      .add-item-btn {
-        background: #007bff;
-        color: white;
-        border: none;
-        border-radius: 50%;
-        width: 24px;
-        height: 24px;
-        cursor: pointer;
-        font-size: 14px;
-        font-weight: bold;
-        transition: all 0.2s ease;
-
-        &:hover {
-          background: #0056b3;
-          transform: scale(1.1);
-        }
-      }
-    }
-
-    .section-content {
-      line-height: 1.6;
-      text-align: justify;
-    }
+  &:last-child {
+    margin-bottom: 0;
   }
 }
 
-// Education styles
-.education-item {
-  margin-bottom: 16px;
+.cv-row-content {
+  display: flex;
+  gap: 20px;
+  width: 100%;
+}
 
-  .edu-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    margin-bottom: 4px;
+.cv-column {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 
-    .edu-degree {
-      font-weight: 600;
-      color: #333;
-      margin: 0;
-      font-size: 15px;
-    }
-
-    .edu-year {
-      color: #666;
-      font-size: 14px;
-      font-style: italic;
-    }
-  }
-
-  .edu-school {
-    color: #555;
-    font-size: 14px;
-    margin-bottom: 2px;
-  }
-
-  .edu-gpa {
-    color: #666;
-    font-size: 13px;
+  // Single column takes full width
+  &:only-child {
+    flex: 100;
   }
 }
 
-// Experience styles
-.experience-item {
+// ========== Section Styles ==========
+
+.cv-section {
+  position: relative;
   margin-bottom: 20px;
+  padding: 12px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  // Hover state for sections
+  &.hovered {
+    background-color: rgba(14, 165, 233, 0.05);
+    box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.2);
+  }
+
+  // Locked section
+  &.locked {
+    opacity: 0.9;
+
+    &.hovered {
+      background-color: rgba(156, 163, 175, 0.05);
+      box-shadow: 0 0 0 2px rgba(156, 163, 175, 0.2);
+    }
+  }
+
+  // Legacy section (flat layout)
+  &.legacy-section {
+    padding: 8px;
+  }
+}
+
+// Section Title
+.cv-section-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 12px 0;
+  padding-bottom: 6px;
+  border-bottom: 2px solid #e2e8f0;
+  transition: all 0.2s ease;
+  cursor: default;
+  user-select: none;
+}
+
+// Section Content
+.cv-section-content {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #475569;
+
+  .placeholder-text {
+    color: #94a3b8;
+    font-style: italic;
+    margin: 8px 0;
+  }
+}
+
+// ========== Section Hover Controls ==========
+
+.section-controls {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  gap: 4px;
+  z-index: 10;
+  opacity: 0;
+  transform: translateY(-5px);
+  transition: all 0.2s ease;
+  background: white;
+  padding: 4px;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+
+  .cv-section.hovered & {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.section-control-btn {
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 4px;
+  background-color: white;
+  color: #64748b;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  padding: 0;
+
+  &:hover {
+    background-color: #f1f5f9;
+    color: #334155;
+    transform: scale(1.05);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  &.move-up,
+  &.move-down {
+    &:hover {
+      background-color: #dbeafe;
+      color: #0ea5e9;
+    }
+  }
+
+  &.delete {
+    &:hover {
+      background-color: #fee2e2;
+      color: #dc2626;
+    }
+  }
+
+  i {
+    font-style: normal;
+    line-height: 1;
+  }
+}
+
+// ========== Field Wrapper & Label ==========
+
+.cv-field-wrapper {
+  margin-bottom: 12px;
   position: relative;
 
-  &:hover .item-controls {
-    opacity: 1;
+  &:last-child {
+    margin-bottom: 0;
   }
 
-  .item-controls {
-    position: absolute;
-    top: 0;
-    right: -10px;
-    opacity: 0;
-    transition: opacity 0.2s ease;
-
-    .remove-item-btn {
-      background: #dc3545;
-      color: white;
-      border: none;
-      border-radius: 50%;
-      width: 20px;
-      height: 20px;
-      cursor: pointer;
-      font-size: 12px;
-      line-height: 1;
-
-      &:hover {
-        background: #c82333;
-      }
-    }
-  }
-
-  .exp-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    margin-bottom: 4px;
-
-    .exp-position {
+  &.field-required {
+    .cv-field-label {
       font-weight: 600;
-      color: #333;
-      margin: 0;
-      font-size: 15px;
+    }
+  }
+}
+
+.cv-field-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: #64748b;
+  margin-bottom: 4px;
+  user-select: none;
+
+  &.required {
+    color: #475569;
+  }
+
+  .required-asterisk {
+    color: #dc2626;
+    margin-left: 2px;
+  }
+}
+
+// ========== Field States ==========
+
+.cv-field {
+  padding: 6px 8px;
+  border-radius: 4px;
+  min-height: 24px;
+  transition: all 0.2s ease;
+  position: relative;
+  outline: none;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+
+  // Empty field placeholder
+  &:empty:before {
+    content: attr(placeholder);
+    color: #cbd5e1;
+    font-style: italic;
+    pointer-events: none;
+  }
+
+  // Editable field
+  &.editable {
+    cursor: text;
+    border: 1px solid transparent;
+
+    &:hover {
+      background-color: rgba(59, 130, 246, 0.05);
+      border-color: rgba(59, 130, 246, 0.2);
+    }
+  }
+
+  // Hovered state
+  &.hovered {
+    background-color: rgba(59, 130, 246, 0.08);
+    border-color: rgba(59, 130, 246, 0.3);
+  }
+
+  // Active state (clicked)
+  &.active {
+    background-color: rgba(59, 130, 246, 0.1);
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+  }
+
+  // Focused state (being edited)
+  &.focused {
+    background-color: white;
+    border-color: #0ea5e9;
+    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
+  }
+
+  // Editing state (contenteditable=true)
+  &.editing {
+    cursor: text;
+    caret-color: #0ea5e9;
+  }
+
+  // Rich text field (supports formatting)
+  &.rich-text {
+    min-height: 60px;
+    line-height: 1.6;
+
+    ul, ol {
+      margin: 8px 0;
+      padding-left: 24px;
     }
 
-    .exp-duration {
-      color: #666;
-      font-size: 14px;
+    li {
+      margin-bottom: 4px;
+    }
+
+    p {
+      margin: 4px 0;
+    }
+
+    strong {
+      font-weight: 600;
+    }
+
+    em {
       font-style: italic;
     }
-  }
 
-  .exp-company {
-    color: #555;
-    font-size: 14px;
-    margin-bottom: 8px;
-    font-weight: 500;
-  }
-
-  .exp-responsibilities {
-    margin: 0 0 8px 0;
-    padding-left: 20px;
-
-    .responsibility-item {
-      margin-bottom: 4px;
-      display: flex;
-      align-items: flex-start;
-      gap: 8px;
-
-      .responsibility-text {
-        flex: 1;
-        line-height: 1.4;
-      }
-
-      .remove-resp-btn {
-        background: none;
-        border: none;
-        color: #dc3545;
-        cursor: pointer;
-        font-size: 12px;
-        padding: 0;
-        min-width: 16px;
-        height: 16px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        opacity: 0;
-        transition: opacity 0.2s ease;
-
-        &:hover {
-          opacity: 1;
-        }
-      }
-
-      &:hover .remove-resp-btn {
-        opacity: 0.7;
-      }
+    u {
+      text-decoration: underline;
     }
   }
 
-  .add-resp-btn {
-    background: none;
-    border: 1px dashed #ccc;
-    color: #666;
-    padding: 4px 8px;
-    font-size: 12px;
+  // Required field indicator
+  &.required:not(.focused):empty {
+    border-color: #fca5a5;
+    background-color: rgba(252, 165, 165, 0.05);
+  }
+
+  // Readonly field
+  &.cv-field-readonly {
+    cursor: default;
+    user-select: none;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    color: #64748b;
+  }
+
+  // Image field
+  &.cv-field-image {
+    border: 2px dashed #cbd5e1;
+    background-color: #f8fafc;
+    min-height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
-    border-radius: 4px;
     transition: all 0.2s ease;
 
     &:hover {
-      border-color: #007bff;
-      color: #007bff;
+      border-color: #0ea5e9;
+      background-color: #f0f9ff;
+    }
+
+    .image-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      color: #94a3b8;
+
+      .image-icon {
+        font-size: 32px;
+        opacity: 0.6;
+      }
+
+      .image-text {
+        font-size: 12px;
+      }
     }
   }
 }
 
-// Activity styles
-.activity-item {
-  margin-bottom: 16px;
+// ========== Empty State ==========
 
-  .activity-title {
-    font-weight: 600;
-    color: #333;
-    margin: 0 0 4px 0;
-    font-size: 15px;
-  }
-
-  .activity-org {
-    color: #666;
+.cv-column-empty {
+  padding: 40px 20px;
+  text-align: center;
+  border: 2px dashed #dee2e6;
+  border-radius: 8px;
+  background-color: #f8f9fa;
+  margin: 10px 0;
+  
+  .empty-column-message {
+    color: #6c757d;
     font-size: 14px;
-    margin-bottom: 4px;
-    font-style: italic;
-  }
-
-  .activity-desc {
-    line-height: 1.4;
-  }
-}
-
-// Certificate styles
-.certificate-item {
-  margin-bottom: 12px;
-
-  .cert-name {
-    font-weight: 600;
-    color: #333;
-    margin: 0 0 2px 0;
-    font-size: 15px;
-  }
-
-  .cert-issuer {
-    color: #666;
-    font-size: 14px;
+    margin: 0;
     font-style: italic;
   }
 }
 
-// Project styles
-.project-item {
-  margin-bottom: 16px;
+.cv-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  text-align: center;
+  padding: 40px;
 
-  .project-title {
+  .empty-icon {
+    font-size: 64px;
+    margin-bottom: 16px;
+    opacity: 0.5;
+  }
+
+  h3 {
+    font-size: 20px;
     font-weight: 600;
-    color: #333;
-    margin: 0 0 4px 0;
-    font-size: 15px;
+    color: #64748b;
+    margin: 0 0 8px 0;
   }
 
-  .project-tech {
-    color: #007bff;
+  p {
     font-size: 14px;
-    font-weight: 500;
-    margin-bottom: 4px;
-  }
-
-  .project-desc {
-    line-height: 1.4;
+    color: #94a3b8;
+    max-width: 400px;
+    line-height: 1.6;
+    margin: 0;
   }
 }
 
-// Reference styles
-.reference-item {
-  margin-bottom: 16px;
+// ========== Editing Instructions (Tooltip) ==========
 
-  .reference-name {
-    font-weight: 600;
-    color: #333;
-    margin: 0 0 4px 0;
-    font-size: 15px;
+.editing-instructions {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 999;
+  animation: slideUp 0.3s ease-out;
+}
+
+.instruction-content {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 500px;
+
+  .instruction-icon {
+    font-size: 20px;
+    flex-shrink: 0;
   }
 
-  .reference-position {
-    color: #666;
-    font-size: 14px;
-    margin-bottom: 2px;
-    font-style: italic;
-  }
-
-  .reference-contact {
+  .instruction-text {
     font-size: 13px;
-    color: #555;
+    line-height: 1.5;
+
+    strong {
+      font-weight: 600;
+    }
   }
 }
 
-// Editable elements
-.editable {
-  cursor: text;
-  transition: all 0.2s ease;
-  border-radius: 2px;
-  padding: 1px 2px;
+// ========== Animations ==========
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+// ========== Print Styles ==========
+
+@media print {
+  .cv-preview-area {
+    padding: 0;
+    background-color: white;
+  }
+
+  .preview-header {
+    display: none;
+  }
+
+  .cv-preview {
+    padding: 0;
+  }
+
+  .cv-paper {
+    box-shadow: none;
+    margin: 0;
+    width: 100%;
+    min-height: auto;
+  }
+
+  .section-controls {
+    display: none !important;
+  }
+
+  .editing-instructions {
+    display: none !important;
+  }
+
+  .cv-field {
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 2px 0 !important;
+  }
+
+  .cv-section {
+    padding: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+}
+
+// ========== Responsive Adjustments ==========
+
+@media (max-width: 1024px) {
+  .cv-paper {
+    width: 100%;
+    max-width: 210mm;
+    padding: 20mm;
+  }
+}
+
+@media (max-width: 768px) {
+  .cv-preview-area {
+    padding: 12px;
+  }
+
+  .preview-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 0 12px;
+
+    .preview-actions {
+      width: 100%;
+      justify-content: space-between;
+    }
+  }
+
+  .cv-preview {
+    padding: 12px;
+  }
+
+  .cv-paper {
+    width: 100%;
+    padding: 15mm;
+    font-size: 12px;
+  }
+
+  .cv-row-content {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .cv-column {
+    flex: none;
+    width: 100%;
+  }
+
+  .section-controls {
+    top: 4px;
+    right: 4px;
+  }
+
+  .section-control-btn {
+    width: 24px;
+    height: 24px;
+    font-size: 12px;
+  }
+
+  .editing-instructions {
+    bottom: 12px;
+    left: 12px;
+    right: 12px;
+    transform: none;
+
+    .instruction-content {
+      padding: 10px 16px;
+      font-size: 12px;
+    }
+  }
+}
+
+// ========== Focus Visible (Accessibility) ==========
+
+.cv-field:focus-visible,
+.section-control-btn:focus-visible {
+  outline: 2px solid #0ea5e9;
+  outline-offset: 2px;
+}
+
+// ========== Selection Styles ==========
+
+::selection {
+  background-color: rgba(14, 165, 233, 0.3);
+  color: inherit;
+}
+
+::-moz-selection {
+  background-color: rgba(14, 165, 233, 0.3);
+  color: inherit;
+}
+
+// ========== Scrollbar Styles ==========
+
+.cv-preview::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.cv-preview::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+.cv-preview::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
 
   &:hover {
-    background-color: rgba(0, 123, 255, 0.1);
-    outline: 1px solid rgba(0, 123, 255, 0.3);
-  }
-
-  &:focus {
-    outline: 2px solid #007bff;
-    background-color: rgba(0, 123, 255, 0.05);
+    background: #94a3b8;
   }
 }

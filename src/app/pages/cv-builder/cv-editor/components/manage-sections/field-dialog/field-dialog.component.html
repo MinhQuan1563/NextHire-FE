@@ -1,0 +1,167 @@
+<p-dialog
+  [(visible)]="visible"
+  modal
+  draggable="false"
+  [resizable]="false"
+  [maximizable]="true"
+  [style]="{ width: '560px' }"
+  [header]="field ? 'Edit Field' : 'Create Field'"
+  (onHide)="close()"
+>
+  <form [formGroup]="form" class="space-y-6">
+    <!-- BASIC INFO -->
+    <div class="space-y-4">
+      <h4 class="text-sm font-semibold text-gray-600 uppercase">
+        Basic Information
+      </h4>
+
+      <!-- NAME -->
+      <div class="flex flex-col gap-1">
+        <label for="field_input_name" class="text-sm font-medium">
+          Name <span class="text-red-500">*</span>
+        </label>
+        <input
+          pInputText
+          class="border border-gray-300 rounded-lg focus:border-blue-500 w-full"
+          id="field_input_name"
+          formControlName="name"
+          [ngClass]="{'border-red-500': isFieldInvalid(form, 'name')}"
+        />
+        <app-form-error [form]="form" fieldName="name" [messages]="{'required': 'Tên trường là bắt buộc'}"></app-form-error>
+      </div>
+
+      <!-- LABEL & TYPE -->
+      <div class="grid grid-cols-2 gap-4">
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-medium">
+            Label <span class="text-red-500">*</span>
+          </label>
+          <input 
+            class="border border-gray-300 rounded-lg focus:border-blue-500 w-full"
+            id="field_input_label"
+            pInputText formControlName="label"
+            [ngClass]="{'border-red-500': isFieldInvalid(form, 'label')}"
+          />
+          <app-form-error [form]="form" fieldName="label" [messages]="{'required': 'Label là bắt buộc'}"></app-form-error>
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-medium">
+            Type <span class="text-red-500">*</span>
+          </label>
+          <p-dropdown
+            [options]="fieldTypeOptions"
+            optionLabel="label"
+            optionValue="value"
+            formControlName="type"
+            placeholder="Choose type"
+            class="border border-gray-300 rounded-lg focus:border-blue-500"
+            id="field_input_type"
+            [ngClass]="{'border-red-500': isFieldInvalid(form, 'type')}"
+          />
+          <app-form-error [form]="form" fieldName="type" [messages]="{'required': 'Type là bắt buộc'}"></app-form-error>
+        </div>
+      </div>
+
+      <!-- PLACEHOLDER -->
+      <div class="flex flex-col gap-1">
+        <label class="text-sm font-medium">Placeholder</label>
+        <input pInputText formControlName="placeholder" class="border border-gray-300 rounded-lg focus:border-blue-500 w-full" id="field_input_placeholder" />
+      </div>
+
+      <!-- REQUIRED -->
+      <div class="flex items-center gap-2">
+        <p-checkbox binary formControlName="required" class="border border-gray-300 rounded-lg focus:border-blue-500" id="field_input_required" />
+        <label class="text-sm" id="field_input_required">Required</label>
+      </div>
+    </div>
+
+    <!-- UPLOAD CONFIG -->
+    <div
+      *ngIf="isUploadField"
+      formGroupName="uploadConfig"
+      class="rounded-xl border border-gray-200 bg-gray-50 p-4 space-y-4"
+    >
+      <h4 class="text-sm font-semibold text-gray-600 uppercase">
+        Upload Configuration
+      </h4>
+
+      <div class="grid grid-cols-2 gap-4">
+
+        <!-- MAX FILE SIZE -->
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-medium">Max File Size (MB)</label>
+          <p-inputNumber
+            formControlName="maxFileSizeMB"
+            [min]="1"
+            [showButtons]="true"
+            class="border border-gray-300 rounded-lg focus:border-blue-500 w-full"
+            id="field_input_maxFileSizeMB"
+          />
+        </div>
+
+        <!-- MIME TYPES -->
+        <div class="flex flex-col gap-1">
+          <label class="text-sm font-medium">Allowed Mime Types</label>
+          <p-multiSelect
+            [options]="mimeTypeOptions"
+            optionLabel="label"
+            optionValue="value"
+            formControlName="allowedMimeTypes"
+            display="chip"
+            class="border border-gray-300 rounded-lg focus:border-blue-500 w-full"
+            id="field_input_allowedMimeTypes"
+          />
+        </div>
+
+        <!-- IMAGE ONLY -->
+        <ng-container *ngIf="form.get('type')?.value === 'image'">
+
+          <div class="flex flex-col gap-1">
+            <label class="text-sm font-medium">Max Width</label>
+            <p-inputNumber formControlName="maxWidth" class="border border-gray-300 rounded-lg focus:border-blue-500 w-full" id="field_input_maxWidth" />
+          </div>
+
+          <div class="flex flex-col gap-1">
+            <label class="text-sm font-medium">Max Height</label>
+            <p-inputNumber formControlName="maxHeight" class="border border-gray-300 rounded-lg focus:border-blue-500 w-full" id="field_input_maxHeight" />
+          </div>
+
+          <div class="flex flex-col gap-1">
+            <label class="text-sm font-medium">Aspect Ratio</label>
+            <input pInputText formControlName="aspectRatio" class="border border-gray-300 rounded-lg focus:border-blue-500 w-full" id="field_input_aspectRatio" />
+          </div>
+
+          <div class="flex items-center gap-2 mt-6">
+            <p-checkbox binary formControlName="allowCrop" class="border border-gray-300 rounded-lg focus:border-blue-500 w-full" id="field_input_allowCrop" />
+            <label class="text-sm" id="field_input_allowCrop">Allow crop</label>
+          </div>
+
+        </ng-container>
+
+        <!-- MULTIPLE -->
+        <div class="flex items-center gap-2 col-span-2">
+          <p-checkbox binary formControlName="multiple" />
+          <label class="text-sm">Allow multiple files</label>
+        </div>
+
+      </div>
+    </div>
+  </form>
+
+  <!-- FOOTER -->
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-3">
+      <p-button
+        label="Cancel"
+        severity="secondary"
+        (click)="close()"
+      />
+      <p-button
+        label="Save"
+        icon="pi pi-check"
+        (click)="save()"
+      />
+    </div>
+  </ng-template>
+</p-dialog>

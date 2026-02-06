@@ -1,0 +1,12 @@
+<div class="bar-chart-container" [style.height]="chartHeight()">
+  <p-chart 
+    *ngIf="processedData()" 
+    type="bar" 
+    [data]="processedData()" 
+    [options]="chartOptions()"
+    [style]="{'height': '100%'}"
+  ></p-chart>
+  <div *ngIf="!processedData()" class="flex items-center justify-center h-full text-gray-400">
+    <span>No data available</span>
+  </div>
+</div>

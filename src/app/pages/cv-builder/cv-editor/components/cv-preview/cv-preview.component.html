@@ -1,10 +1,19 @@
 <div class="cv-preview-area">
+  <!-- Hidden file input for image uploads -->
+  <input
+    #fileInput
+    type="file"
+    accept="image/*"
+    style="display: none"
+    (change)="onFileSelected($event)"
+  />
+
   <div class="preview-header">
     <h2>Xem trước CV</h2>
     <div class="preview-actions">
       <button class="btn-secondary" (click)="zoomCV()">
         <i class="icon-zoom"></i>
-        {{ isZoomed ? 'Thu nhỏ' : 'Phóng to' }}
+        {{ isZoomed ? "Thu nhỏ" : "Phóng to" }}
       </button>
       <button class="btn-primary" (click)="downloadCV()">
         <i class="icon-download"></i>
@@ -15,226 +24,234 @@
 
   <!-- A4 CV Preview -->
   <div class="cv-preview" [class.zoomed]="isZoomed">
-    <div class="cv-paper" 
-         [style.font-family]="designSettings.selectedFont"
-         [style.font-size.px]="designSettings.fontSize"
-         [style.line-height]="designSettings.lineSpacing"
-         [class]="'bg-' + designSettings.selectedBackground">
-      
-      <!-- Hidden file input -->
-      <input #fileInput 
-             id="cvFileInput"
-             type="file" 
-             accept="image/*" 
-             style="display: none" 
-             (change)="onFileSelected($event)">
-      
-      <!-- CV Header -->
-      <div class="cv-header">
-        <div class="cv-avatar">
-          <div class="avatar-placeholder editable" 
-               title="Click để thêm ảnh"
-               (click)="uploadAvatar()"
-               *ngIf="!selectedAvatarUrl">
-            <i class="icon-camera">📷</i>
-            <span>Thêm ảnh</span>
-          </div>
-          <div class="avatar-image" 
-               *ngIf="selectedAvatarUrl"
-               (click)="uploadAvatar()">
-            <img [src]="selectedAvatarUrl" alt="Avatar" />
-            <div class="avatar-overlay">
-              <i class="icon-edit">✏️</i>
-            </div>
-          </div>
-        </div>
-        <div class="cv-personal-info">
-          <h1 class="cv-name editable" 
-              contenteditable="true"
-              (click)="onEditableClick($event, 'name')"
-              (blur)="updateField('name', $event)">Nguyễn Văn A</h1>
-          <div class="cv-title editable" 
-               contenteditable="true"
-               (click)="onEditableClick($event, 'title')"
-               (blur)="updateField('title', $event)">Frontend Developer</div>
-          <div class="cv-contact">
-            <div class="contact-item editable" 
-                 contenteditable="true"
-                 (click)="onEditableClick($event, 'email')"
-                 (blur)="updateField('email', $event)">📧 nguyen.vana&#64;email.com</div>
-            <div class="contact-item editable" 
-                 contenteditable="true"
-                 (click)="onEditableClick($event, 'phone')"
-                 (blur)="updateField('phone', $event)">📱 0123 456 789</div>
-            <div class="contact-item editable" 
-                 contenteditable="true"
-                 (click)="onEditableClick($event, 'address')"
-                 (blur)="updateField('address', $event)">📍 Hà Nội, Việt Nam</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- CV Body -->
+    <div
+      #cvPaper
+      class="cv-paper"
+      [style.font-family]="designSettings.selectedFont"
+      [style.font-size.px]="designSettings.fontSize"
+      [style.line-height]="designSettings.lineSpacing"
+      [class]="'bg-' + designSettings.selectedBackground"
+    >
+      <!-- CV Body with Layout Configuration -->
       <div class="cv-body">
-        <!-- Dynamic sections based on usedSections order -->
-        <div *ngFor="let section of getSortedUsedSections()" class="cv-section">
-          
-          <!-- Personal Info Section -->
-          <div *ngIf="section.id === 'personal-info'">
-            <!-- Personal info is in header, skip here -->
-          </div>
-          
-          <!-- Objective Section -->
-          <div *ngIf="section.id === 'objective'">
-            <h3 class="section-title" [style.color]="designSettings.selectedColor">
-              MỤC TIÊU NGHỀ NGHIỆP
-            </h3>
-            <div class="section-content editable"
-                 contenteditable="true"
-                 (click)="onEditableClick($event, 'objective')"
-                 (blur)="updateField('objective', $event)">
-              Là một Frontend Developer với 3 năm kinh nghiệm, tôi mong muốn gia nhập một 
-              môi trường làm việc chuyên nghiệp để phát triển kỹ năng và đóng góp vào 
-              sự thành công của công ty.
-            </div>
-          </div>
+        <!-- Grid-based layout: Render rows and columns -->
+        <ng-container *ngIf="hasLayoutConfiguration()">
+          <div
+            *ngFor="let row of getLayoutRows(); trackBy: trackByRowId"
+            class="cv-row"
+            [attr.data-row-id]="row.id"
+          >
+            <div class="cv-row-content">
+              <!-- Columns within the row -->
+              <div
+                *ngFor="let column of getRowColumns(row); trackBy: trackByColumnId"
+                class="cv-column"
+                [attr.data-column-id]="column.id"
+                [style.flex]="getColumnWidth(column)"
+              >
+                <!-- Sections within the column -->
+                <ng-container *ngIf="getColumnSections(column).length > 0">
+                  <div
+                    *ngFor="let sectionId of getColumnSections(column); trackBy: trackBySectionId; let sectionIndex = index"
+                    class="cv-section"
+                    [attr.data-section-id]="sectionId"
+                    [class.hovered]="hoveredSectionId === sectionId"
+                    [class.locked]="isSectionLocked(sectionId)"
+                    (mouseenter)="onSectionMouseEnter(sectionId)"
+                    (mouseleave)="onSectionMouseLeave()"
+                  >
+                    <!-- Section Hover Controls -->
+                    <div *ngIf="showSectionControls(sectionId) && !isSectionLocked(sectionId)" class="section-controls">
+                      <button
+                        *ngIf="canMoveSectionUp(sectionId, getColumnSections(column))"
+                        class="section-control-btn move-up"
+                        (click)="onMoveSectionUp(sectionId)"
+                        title="Di chuyển lên"
+                      >
+                        <i class="icon-arrow-up">🔼</i>
+                      </button>
+                      <button
+                        *ngIf="canMoveSectionDown(sectionId, getColumnSections(column))"
+                        class="section-control-btn move-down"
+                        (click)="onMoveSectionDown(sectionId)"
+                        title="Di chuyển xuống"
+                      >
+                        <i class="icon-arrow-down">🔽</i>
+                      </button>
+                      <button
+                        class="section-control-btn delete"
+                        (click)="onDeleteSection(sectionId)"
+                        title="Xóa mục"
+                      >
+                        <i class="icon-delete">🗑</i>
+                      </button>
+                    </div>
 
-          <!-- Education Section -->
-          <div *ngIf="section.id === 'education'">
-            <h3 class="section-title" [style.color]="designSettings.selectedColor">
-              HỌC VẤN
-            </h3>
-            <div class="education-item">
-              <div class="edu-header">
-                <h4 class="edu-degree editable"
-                    contenteditable="true"
-                    (blur)="updateField('degree', $event)">Cử nhân Công nghệ Thông tin</h4>
-                <span class="edu-year editable"
-                      contenteditable="true"
-                      (blur)="updateField('edu-year', $event)">2018 - 2022</span>
+                    <!-- Section Content -->
+                    <ng-container *ngIf="getSectionById(sectionId) as section">
+                    <!-- Section header -->
+                    <h3
+                      class="cv-section-title"
+                      [style.color]="designSettings.selectedColor"
+                    >
+                      {{ section.name }}
+                    </h3>
+
+                    <!-- Section Fields (if defined) -->
+                    <div *ngIf="section.fields && section.fields.length > 0" class="cv-section-content">
+                      <div
+                        *ngFor="let field of section.fields; trackBy: trackByFieldName"
+                        class="cv-field-wrapper"
+                        [class.field-required]="field.required"
+                      >
+                        <!-- Field Label (optional) -->
+                        <label
+                          *ngIf="field.label"
+                          class="cv-field-label"
+                          [class.required]="field.required"
+                        >
+                          {{ field.label }}
+                          <span *ngIf="field.required" class="required-asterisk">*</span>
+                        </label>
+
+                        <!-- Editable Text Fields -->
+                        <div
+                          *ngIf="isFieldEditable(field)"
+                          [attr.data-editable]="true"
+                          [attr.data-section-id]="section.id"
+                          [attr.data-field-id]="field.name"
+                          [attr.data-field-type]="field.type"
+                          [class]="getFieldClasses(section, field)"
+                          contenteditable="false"
+                          [attr.placeholder]="field.placeholder || ''"
+                          [textContent]="getFieldValue(field)"
+                          (click)="onFieldClick($event, section, field)"
+                          (input)="onFieldChange($event, section, field)"
+                          (keydown)="onFieldKeyDown($event, section, field)"
+                          (blur)="onFieldBlur($event, section, field)"
+                          (mouseenter)="onFieldMouseEnter(section, field)"
+                          (mouseleave)="onFieldMouseLeave(section, field)"
+                        ></div>
+
+                        <!-- Image Fields -->
+                        <div
+                          *ngIf="field.type === 'image'"
+                          class="cv-field cv-field-image"
+                          [attr.data-section-id]="section.id"
+                          [attr.data-field-id]="field.name"
+                          (click)="onImageFieldClick($event, section, field)"
+                          style="cursor: pointer"
+                        >
+                          <div class="image-placeholder" *ngIf="!field.value">
+                            <span class="image-icon">📷</span>
+                            <span class="image-text">{{ field.placeholder || 'Nhấn để tải ảnh lên' }}</span>
+                          </div>
+                          <img
+                            *ngIf="field.value"
+                            [src]="field.value"
+                            alt="Uploaded image"
+                            class="uploaded-image"
+                            style="max-width: 100%; height: auto; border-radius: 4px;"
+                          />
+                        </div>
+
+                        <!-- Non-editable fields (display only) -->
+                        <div
+                          *ngIf="!isFieldEditable(field) && field.type !== 'image'"
+                          class="cv-field cv-field-readonly"
+                        >
+                          {{ getFieldValue(field) }}
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Section content placeholder (if no fields defined) -->
+                    <div *ngIf="!section.fields || section.fields.length === 0" class="cv-section-content">
+                      <p class="placeholder-text">
+                        Nội dung của {{ section.name }}
+                      </p>
+                    </div>
+                  </ng-container>
+                </div>
+                </ng-container>
+                
+                <!-- Empty column placeholder -->
+                <div *ngIf="getColumnSections(column).length === 0" class="cv-column-empty">
+                  <p class="empty-column-message">Chưa có section nào trong cột này</p>
+                </div>
               </div>
-              <div class="edu-school editable"
-                   contenteditable="true"
-                   (blur)="updateField('school', $event)">Đại học Công nghệ - ĐH Quốc gia Hà Nội</div>
-              <div class="edu-gpa editable"
-                   contenteditable="true"
-                   (blur)="updateField('gpa', $event)">GPA: 3.5/4.0</div>
             </div>
           </div>
+        </ng-container>
 
-          <!-- Experience Section -->
-          <div *ngIf="section.id === 'experience'">
-            <div class="section-header">
-              <h3 class="section-title" [style.color]="designSettings.selectedColor">
-                KINH NGHIỆM LÀM VIỆC
-              </h3>
-              <button class="add-item-btn" (click)="addExperience()" title="Thêm kinh nghiệm">
-                +
+        <!-- Fallback: Legacy flat layout (backward compatibility) -->
+        <ng-container *ngIf="isLegacyLayout()">
+          <div
+            *ngFor="let section of getSortedUsedSections()"
+            class="cv-section legacy-section"
+            [attr.data-section-id]="section.id"
+            [class.hovered]="hoveredSectionId === section.id"
+            (mouseenter)="onSectionMouseEnter(section.id)"
+            (mouseleave)="onSectionMouseLeave()"
+          >
+            <!-- Section Hover Controls -->
+            <div *ngIf="showSectionControls(section.id) && !section.locked" class="section-controls">
+              <button
+                class="section-control-btn move-up"
+                title="Di chuyển lên"
+              >
+                <i class="icon-arrow-up">🔼</i>
+              </button>
+              <button
+                class="section-control-btn move-down"
+                title="Di chuyển xuống"
+              >
+                <i class="icon-arrow-down">🔽</i>
+              </button>
+              <button
+                class="section-control-btn delete"
+                title="Xóa mục"
+              >
+                <i class="icon-delete">🗑</i>
               </button>
             </div>
-            <div *ngFor="let exp of cvData.experiences; let i = index" class="experience-item">
-              <div class="item-controls">
-                <button class="remove-item-btn" (click)="removeExperience(i)" title="Xóa kinh nghiệm">
-                  ×
-                </button>
-              </div>
-              <div class="exp-header">
-                <h4 class="exp-position editable"
-                    contenteditable="true"
-                    (click)="onEditableClick($event, 'position-' + i)"
-                    (blur)="updateField('position-' + i, $event)">{{ exp.position }}</h4>
-                <span class="exp-duration editable"
-                      contenteditable="true"
-                      (click)="onEditableClick($event, 'duration-' + i)"
-                      (blur)="updateField('duration-' + i, $event)">{{ exp.duration }}</span>
-              </div>
-              <div class="exp-company editable"
-                   contenteditable="true"
-                   (click)="onEditableClick($event, 'company-' + i)"
-                   (blur)="updateField('company-' + i, $event)">{{ exp.company }}</div>
-              <ul class="exp-responsibilities">
-                <li *ngFor="let resp of exp.responsibilities; let j = index" class="responsibility-item">
-                  <div class="editable responsibility-text"
-                       contenteditable="true"
-                       (click)="onEditableClick($event, 'responsibility-' + i + '-' + j)"
-                       (blur)="updateField('responsibility-' + i + '-' + j, $event)">{{ resp }}</div>
-                  <button class="remove-resp-btn" (click)="removeResponsibility(i, j)" title="Xóa">×</button>
-                </li>
-              </ul>
-              <button class="add-resp-btn" (click)="addResponsibility(i)">+ Thêm trách nhiệm</button>
-            </div>
-          </div>
 
-          <!-- Activities Section -->
-          <div *ngIf="section.id === 'activities'">
-            <h3 class="section-title" [style.color]="designSettings.selectedColor">
-              HOẠT ĐỘNG
+            <h3
+              class="cv-section-title"
+              [style.color]="designSettings.selectedColor"
+              (click)="onEditableClick($event, section.id)"
+            >
+              {{ section.name }}
             </h3>
-            <div *ngFor="let activity of cvData.activities; let i = index" class="activity-item">
-              <h4 class="activity-title editable"
-                  contenteditable="true"
-                  (blur)="updateField('activity-title-' + i, $event)">{{ activity.title }}</h4>
-              <div class="activity-org editable"
-                   contenteditable="true"
-                   (blur)="updateField('activity-org-' + i, $event)">{{ activity.organization }}</div>
-              <div class="activity-desc editable"
-                   contenteditable="true"
-                   (blur)="updateField('activity-desc-' + i, $event)">{{ activity.description }}</div>
-            </div>
-          </div>
 
-          <!-- Certificates Section -->
-          <div *ngIf="section.id === 'certificates'">
-            <h3 class="section-title" [style.color]="designSettings.selectedColor">
-              CHỨNG CHỈ
-            </h3>
-            <div *ngFor="let cert of cvData.certificates; let i = index" class="certificate-item">
-              <h4 class="cert-name editable"
-                  contenteditable="true"
-                  (blur)="updateField('cert-name-' + i, $event)">{{ cert.name }}</h4>
-              <div class="cert-issuer editable"
-                   contenteditable="true"
-                   (blur)="updateField('cert-issuer-' + i, $event)">{{ cert.issuer }}</div>
+            <div class="cv-section-content">
+              <p class="placeholder-text">
+                Nội dung của {{ section.name }}
+              </p>
             </div>
           </div>
+        </ng-container>
 
-          <!-- Projects Section -->
-          <div *ngIf="section.id === 'projects'">
-            <h3 class="section-title" [style.color]="designSettings.selectedColor">
-              DỰ ÁN
-            </h3>
-            <div *ngFor="let project of cvData.projects; let i = index" class="project-item">
-              <h4 class="project-title editable"
-                  contenteditable="true"
-                  (blur)="updateField('project-title-' + i, $event)">{{ project.title }}</h4>
-              <div class="project-tech editable"
-                   contenteditable="true"
-                   (blur)="updateField('project-tech-' + i, $event)">{{ project.technology }}</div>
-              <div class="project-desc editable"
-                   contenteditable="true"
-                   (blur)="updateField('project-desc-' + i, $event)">{{ project.description }}</div>
-            </div>
-          </div>
-
-          <!-- References Section -->
-          <div *ngIf="section.id === 'references'">
-            <h3 class="section-title" [style.color]="designSettings.selectedColor">
-              NGƯỜI THAM CHIẾU
-            </h3>
-            <div *ngFor="let ref of cvData.references; let i = index" class="reference-item">
-              <h4 class="reference-name editable"
-                  contenteditable="true"
-                  (blur)="updateField('ref-name-' + i, $event)">{{ ref.name }}</h4>
-              <div class="reference-position editable"
-                   contenteditable="true"
-                   (blur)="updateField('ref-position-' + i, $event)">{{ ref.position }}</div>
-              <div class="reference-contact editable"
-                   contenteditable="true"
-                   (blur)="updateField('ref-contact-' + i, $event)">{{ ref.contact }}</div>
-            </div>
-          </div>
+        <!-- Empty state: No layout configured -->
+        <div
+          *ngIf="!hasLayoutConfiguration() && !isLegacyLayout()"
+          class="cv-empty-state"
+        >
+          <div class="empty-icon">📄</div>
+          <h3>Chưa có bố cục CV</h3>
+          <p>Sử dụng bảng điều khiển bên trái để cấu hình bố cục và thêm các mục vào CV của bạn.</p>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Inline Editing Instructions (optional, can be shown as tooltip) -->
+  <div class="editing-instructions" *ngIf="activeFieldId">
+    <div class="instruction-content">
+      <span class="instruction-icon">💡</span>
+      <span class="instruction-text">
+        <strong>Mẹo:</strong> Sử dụng Ctrl+B (đậm), Ctrl+I (nghiêng), Ctrl+U (gạch chân). Nhấn Esc để đóng.
+      </span>
     </div>
   </div>
 </div>

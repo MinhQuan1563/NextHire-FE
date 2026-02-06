@@ -28,6 +28,12 @@ export class CvTemplateService {
     if (input.filter) {
       params = params.append('filter', input.filter);
     }
+    if (input.type !== undefined) {
+      params = params.append('type', input.type.toString());
+    }
+    if (input.isPublished !== undefined) {
+      params = params.append('isPublished', input.isPublished.toString());
+    }
 
     return this.http.get<PagedResultDto<CvTemplate>>(this.apiUrl, { params });
   }
@@ -37,14 +43,42 @@ export class CvTemplateService {
   }
 
   createTemplate(template: CreateCvTemplate): Observable<CvTemplate> {
-    return this.http.post<CvTemplate>(this.apiUrl, template);
+    console.log(template);
+    const bodyData = {
+      name: template.name,
+      description: template.description,
+      isPublished: template.isPublished,
+      type: template.type,
+      sampleFileUrl: template.sampleFileUrl,
+      designSettings: JSON.stringify(template.designSettings),
+      layoutConfiguration: JSON.stringify(template.layoutConfiguration),
+      section: JSON.stringify(template.section),
+    }
+    return this.http.post<CvTemplate>(this.apiUrl, bodyData);
   }
 
   updateTemplate(templateCode: string, template: UpdateCvTemplate): Observable<CvTemplate> {
-    return this.http.put<CvTemplate>(`${this.apiUrl}/${templateCode}`, template);
+    const bodyData = {
+      name: template.name,
+      description: template.description,
+      type: template.type,
+      sampleFileUrl: template.sampleFileUrl,
+      designSettings: JSON.stringify(template.designSettings),
+      layoutConfiguration: JSON.stringify(template.layoutConfiguration),
+      section: JSON.stringify(template.section),
+    }
+    return this.http.put<CvTemplate>(`${this.apiUrl}/${templateCode}`, bodyData);
   }
 
   deleteTemplate(templateCode: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${templateCode}`);
+  }
+
+  publishTemplate(templateCode: string): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/${templateCode}/publish`, { isPublished: true });
+  }
+
+  unpublishTemplate(templateCode: string): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/${templateCode}/publish`, { isPublished: false });
   }
 }

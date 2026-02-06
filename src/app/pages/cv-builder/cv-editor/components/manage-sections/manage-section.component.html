@@ -1,0 +1,96 @@
+<div class="manage-sections-container">
+  <p-toolbar styleClass="mb-4">
+    <div class="p-toolbar-group-start">
+      <h3 class="m-0">Quản Lý Danh Mục Sections</h3>
+    </div>
+    <div class="p-toolbar-group-end">
+      <p-button 
+        label="Thêm Section" 
+        icon="pi pi-plus" 
+        class="p-button-success"
+        (click)="onAddSection()"
+        pTooltip="Thêm section mới">
+      </p-button>
+    </div>
+  </p-toolbar>
+
+  <p-table 
+    [value]="sections()" 
+    [paginator]="true" 
+    [rows]="10"
+    [rowsPerPageOptions]="[10, 20, 30]"
+    [globalFilterFields]="['name', 'description']"
+    responsiveLayout="scroll"
+    styleClass="p-datatable-gridlines">
+    
+    <ng-template pTemplate="caption">
+      <div class="flex justify-content-between align-items-center">
+        <span class="text-xl font-bold">Danh sách Sections ({{ sections().length }})</span>
+      </div>
+    </ng-template>
+    
+    <ng-template pTemplate="header">
+      <tr>
+        <th style="width: 4rem">STT</th>
+        <th>Tên Section</th>
+        <th>Mô tả</th>
+        <th style="width: 8rem">Số Fields</th>
+        <th style="width: 10rem">Hành động</th>
+      </tr>
+    </ng-template>
+    
+    <ng-template pTemplate="body" let-section let-rowIndex="rowIndex">
+      <tr>
+        <td>{{ rowIndex + 1 }}</td>
+        <td>
+          <span class="font-medium">{{ section.name }}</span>
+        </td>
+        <td>
+          <span>{{ section.description || 'Không có mô tả' }}</span>
+        </td>
+        <td class="text-center">
+          <span class="p-tag p-tag-rounded">{{ section.fields?.length || 0 }}</span>
+        </td>
+        <td>
+          <div class="flex gap-2">
+            <p-button 
+              icon="pi pi-pencil" 
+              class="p-button-rounded p-button-text p-button-info"
+              size="small"
+              (click)="onEditSection(section)"
+              pTooltip="Chỉnh sửa section">
+            </p-button>
+            
+            <p-button 
+              icon="pi pi-trash" 
+              class="p-button-rounded p-button-text p-button-danger"
+              size="small"
+              (click)="onDeleteSection(section)"
+              pTooltip="Xóa section">
+            </p-button>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+    
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="5" class="text-center py-5">
+          <div class="flex flex-column align-items-center justify-center  gap-3">
+              <span class="text-lg text-600">Chưa có section nào</span>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<!-- Section Dialog  -->
+<app-section-dialog
+  [visible]="showSectionModal"
+  [section]="editingSection"
+  (onClose)="onCloseSectionModal()">
+</app-section-dialog>
+
+<p-confirmDialog></p-confirmDialog>
+<p-toast position="top-right"></p-toast>

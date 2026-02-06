@@ -1,0 +1,58 @@
+@if (educations.length > 0) {
+  <div class="education-display space-y-6">
+    @for (education of educations; track education.institution + education.startDate) {
+      <div class="border-l-4 border-purple-500 pl-4 pb-6 last:pb-0">
+        <div class="bg-white rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+          <!-- Header -->
+          <div class="mb-3">
+            <h3 class="text-lg font-semibold text-gray-900 mb-1">
+              {{ education.degree }}
+            </h3>
+            <p class="text-base text-gray-700 font-medium mb-2">
+              {{ education.institution }}
+            </p>
+            @if (education.fieldOfStudy) {
+              <p class="text-sm text-gray-600 mb-2">
+                {{ education.fieldOfStudy }}
+              </p>
+            }
+            <div class="flex items-center gap-4 text-sm text-gray-600">
+              <span class="flex items-center gap-1">
+                <i class="pi pi-calendar text-gray-400"></i>
+                {{ getDateRange(education) }}
+              </span>
+              @if (calculateDuration(education.startDate, education.endDate, education.isCurrent)) {
+                <span class="flex items-center gap-1">
+                  <i class="pi pi-clock text-gray-400"></i>
+                  {{ calculateDuration(education.startDate, education.endDate, education.isCurrent) }}
+                </span>
+              }
+              @if (education.isCurrent) {
+                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                  Current
+                </span>
+              }
+              @if (education.grade) {
+                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                  Grade: {{ education.grade }}
+                </span>
+              }
+            </div>
+          </div>
+
+          <!-- Description -->
+          @if (education.description) {
+            <p class="text-sm text-gray-700 whitespace-pre-line">
+              {{ education.description }}
+            </p>
+          }
+        </div>
+      </div>
+    }
+  </div>
+} @else {
+  <div class="text-center py-8 text-gray-500">
+    <p>No education information added yet</p>
+  </div>
+}
+

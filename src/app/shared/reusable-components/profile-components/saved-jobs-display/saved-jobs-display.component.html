@@ -1,0 +1,34 @@
+@if (savedJobs.length > 0) {
+  <div class="saved-jobs-display">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      @for (job of savedJobs; track job.jobCode) {
+        <div class="bg-white rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow border border-gray-200 cursor-pointer"
+             (click)="navigateToJob(job.jobCode)">
+          <div class="flex items-start justify-between mb-2">
+            <div class="flex-1">
+              <h4 class="font-semibold text-gray-900 text-sm mb-1">
+                Job Code: {{ job.jobCode }}
+              </h4>
+              <p class="text-xs text-gray-500">
+                Saved on {{ formatSavedDate(job.savedDate) }}
+              </p>
+            </div>
+            <i class="pi pi-bookmark text-blue-600"></i>
+          </div>
+          <div class="mt-3 pt-3 border-t border-gray-100">
+            <span class="text-xs text-blue-600 hover:underline">
+              View Job Details →
+            </span>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+} @else {
+  <div class="text-center py-8 text-gray-500">
+    <i class="pi pi-bookmark text-4xl text-gray-300 mb-3"></i>
+    <p>No saved jobs yet</p>
+    <p class="text-sm mt-1">Save jobs you're interested in to view them here</p>
+  </div>
+}
+

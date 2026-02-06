@@ -39,5 +39,6 @@ export interface User {
   fullName: string;
   phoneNumber?: string;
   profilePicture?: string;
+  avatarUrl?:string;
   roles: string[];
 }

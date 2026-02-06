@@ -1,0 +1,71 @@
+<div class="time-range-selector flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+  <div class="flex-1 w-full sm:w-auto">
+    <p-dropdown
+      [options]="timeRangeOptions"
+      [(ngModel)]="selectedTimeRange"
+      (onChange)="onTimeRangeChange($event.value)"
+      optionLabel="label"
+      optionValue="value"
+      placeholder="Select Time Range"
+      [style]="{'width': '100%', 'min-width': '200px'}"
+      styleClass="w-full"
+      aria-label="Select time range for dashboard statistics"
+    >
+      <ng-template pTemplate="selectedItem" let-option>
+        <div class="flex items-center gap-2" *ngIf="option">
+          <i [class]="option.icon"></i>
+          <span>{{ option.label }}</span>
+        </div>
+      </ng-template>
+      <ng-template pTemplate="item" let-option>
+        <div class="flex items-center gap-2">
+          <i [class]="option.icon"></i>
+          <span>{{ option.label }}</span>
+        </div>
+      </ng-template>
+    </p-dropdown>
+  </div>
+
+  <div class="custom-range-container flex flex-col sm:flex-row gap-3 items-start sm:items-center w-full sm:w-auto" *ngIf="isCustomRange()">
+    <div class="flex-1 w-full sm:w-auto">
+      <p-calendar
+        [(ngModel)]="customStartDate"
+        (onSelect)="onCustomDateChange()"
+        [maxDate]="maxDate"
+        dateFormat="yy-mm-dd"
+        placeholder="Start Date"
+        [showIcon]="true"
+        [style]="{'width': '100%'}"
+        styleClass="w-full"
+        aria-label="Select start date for custom range"
+      ></p-calendar>
+    </div>
+
+    <span class="text-gray-500 hidden sm:inline">to</span>
+
+    <div class="flex-1 w-full sm:w-auto">
+      <p-calendar
+        [(ngModel)]="customEndDate"
+        (onSelect)="onCustomDateChange()"
+        [maxDate]="maxDate"
+        [minDate]="customStartDate() || undefined"
+        dateFormat="yy-mm-dd"
+        placeholder="End Date"
+        [showIcon]="true"
+        [style]="{'width': '100%'}"
+        styleClass="w-full"
+        aria-label="Select end date for custom range"
+      ></p-calendar>
+    </div>
+
+    <p-button
+      label="Apply"
+      icon="pi pi-check"
+      (onClick)="applyCustomRange()"
+      [disabled]="!isCustomRangeValid()"
+      severity="success"
+      [style]="{'min-width': '100px'}"
+      aria-label="Apply custom date range"
+    ></p-button>
+  </div>
+</div>

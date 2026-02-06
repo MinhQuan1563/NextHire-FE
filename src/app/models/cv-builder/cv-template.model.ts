@@ -1,25 +1,74 @@
 export enum CvTemplateType {
   Resume = 0,
   CoverLetter = 1,
-  Portfolio = 2
+  Portfolio = 2,
+}
+export type CVFieldType =
+  | "text"
+  | "richtext"
+  | "date"
+  | "email"
+  | "phone"
+  | "url"
+  | "textarea"
+  | "image";
+
+export interface CVSectionField {
+  name: string;
+  type: CVFieldType;
+  label: string;
+  required?: boolean;
+  placeholder?: string;
+  defaultValue?: any;
+  uploadConfig?: CVUploadConfig;
+  editable?: boolean; // Whether the field can be edited inline
+  multiline?: boolean; // Whether the field supports multiple lines
+  maxLength?: number; // Maximum character length
+  value?: any; // Current field value
+}
+
+export interface FieldState {
+  fieldId: string;
+  sectionId: string;
+  isActive: boolean;
+  isFocused: boolean;
+  isEditing: boolean;
+  element?: HTMLElement;
+}
+
+export interface TextFormatting {
+  bold?: boolean;
+  italic?: boolean;
+  underline?: boolean;
+  fontSize?: number;
+  fontFamily?: string;
+  color?: string;
+  alignment?: "left" | "center" | "right" | "justify";
+  listType?: "bullet" | "number" | "none";
 }
 
 export interface CVSection {
   id: string;
   name: string;
-  icon: string;
-  categoryId?: string;
-  isDefault?: boolean;
-  allowMultiple?: boolean;
+  description?: string;
   fields?: CVSectionField[];
+  /**
+   * Locked sections cannot be removed from the CV layout and are not draggable.
+   * Example: Personal Info/header section.
+   */
+  locked?: boolean;
 }
 
-export interface CVSectionField {
-  name: string;
-  type: 'text' | 'textarea' | 'date' | 'url' | 'email' | 'phone';
-  label: string;
-  required?: boolean;
-  placeholder?: string;
+export interface CVUploadConfig {
+  allowedMimeTypes: string[];
+  maxFileSizeMB: number;
+
+  maxWidth?: number;
+  maxHeight?: number;
+  aspectRatio?: string;
+
+  allowCrop?: boolean;
+  multiple?: boolean;
 }
 
 // Layout Configuration Interfaces
@@ -39,16 +88,9 @@ export interface LayoutRow {
 }
 
 export interface LayoutConfiguration {
-  id: string;
-  name: string;
-  description?: string;
   rows: LayoutRow[];
-  totalColumns: number; // Max columns across all rows
-  isDefault?: boolean;
-  createdDate?: Date;
-  modifiedDate?: Date;
+  totalColumns?: number; // Max columns across all rows
 }
-
 // Layout Management Types
 export interface LayoutZone {
   rowId: string;
@@ -63,17 +105,6 @@ export interface DragDropData {
   targetZone: LayoutZone;
 }
 
-export interface CVCategory {
-  id: string;
-  name: string;
-  icon: string;
-  description?: string;
-  allowMultiple: boolean;
-  isSystemCategory: boolean;
-  sections: CVSection[];
-  order: number;
-}
-
 export interface CvTemplate {
   id: string;
   templateCode: string;
@@ -82,11 +113,9 @@ export interface CvTemplate {
   description: string;
   sampleFileUrl: string;
   isPublished: boolean;
-  createDate: Date;
-  modifiedDate: Date;
   layoutConfiguration?: LayoutConfiguration; // Changed to proper interface
-  categories?: CVCategory[];
-  defaultSections?: string[];
+  section?: CVSection[];
+  designSettings?: DesignSettings; // Design settings (fonts, colors, etc.)
 }
 
 export interface CreateCvTemplate {
@@ -96,8 +125,8 @@ export interface CreateCvTemplate {
   sampleFileUrl?: string;
   layoutConfiguration?: LayoutConfiguration; // Changed to proper interface
   isPublished?: boolean;
-  categories?: CVCategory[];
-  defaultSections?: string[];
+  section?: CVSection[];
+  designSettings?: DesignSettings; // Design settings (fonts, colors, etc.)
 }
 
 export interface UpdateCvTemplate {
@@ -106,8 +135,8 @@ export interface UpdateCvTemplate {
   description?: string;
   sampleFileUrl?: string;
   layoutConfiguration?: LayoutConfiguration; // Changed to proper interface
-  categories?: CVCategory[];
-  defaultSections?: string[];
+  section?: CVSection[];
+  designSettings?: DesignSettings; // Design settings (fonts, colors, etc.)
 }
 
 export interface GetCvTemplatesInput {
@@ -115,4 +144,28 @@ export interface GetCvTemplatesInput {
   maxResultCount?: number;
   sorting?: string;
   filter?: string;
+  type?: CvTemplateType;
+  isPublished?: boolean;
+}
+
+// Design Settings Interface
+export interface DesignSettings {
+  selectedFont: string;
+  fontSize: number;
+  lineSpacing: number;
+  selectedColor: string;
+  selectedBackground: string;
+}
+
+// Extended interfaces with design settings
+export interface CvTemplateWithDesign extends CvTemplate {
+  designSettings?: DesignSettings;
+}
+
+export interface CreateCvTemplateWithDesign extends CreateCvTemplate {
+  designSettings?: DesignSettings;
+}
+
+export interface UpdateCvTemplateWithDesign extends UpdateCvTemplate {
+  designSettings?: DesignSettings;
 }

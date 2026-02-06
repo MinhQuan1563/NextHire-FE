@@ -14,7 +14,6 @@ export class SidebarTabsComponent {
 
   tabs = [
     { id: 'design', icon: 'icon-design', label: 'Thiết kế & Font' },
-    { id: 'sections', icon: 'icon-add', label: 'Thêm mục' },
     { id: 'layout', icon: 'icon-layout', label: 'Bố cục' }
   ];
 
