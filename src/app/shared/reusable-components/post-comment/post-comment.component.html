@@ -1,0 +1,33 @@
+<div class="post-comments">
+  <!-- Form tạo comment -->
+  <div class="comment-form mb-4">
+    <p-inputTextarea [(ngModel)]="newCommentContent" placeholder="Viết bình luận..." rows="2"></p-inputTextarea>
+    <p-button label="Bình luận" (click)="createComment()" [disabled]="!newCommentContent.trim()"></p-button>
+  </div>
+
+  <!-- Danh sách comments -->
+  <div class="comments-list">
+    <div *ngFor="let comment of comments" class="comment-item mb-3">
+      <div class="comment-content">
+        <strong>{{ comment.userCode }}</strong>: {{ comment.content }}
+        <small>{{ comment.createAt | date:'dd/MM/yyyy HH:mm' }}</small>
+        <p-button label="Trả lời" (click)="startReply(comment.commentId)" size="small"></p-button>
+        <p-button *ngIf="comment.userCode === currentUserCode" label="Xóa" (click)="deleteComment(comment.commentId)" size="small"></p-button>
+        <span *ngIf="comment.childCommentCount > 0"> ({{ comment.childCommentCount }} trả lời)</span>
+      </div>
+
+      <!-- Form reply -->
+      <div *ngIf="replyingTo === comment.commentId" class="reply-form mt-2">
+        <p-inputTextarea [(ngModel)]="replyContent" placeholder="Trả lời..." rows="1"></p-inputTextarea>
+        <p-button label="Gửi" (click)="replyComment(comment.commentId)" size="small"></p-button>
+        <p-button label="Hủy" (click)="cancelReply()" size="small"></p-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Load more -->
+  <div *ngIf="hasMore && !isLoading" class="text-center mt-4">
+    <p-button label="Tải thêm bình luận" (click)="loadMore()"></p-button>
+  </div>
+  <div *ngIf="isLoading" class="text-center">Đang tải...</div>
+</div>

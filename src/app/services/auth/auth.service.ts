@@ -11,6 +11,7 @@ import {
   ResetPasswordRequest,
 } from '../../models/auth/auth.model';
 import { environment } from '../../../environments/environment';
+import { jwtDecode } from 'jwt-decode';
 
 @Injectable({
   providedIn: 'root',
@@ -40,6 +41,22 @@ export class AuthService {
         console.error('Error parsing user data from storage:', e);
         localStorage.removeItem('user');
       }
+    }
+  }
+
+  getUserCodeFromToken(): string | null {
+    if (!this.isBrowser) return null;
+
+    const token = this.getToken();
+    if (!token) return null;
+
+    try {
+      const decoded: any = jwtDecode(token);
+      return decoded['user_code'] || decoded['sub'] || null;
+    } 
+    catch (error) {
+      console.error('ERROR: Decode token', error);
+      return null;
     }
   }
 

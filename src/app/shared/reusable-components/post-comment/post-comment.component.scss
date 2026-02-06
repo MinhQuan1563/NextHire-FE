@@ -1,0 +1,16 @@
+.comment-form, .reply-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.comment-item {
+  border-left: 2px solid #e0e0e0;
+  padding-left: 1rem;
+}
+
+.comment-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}

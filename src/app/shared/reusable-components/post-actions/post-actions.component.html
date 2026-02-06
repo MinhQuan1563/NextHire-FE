@@ -1,4 +1,4 @@
-<div class="flex justify-around items-center text-sm text-gray-600">
+<!-- <div class="flex justify-around items-center text-sm text-gray-600">
   <button pButton
           [icon]="liked ? 'pi pi-thumbs-up-fill' : 'pi pi-thumbs-up'"
           [label]="liked ? 'Đã thích' : 'Thích'"
@@ -21,4 +21,14 @@
           (click)="triggerAction('send')"
           styleClass="p-button-text p-button-sm text-gray-600 hover:bg-gray-100 flex-1 justify-center">
   </button>
+</div>
+ -->
+<!-- post-actions.component.html (cập nhật) -->
+<div class="post-actions flex justify-between items-center p-2 border-t">
+  <button pButton [icon]="hasLiked ? 'pi pi-thumbs-up-fill' : 'pi pi-thumbs-up'" 
+          [label]="'Thích (' + likeCount + ')'" 
+          (click)="toggleLike()" 
+          class="p-button-text"></button>
+  <button pButton icon="pi pi-comment" label="Bình luận" (click)="onComment()" class="p-button-text"></button>
+  <button pButton icon="pi pi-share-alt" label="Chia sẻ" (click)="onShare()" class="p-button-text"></button>
 </div>

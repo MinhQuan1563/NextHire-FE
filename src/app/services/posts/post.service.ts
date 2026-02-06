@@ -17,7 +17,6 @@ export class PostService extends BaseApiService<PostResponse> {
   }
 
   override getById(code: string): Observable<PostResponse> {
-    // Sử dụng helper mới từ Base
     const params = this.buildHttpParams({ code });
     return this.http.get<PostResponse>(this.getUrl(), { params });
   }
