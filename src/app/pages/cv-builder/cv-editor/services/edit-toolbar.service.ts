@@ -1,365 +1,661 @@
-import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { Injectable } from "@angular/core";
+import { BehaviorSubject, Observable } from "rxjs";
 
-export interface EditToolbarState {
-  isVisible: boolean;
+export interface ToolbarState {
+  visible: boolean;
   position: { x: number; y: number };
   activeElement: HTMLElement | null;
-  selectedText: string;
+  fieldType?: string;
+  sectionId?: string;
+  fieldId?: string;
 }
 
-export interface TextFormat {
-  bold?: boolean;
-  italic?: boolean;
-  underline?: boolean;
-  fontSize?: number;
-  alignment?: 'left' | 'center' | 'right' | 'justify';
+export interface ToolbarConfig {
+  width: number;
+  height: number;
+  margin: number;
 }
 
-/**
- * Edit Toolbar Service - Tương tự như useEditToolbar hook trong React
- * Quản lý text editing, formatting và toolbar state
- */
+export interface TextFormatState {
+  bold: boolean;
+  italic: boolean;
+  underline: boolean;
+  fontSize: number;
+  fontFamily: string;
+  color: string;
+  alignment: string;
+  isList: boolean;
+}
+
 @Injectable({
-  providedIn: 'root'
+  providedIn: "root",
 })
 export class EditToolbarService {
-  private readonly _toolbarState$ = new BehaviorSubject<EditToolbarState>({
-    isVisible: false,
+  private toolbarStateSubject = new BehaviorSubject<ToolbarState>({
+    visible: false,
     position: { x: 0, y: 0 },
     activeElement: null,
-    selectedText: ''
   });
-  
-  private readonly _currentFormat$ = new BehaviorSubject<TextFormat>({});
-  
-  // Public observables
-  public readonly toolbarState$ = this._toolbarState$.asObservable();
-  public readonly currentFormat$ = this._currentFormat$.asObservable();
-  
-  // Font size options
-  readonly fontSizeOptions = [10, 12, 14, 16, 18, 20, 24, 28, 32];
-  
-  // Getters
-  get currentToolbarState(): EditToolbarState {
-    return this._toolbarState$.value;
+
+  public toolbarState$: Observable<ToolbarState> =
+    this.toolbarStateSubject.asObservable();
+
+  private config: ToolbarConfig = {
+    width: 550,
+    height: 50,
+    margin: 20,
+  };
+
+  private outsideClickHandler?: (event: Event) => void;
+  private keyboardHandler?: (event: KeyboardEvent) => void;
+
+  constructor() {
+    this.setupKeyboardShortcuts();
   }
-  
-  get currentFormat(): TextFormat {
-    return this._currentFormat$.value;
-  }
-  
-  // Toolbar Visibility Management
-  showToolbar(event: MouseEvent, element: HTMLElement): void {
-    const selection = window.getSelection();
-    const selectedText = selection ? selection.toString() : '';
-    
-    if (selectedText.trim().length === 0) {
-      this.hideToolbar();
-      return;
+
+  /**
+   * Show toolbar at calculated position near the clicked element
+   */
+  showToolbarAt(
+    event: MouseEvent,
+    element: HTMLElement,
+    fieldType: string = "richtext",
+    sectionId?: string,
+    fieldId?: string,
+  ) {
+    event.stopPropagation();
+
+    // Ensure the element is editable
+    if (fieldType === "richtext" || fieldType === "textarea") {
+      element.contentEditable = "true";
     }
-    
-    const rect = this.getSelectionRect();
-    const position = this.calculateToolbarPosition(rect, event);
-    
-    this.updateToolbarState({
-      isVisible: true,
+
+    // Focus the element
+    element.focus();
+
+    const position = this.calculateToolbarPosition(element);
+
+    this.toolbarStateSubject.next({
+      visible: true,
       position,
       activeElement: element,
-      selectedText
+      fieldType,
+      sectionId,
+      fieldId,
     });
-    
-    this.updateCurrentFormat(element);
+
+    // Setup outside click handling
+    this.setupOutsideClickHandler();
   }
-  
-  hideToolbar(): void {
-    this.updateToolbarState({
-      isVisible: false,
+
+  /**
+   * Hide toolbar and cleanup
+   */
+  hideToolbar() {
+    const currentState = this.toolbarStateSubject.value;
+
+    // Make element non-editable if it was editable
+    if (currentState.activeElement) {
+      const element = currentState.activeElement;
+      if (element.contentEditable === "true") {
+        element.contentEditable = "false";
+      }
+    }
+
+    this.toolbarStateSubject.next({
+      visible: false,
       position: { x: 0, y: 0 },
       activeElement: null,
-      selectedText: ''
     });
+
+    // Cleanup outside click handler
+    this.removeOutsideClickHandler();
   }
-  
-  // Text Formatting Methods
-  makeBold(): void {
-    this.executeCommand('bold');
-    this.updateFormatState({ bold: !this.currentFormat.bold });
+
+  /**
+   * Get current toolbar state
+   */
+  getCurrentState(): ToolbarState {
+    return this.toolbarStateSubject.value;
   }
-  
-  makeItalic(): void {
-    this.executeCommand('italic');
-    this.updateFormatState({ italic: !this.currentFormat.italic });
-  }
-  
-  makeUnderline(): void {
-    this.executeCommand('underline');
-    this.updateFormatState({ underline: !this.currentFormat.underline });
-  }
-  
-  // List Creation
-  createBulletList(): void {
-    this.executeCommand('insertUnorderedList');
-  }
-  
-  createNumberList(): void {
-    this.executeCommand('insertOrderedList');
-  }
-  
-  // Text Alignment
-  alignLeft(): void {
-    this.executeCommand('justifyLeft');
-    this.updateFormatState({ alignment: 'left' });
-  }
-  
-  alignCenter(): void {
-    this.executeCommand('justifyCenter');
-    this.updateFormatState({ alignment: 'center' });
-  }
-  
-  alignRight(): void {
-    this.executeCommand('justifyRight');
-    this.updateFormatState({ alignment: 'right' });
-  }
-  
-  alignJustify(): void {
-    this.executeCommand('justifyFull');
-    this.updateFormatState({ alignment: 'justify' });
-  }
-  
-  // Font Size Management
-  changeFontSize(size: number): void {
-    const activeElement = this.currentToolbarState.activeElement;
-    if (!activeElement) return;
-    
-    const selection = window.getSelection();
-    if (selection && selection.rangeCount > 0) {
-      const range = selection.getRangeAt(0);
-      const span = document.createElement('span');
-      span.style.fontSize = `${size}px`;
-      
-      try {
-        range.surroundContents(span);
-        this.updateFormatState({ fontSize: size });
-      } catch (e) {
-        // Fallback for complex selections
-        this.executeCommand('fontSize', '3');
-        const fontElements = activeElement.querySelectorAll('font[size="3"]');
-        fontElements.forEach(el => {
-          (el as HTMLElement).style.fontSize = `${size}px`;
-        });
-      }
+
+  /**
+   * Get current text formatting state
+   */
+  getCurrentFormatState(): TextFormatState {
+    const activeElement = this.getCurrentState().activeElement;
+
+    if (!activeElement) {
+      return this.getDefaultFormatState();
     }
-  }
-  
-  // Advanced Text Operations
-  removeFormatting(): void {
-    this.executeCommand('removeFormat');
-    this._currentFormat$.next({});
-  }
-  
-  insertLink(url: string): void {
+
+    const computedStyle = window.getComputedStyle(activeElement);
     const selection = window.getSelection();
-    if (selection && selection.toString().trim()) {
-      this.executeCommand('createLink', url);
-    }
-  }
-  
-  removeLink(): void {
-    this.executeCommand('unlink');
-  }
-  
-  // Format Detection
-  private updateCurrentFormat(element: HTMLElement): void {
-    const selection = window.getSelection();
-    if (!selection || selection.rangeCount === 0) return;
-    
-    const range = selection.getRangeAt(0);
-    const containerElement = range.commonAncestorContainer.nodeType === Node.TEXT_NODE
-      ? range.commonAncestorContainer.parentElement
-      : range.commonAncestorContainer as HTMLElement;
-    
-    if (!containerElement) return;
-    
-    const computedStyle = window.getComputedStyle(containerElement);
-    
-    const format: TextFormat = {
-      bold: this.checkCommandState('bold') || computedStyle.fontWeight === 'bold' || parseInt(computedStyle.fontWeight) >= 600,
-      italic: this.checkCommandState('italic') || computedStyle.fontStyle === 'italic',
-      underline: this.checkCommandState('underline') || computedStyle.textDecoration.includes('underline'),
-      fontSize: parseInt(computedStyle.fontSize),
-      alignment: this.detectAlignment(computedStyle.textAlign)
+
+    return {
+      bold:
+        document.queryCommandState("bold") ||
+        computedStyle.fontWeight === "bold" ||
+        parseInt(computedStyle.fontWeight) >= 700,
+      italic:
+        document.queryCommandState("italic") ||
+        computedStyle.fontStyle === "italic",
+      underline:
+        document.queryCommandState("underline") ||
+        computedStyle.textDecoration.includes("underline"),
+      fontSize: parseInt(computedStyle.fontSize) || 14,
+      fontFamily:
+        computedStyle.fontFamily.replace(/['"]/g, "").split(",")[0] || "Roboto",
+      color: this.rgbToHex(computedStyle.color) || "#000000",
+      alignment: this.getTextAlignment(activeElement),
+      isList: this.isInList(activeElement),
     };
-    
-    this._currentFormat$.next(format);
   }
-  
-  private detectAlignment(textAlign: string): 'left' | 'center' | 'right' | 'justify' {
-    switch (textAlign) {
-      case 'center': return 'center';
-      case 'right': return 'right';
-      case 'justify': return 'justify';
-      default: return 'left';
+
+  // ========== Text Formatting Methods ==========
+
+  /**
+   * Apply bold formatting
+   */
+  applyBold() {
+    const activeElement = this.getCurrentState().activeElement;
+    if (activeElement) {
+      activeElement.contentEditable = "true";
+      activeElement.focus();
+
+      setTimeout(() => {
+        this.restoreOrCreateSelection(activeElement);
+        document.execCommand("bold", false);
+        activeElement.focus();
+      }, 10);
     }
   }
-  
-  // Utility Methods
-  private executeCommand(command: string, value?: string): void {
-    try {
-      document.execCommand(command, false, value);
-    } catch (e) {
-      console.warn(`Could not execute command: ${command}`, e);
+
+  /**
+   * Apply italic formatting
+   */
+  applyItalic() {
+    const activeElement = this.getCurrentState().activeElement;
+    if (activeElement) {
+      activeElement.contentEditable = "true";
+      activeElement.focus();
+
+      setTimeout(() => {
+        this.restoreOrCreateSelection(activeElement);
+        document.execCommand("italic", false);
+        activeElement.focus();
+      }, 10);
     }
   }
-  
-  private checkCommandState(command: string): boolean {
-    try {
-      return document.queryCommandState(command);
-    } catch (e) {
-      return false;
+
+  /**
+   * Apply underline formatting
+   */
+  applyUnderline() {
+    const activeElement = this.getCurrentState().activeElement;
+    if (activeElement) {
+      activeElement.contentEditable = "true";
+      activeElement.focus();
+
+      setTimeout(() => {
+        this.restoreOrCreateSelection(activeElement);
+        document.execCommand("underline", false);
+        activeElement.focus();
+      }, 10);
     }
   }
-  
-  private getSelectionRect(): DOMRect {
+
+  /**
+   * Create bullet list
+   */
+  createBulletList() {
+    const activeElement = this.getCurrentState().activeElement;
+    if (activeElement) {
+      activeElement.contentEditable = "true";
+      activeElement.focus();
+
+      setTimeout(() => {
+        this.restoreOrCreateSelection(activeElement);
+        document.execCommand("insertUnorderedList", false);
+        activeElement.focus();
+      }, 10);
+    }
+  }
+
+  /**
+   * Create numbered list
+   */
+  createNumberList() {
+    const activeElement = this.getCurrentState().activeElement;
+    if (activeElement) {
+      activeElement.contentEditable = "true";
+      activeElement.focus();
+
+      setTimeout(() => {
+        this.restoreOrCreateSelection(activeElement);
+        document.execCommand("insertOrderedList", false);
+        activeElement.focus();
+      }, 10);
+    }
+  }
+
+  /**
+   * Change font size
+   */
+  changeFontSize(size: number) {
+    const activeElement = this.getCurrentState().activeElement;
+    if (activeElement) {
+      activeElement.contentEditable = "true";
+      activeElement.focus();
+
+      const selection = window.getSelection();
+      if (selection && selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        if (!range.collapsed) {
+          // Has selection - wrap it
+          const span = document.createElement("span");
+          span.style.fontSize = size + "px";
+          try {
+            range.surroundContents(span);
+          } catch (e) {
+            // If can't surround (e.g., partial element), extract and wrap
+            span.appendChild(range.extractContents());
+            range.insertNode(span);
+          }
+          selection.removeAllRanges();
+          selection.addRange(range);
+        } else {
+          // No selection - apply to entire element
+          activeElement.style.fontSize = size + "px";
+        }
+      } else {
+        activeElement.style.fontSize = size + "px";
+      }
+
+      activeElement.focus();
+    }
+  }
+
+  /**
+   * Change font family
+   */
+  changeFontFamily(fontFamily: string) {
+    const activeElement = this.getCurrentState().activeElement;
+    if (activeElement) {
+      activeElement.contentEditable = "true";
+      activeElement.focus();
+
+      const selection = window.getSelection();
+      if (selection && selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        if (!range.collapsed) {
+          const span = document.createElement("span");
+          span.style.fontFamily = fontFamily;
+          try {
+            range.surroundContents(span);
+          } catch (e) {
+            span.appendChild(range.extractContents());
+            range.insertNode(span);
+          }
+          selection.removeAllRanges();
+          selection.addRange(range);
+        } else {
+          activeElement.style.fontFamily = fontFamily;
+        }
+      } else {
+        activeElement.style.fontFamily = fontFamily;
+      }
+
+      activeElement.focus();
+    }
+  }
+
+  /**
+   * Change text color
+   */
+  changeTextColor(color: string) {
+    const activeElement = this.getCurrentState().activeElement;
+    if (activeElement) {
+      activeElement.contentEditable = "true";
+      activeElement.focus();
+
+      const selection = window.getSelection();
+      if (selection && selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        if (!range.collapsed) {
+          const span = document.createElement("span");
+          span.style.color = color;
+          try {
+            range.surroundContents(span);
+          } catch (e) {
+            span.appendChild(range.extractContents());
+            range.insertNode(span);
+          }
+          selection.removeAllRanges();
+          selection.addRange(range);
+        } else {
+          activeElement.style.color = color;
+        }
+      } else {
+        activeElement.style.color = color;
+      }
+
+      activeElement.focus();
+    }
+  }
+
+  // ========== Text Alignment Methods ==========
+
+  /**
+   * Align text left
+   */
+  alignLeft() {
+    const activeElement = this.getCurrentState().activeElement;
+    if (activeElement) {
+      activeElement.contentEditable = "true";
+      activeElement.focus();
+
+      setTimeout(() => {
+        this.restoreOrCreateSelection(activeElement);
+        document.execCommand("justifyLeft", false);
+        activeElement.focus();
+      }, 10);
+    }
+  }
+
+  /**
+   * Align text center
+   */
+  alignCenter() {
+    const activeElement = this.getCurrentState().activeElement;
+    if (activeElement) {
+      activeElement.contentEditable = "true";
+      activeElement.focus();
+
+      setTimeout(() => {
+        this.restoreOrCreateSelection(activeElement);
+        document.execCommand("justifyCenter", false);
+        activeElement.focus();
+      }, 10);
+    }
+  }
+
+  /**
+   * Align text right
+   */
+  alignRight() {
+    const activeElement = this.getCurrentState().activeElement;
+    if (activeElement) {
+      activeElement.contentEditable = "true";
+      activeElement.focus();
+
+      setTimeout(() => {
+        this.restoreOrCreateSelection(activeElement);
+        document.execCommand("justifyRight", false);
+        activeElement.focus();
+      }, 10);
+    }
+  }
+
+  /**
+   * Align text justify
+   */
+  alignJustify() {
+    const activeElement = this.getCurrentState().activeElement;
+    if (activeElement) {
+      activeElement.contentEditable = "true";
+      activeElement.focus();
+
+      setTimeout(() => {
+        this.restoreOrCreateSelection(activeElement);
+        document.execCommand("justifyFull", false);
+        activeElement.focus();
+      }, 10);
+    }
+  }
+
+  // ========== Helper Methods ==========
+
+  /**
+   * Calculate optimal toolbar position near the element
+   */
+  private calculateToolbarPosition(element: HTMLElement): {
+    x: number;
+    y: number;
+  } {
+    const rect = element.getBoundingClientRect();
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const scrollY = window.scrollY || window.pageYOffset;
+
+    // Calculate horizontal position (centered above element)
+    let xPos = rect.left + rect.width / 2 - this.config.width / 2;
+
+    // Ensure toolbar stays within viewport horizontally
+    if (xPos + this.config.width > viewportWidth - this.config.margin) {
+      xPos = viewportWidth - this.config.width - this.config.margin;
+    }
+    if (xPos < this.config.margin) {
+      xPos = this.config.margin;
+    }
+
+    // Calculate vertical position (above the element)
+    let yPos = rect.top + scrollY - this.config.height - 10;
+
+    // If not enough space above, show below
+    if (rect.top < this.config.height + this.config.margin) {
+      yPos = rect.bottom + scrollY + 10;
+    }
+
+    return { x: xPos, y: yPos };
+  }
+
+  /**
+   * Restore selection or create a new one in the element
+   */
+  private restoreOrCreateSelection(element: HTMLElement) {
     const selection = window.getSelection();
     if (!selection || selection.rangeCount === 0) {
-      return new DOMRect(0, 0, 0, 0);
+      const range = document.createRange();
+      range.selectNodeContents(element);
+      range.collapse(false); // Collapse to end
+      selection?.removeAllRanges();
+      selection?.addRange(range);
     }
-    
-    const range = selection.getRangeAt(0);
-    return range.getBoundingClientRect();
   }
-  
-  private calculateToolbarPosition(selectionRect: DOMRect, event: MouseEvent): { x: number; y: number } {
-    const toolbarWidth = 450; // Approximate toolbar width
-    const toolbarHeight = 48; // Approximate toolbar height
-    const margin = 10;
-    
-    let x = selectionRect.left + (selectionRect.width / 2) - (toolbarWidth / 2);
-    let y = selectionRect.top - toolbarHeight - margin;
-    
-    // Adjust if toolbar would go off-screen
-    if (x < margin) {
-      x = margin;
-    } else if (x + toolbarWidth > window.innerWidth - margin) {
-      x = window.innerWidth - toolbarWidth - margin;
+
+  /**
+   * Focus the active element
+   */
+  private focusActiveElement() {
+    const activeElement = this.getCurrentState().activeElement;
+    if (activeElement) {
+      activeElement.focus();
     }
-    
-    if (y < margin) {
-      y = selectionRect.bottom + margin; // Show below selection
-    }
-    
-    return { x, y };
   }
-  
-  private updateToolbarState(partialState: Partial<EditToolbarState>): void {
-    const newState = { ...this.currentToolbarState, ...partialState };
-    this._toolbarState$.next(newState);
+
+  /**
+   * Get text alignment of element
+   */
+  private getTextAlignment(element: HTMLElement): string {
+    const computedStyle = window.getComputedStyle(element);
+    return computedStyle.textAlign || "left";
   }
-  
-  private updateFormatState(partialFormat: Partial<TextFormat>): void {
-    const newFormat = { ...this.currentFormat, ...partialFormat };
-    this._currentFormat$.next(newFormat);
-  }
-  
-  // Event Handlers for component use
-  onTextSelection(event: MouseEvent, element: HTMLElement): void {
-    // Delay to ensure selection is complete
-    setTimeout(() => {
-      const selection = window.getSelection();
-      if (selection && selection.toString().trim().length > 0) {
-        this.showToolbar(event, element);
-      } else {
-        this.hideToolbar();
+
+  /**
+   * Check if element is in a list
+   */
+  private isInList(element: HTMLElement): boolean {
+    let current: HTMLElement | null = element;
+    while (current) {
+      if (
+        current.tagName === "UL" ||
+        current.tagName === "OL" ||
+        current.tagName === "LI"
+      ) {
+        return true;
       }
-    }, 10);
-  }
-  
-  onElementClick(event: MouseEvent, element: HTMLElement): void {
-    // Store active element for future edits
-    this.updateToolbarState({ activeElement: element });
-  }
-  
-  onElementFocus(element: HTMLElement): void {
-    this.updateToolbarState({ activeElement: element });
-  }
-  
-  onElementBlur(): void {
-    // Hide toolbar after a delay to allow for toolbar interactions
-    setTimeout(() => {
-      if (!this.isToolbarFocused()) {
-        this.hideToolbar();
-      }
-    }, 150);
-  }
-  
-  private isToolbarFocused(): boolean {
-    const activeElement = document.activeElement;
-    const toolbar = document.querySelector('.edit-toolbar');
-    return toolbar?.contains(activeElement) ?? false;
-  }
-  
-  // Keyboard Shortcuts
-  handleKeyboardShortcut(event: KeyboardEvent): boolean {
-    if (!event.ctrlKey && !event.metaKey) return false;
-    
-    switch (event.key.toLowerCase()) {
-      case 'b':
-        event.preventDefault();
-        this.makeBold();
-        return true;
-      case 'i':
-        event.preventDefault();
-        this.makeItalic();
-        return true;
-      case 'u':
-        event.preventDefault();
-        this.makeUnderline();
-        return true;
-      case 'l':
-        if (event.shiftKey) {
-          event.preventDefault();
-          this.alignLeft();
-          return true;
-        }
-        break;
-      case 'e':
-        if (event.shiftKey) {
-          event.preventDefault();
-          this.alignCenter();
-          return true;
-        }
-        break;
-      case 'r':
-        if (event.shiftKey) {
-          event.preventDefault();
-          this.alignRight();
-          return true;
-        }
-        break;
-      default:
-        return false;
+      current = current.parentElement;
     }
-    
     return false;
   }
-  
-  // Cleanup
-  cleanup(): void {
-    this.hideToolbar();
-    this._currentFormat$.next({});
+
+  /**
+   * Convert RGB color to hex
+   */
+  private rgbToHex(rgb: string): string {
+    if (rgb.startsWith("#")) {
+      return rgb;
+    }
+
+    const result = rgb.match(/\d+/g);
+    if (!result || result.length < 3) {
+      return "#000000";
+    }
+
+    const r = parseInt(result[0]);
+    const g = parseInt(result[1]);
+    const b = parseInt(result[2]);
+
+    return (
+      "#" +
+      [r, g, b]
+        .map((x) => {
+          const hex = x.toString(16);
+          return hex.length === 1 ? "0" + hex : hex;
+        })
+        .join("")
+    );
   }
-  
-  // Observable getters for specific states
-  get isVisible$(): Observable<boolean> {
-    return new BehaviorSubject(this.currentToolbarState.isVisible);
+
+  /**
+   * Get default format state
+   */
+  private getDefaultFormatState(): TextFormatState {
+    return {
+      bold: false,
+      italic: false,
+      underline: false,
+      fontSize: 14,
+      fontFamily: "Roboto",
+      color: "#000000",
+      alignment: "left",
+      isList: false,
+    };
   }
-  
-  get position$(): Observable<{ x: number; y: number }> {
-    return new BehaviorSubject(this.currentToolbarState.position);
+
+  /**
+   * Setup keyboard shortcuts
+   */
+  private setupKeyboardShortcuts() {
+    this.keyboardHandler = (event: KeyboardEvent) => {
+      const state = this.getCurrentState();
+      if (!state.visible || !state.activeElement) {
+        return;
+      }
+
+      // Ctrl/Cmd + B: Bold
+      if ((event.ctrlKey || event.metaKey) && event.key === "b") {
+        event.preventDefault();
+        this.applyBold();
+      }
+
+      // Ctrl/Cmd + I: Italic
+      if ((event.ctrlKey || event.metaKey) && event.key === "i") {
+        event.preventDefault();
+        this.applyItalic();
+      }
+
+      // Ctrl/Cmd + U: Underline
+      if ((event.ctrlKey || event.metaKey) && event.key === "u") {
+        event.preventDefault();
+        this.applyUnderline();
+      }
+
+      // Escape: Close toolbar
+      if (event.key === "Escape") {
+        event.preventDefault();
+        this.hideToolbar();
+      }
+
+      // Ctrl/Cmd + Shift + L: Bullet list
+      if (
+        (event.ctrlKey || event.metaKey) &&
+        event.shiftKey &&
+        event.key === "l"
+      ) {
+        event.preventDefault();
+        this.createBulletList();
+      }
+
+      // Ctrl/Cmd + Shift + N: Number list
+      if (
+        (event.ctrlKey || event.metaKey) &&
+        event.shiftKey &&
+        event.key === "n"
+      ) {
+        event.preventDefault();
+        this.createNumberList();
+      }
+    };
+
+    document.addEventListener("keydown", this.keyboardHandler);
   }
-  
-  get activeElement$(): Observable<HTMLElement | null> {
-    return new BehaviorSubject(this.currentToolbarState.activeElement);
+
+  /**
+   * Setup outside click handler to hide toolbar
+   */
+  private setupOutsideClickHandler() {
+    this.outsideClickHandler = (event: Event) => {
+      const target = event.target as HTMLElement;
+      const toolbar = document.querySelector(".edit-toolbar");
+      const activeElement = this.getCurrentState().activeElement;
+
+      // Don't hide if clicking on toolbar or active element
+      if (
+        toolbar &&
+        !toolbar.contains(target) &&
+        !activeElement?.contains(target)
+      ) {
+        // Check if clicking on another editable element
+        const clickedEditable = target.closest('[data-editable="true"]');
+        if (!clickedEditable) {
+          this.hideToolbar();
+        }
+      }
+    };
+
+    // Delay to avoid immediate trigger
+    setTimeout(() => {
+      document.addEventListener("click", this.outsideClickHandler!, {
+        capture: true,
+      });
+    }, 100);
+  }
+
+  /**
+   * Remove outside click handler
+   */
+  private removeOutsideClickHandler() {
+    if (this.outsideClickHandler) {
+      document.removeEventListener("click", this.outsideClickHandler, {
+        capture: true,
+      });
+      this.outsideClickHandler = undefined;
+    }
+  }
+
+  /**
+   * Cleanup method - call on service destroy
+   */
+  destroy() {
+    this.removeOutsideClickHandler();
+
+    if (this.keyboardHandler) {
+      document.removeEventListener("keydown", this.keyboardHandler);
+      this.keyboardHandler = undefined;
+    }
+
+    this.toolbarStateSubject.complete();
   }
 }

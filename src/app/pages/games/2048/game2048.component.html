@@ -1,0 +1,101 @@
+<div class="game-container">
+  <div class="game-header">
+    <button class="back-button" (click)="goBack()">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <path d="M12 4L6 10L12 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Back
+    </button>
+    
+    <h1 class="game-title">🎲 2048 #128</h1>
+    
+    <div class="game-stats">
+      <div class="stat">
+        <span class="stat-label">Score</span>
+        <span class="stat-value">{{ score }}</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Best</span>
+        <span class="stat-value">{{ bestScore }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="game-board">
+    <div class="instructions">
+      <p>Use arrow keys to move tiles. Combine same numbers to reach 2048!</p>
+    </div>
+
+    <div class="grid-container">
+      <div class="grid">
+        <div *ngFor="let row of grid; let i = index" class="grid-row">
+          <div
+            *ngFor="let cell of row; let j = index"
+            class="cell"
+            [class.cell-new]="cell.isNew"
+            [class.cell-merged]="cell.isMerged"
+            [class.cell-empty]="cell.value === 0"
+            [style.background-color]="getTileColor(cell.value)"
+            [style.color]="getTextColor(cell.value)">
+            <span class="cell-value" *ngIf="cell.value !== 0">{{ cell.value }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="game-controls">
+    <button class="control-button reset" (click)="resetGame()">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <path d="M4 10C4 13.3137 6.68629 16 10 16C13.3137 16 16 13.3137 16 10C16 6.68629 13.3137 4 10 4C8.1435 4 6.4723 4.80974 5.34315 6.09099M5 3V6.5H8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      New Game
+    </button>
+  </div>
+
+  <!-- Win Modal -->
+  <div class="modal-overlay" *ngIf="isWon" (click)="goBack()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-icon">🎉</div>
+      <h2>You Win!</h2>
+      <p>You reached 2048!</p>
+      <div class="modal-stats">
+        <div class="modal-stat">
+          <span class="label">Score</span>
+          <span class="value">{{ score }}</span>
+        </div>
+        <div class="modal-stat">
+          <span class="label">Best Tile</span>
+          <span class="value">{{ getBestTile() }}</span>
+        </div>
+      </div>
+      <div class="modal-buttons">
+        <button class="modal-button" (click)="resetGame(); $event.stopPropagation()">Play Again</button>
+        <button class="modal-button secondary" (click)="goBack()">Back to Games</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Game Over Modal -->
+  <div class="modal-overlay" *ngIf="isGameOver" (click)="goBack()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-icon">😢</div>
+      <h2>Game Over!</h2>
+      <p>No more moves available</p>
+      <div class="modal-stats">
+        <div class="modal-stat">
+          <span class="label">Score</span>
+          <span class="value">{{ score }}</span>
+        </div>
+        <div class="modal-stat">
+          <span class="label">Best Tile</span>
+          <span class="value">{{ getBestTile() }}</span>
+        </div>
+      </div>
+      <div class="modal-buttons">
+        <button class="modal-button" (click)="resetGame(); $event.stopPropagation()">Try Again</button>
+        <button class="modal-button secondary" (click)="goBack()">Back to Games</button>
+      </div>
+    </div>
+  </div>
+</div>

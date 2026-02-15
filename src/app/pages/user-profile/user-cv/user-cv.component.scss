@@ -1,0 +1,44 @@
+:host {
+  display: block;
+}
+
+.container {
+  max-width: 1400px;
+}
+
+::ng-deep {
+  .p-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    }
+
+    .p-card-header {
+      padding: 0;
+    }
+
+    .p-card-body {
+      padding: 1.25rem;
+    }
+
+    .p-card-footer {
+      padding: 1rem 1.25rem;
+      background-color: #f9fafb;
+      border-top: 1px solid #e5e7eb;
+    }
+  }
+
+  .p-button.p-button-sm {
+    font-size: 0.875rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .p-progressspinner {
+    .p-progressspinner-circle {
+      stroke: #3b82f6;
+    }
+  }
+}
+

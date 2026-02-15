@@ -1,0 +1,31 @@
+// My Profile Component Styles
+
+// Component-specific styles
+// Most styling is handled by TailwindCSS utility classes
+// Add custom styles here only if needed
+
+// Smooth transitions for interactive elements
+:host {
+  display: block;
+}
+
+// Ensure proper spacing and readability
+.profile-section {
+  scroll-margin-top: 2rem;
+}
+
+// Improve focus states for accessibility
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid theme('colors.blue.600');
+  outline-offset: 2px;
+  border-radius: theme('borderRadius.md');
+}
+
+// Print styles (optional - for future print functionality)
+@media print {
+  .no-print {
+    display: none;
+  }
+}
+

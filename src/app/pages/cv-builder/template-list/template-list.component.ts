@@ -1,9 +1,16 @@
-import { Component, OnInit, Pipe, PipeTransform } from '@angular/core';
+import { Component, inject, OnInit, Pipe, PipeTransform, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { CvTemplate, CvTemplateType } from '@app/models/cv-builder/cv-template.model';
 import { CvTemplateService } from '@app/services/cv-builder/cv-template.service';
-
+import { TagModule } from 'primeng/tag';
+import { ImageModule } from 'primeng/image';
+import { CardModule } from 'primeng/card';
+import { AuthService } from '@app/services/auth/auth.service';
+import { ButtonModule } from 'primeng/button';
+import { PaginatorModule, PaginatorState } from 'primeng/paginator';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { SkeletonModule } from 'primeng/skeleton';
 @Pipe({
   name: 'cvTemplateType',
   standalone: true
@@ -25,59 +32,67 @@ export class CvTemplateTypePipe implements PipeTransform {
 @Component({
   selector: 'app-template-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, CvTemplateTypePipe],
-  template: `
-    <div class="container mx-auto px-4 py-8">
-      <h1 class="text-3xl font-bold mb-6">Choose Your CV Template</h1>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        @for (template of templates; track template.templateCode) {
-          <div class="bg-white rounded-lg shadow-lg overflow-hidden cursor-pointer hover:shadow-xl transition-shadow"
-               [routerLink]="['/cv-builder/editor', template.templateCode]">
-            <img [src]="template.sampleFileUrl" [alt]="template.name" class="w-full h-48 object-cover">
-            <div class="p-4">
-              <h3 class="text-xl font-semibold mb-2">{{template.name}}</h3>
-              <p class="text-gray-600">{{template.description}}</p>
-              <div class="mt-2 flex justify-between items-center">
-                <span class="text-sm text-gray-500">{{template.type | cvTemplateType}}</span>
-                <span [class]="template.isPublished ? 'text-green-600' : 'text-gray-400'">
-                  {{template.isPublished ? 'Published' : 'Draft'}}
-                </span>
-              </div>
-            </div>
-          </div>
-        }
-      </div>
-    </div>
-  `,
-  styles: [`
-    :host {
-      display: block;
-      background-color: #f5f5f5;
-      min-height: 100vh;
-    }
-  `]
+  imports: [CommonModule, RouterModule, CvTemplateTypePipe, TagModule, ImageModule, CardModule, ButtonModule, PaginatorModule, ProgressSpinnerModule, SkeletonModule],
+  templateUrl:'./template-list.component.html',
+  styleUrl: './template-list.component.scss',
 })
 export class TemplateListComponent implements OnInit {
   templates: CvTemplate[] = [];
+  isAdmin = signal<boolean>(false);
+  isLoading = signal<boolean>(false);
+  
+  // Pagination state
+  totalRecords = signal<number>(0);
+  first = signal<number>(0);
+  rows = signal<number>(12);
+  rowsPerPageOptions = [12, 24, 36, 48];
 
-  constructor(private cvTemplateService: CvTemplateService) {}
+  private cvTemplateService = inject(CvTemplateService);
+  private authService = inject(AuthService);
+  private router = inject(Router);
 
   ngOnInit() {
+    this.checkAdminStatus();
+    this.loadTemplates();
+  }
+
+  private checkAdminStatus(): void {
+    this.isAdmin.set(this.authService.isAdmin());
+  }
+
+  navigateToTemplate(templateCode: string): void {
+    this.router.navigate(['/cv-template/editor', templateCode]);
+  }
+
+  navigateToCreate(): void {
+    this.router.navigate(['/cv-template/editor', 'new']);
+  }
+
+  onPageChange(event: PaginatorState): void {
+    this.first.set(event.first ?? 0);
+    this.rows.set(event.rows ?? 12);
     this.loadTemplates();
   }
 
   private loadTemplates(): void {
+    this.isLoading.set(true);
+    const skipCount = this.first();
+    const maxResultCount = this.rows();
+
     this.cvTemplateService.getCvTemplates({
-      maxResultCount: 10,
-      skipCount: 0,
+      maxResultCount,
+      skipCount,
       sorting: 'name asc'
     }).subscribe({
       next: (response) => {
         this.templates = response.items;
+        this.totalRecords.set(response.totalCount);
+        this.isLoading.set(false);
       },
       error: (error: Error) => {
         console.error('Error loading templates:', error);
-        // TODO: Add error handling UI
+        this.isLoading.set(false);
+        // TODO: Add error handling UIs
       }
     });
   }

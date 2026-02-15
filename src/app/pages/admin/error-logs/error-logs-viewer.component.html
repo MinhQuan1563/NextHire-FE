@@ -1,0 +1,275 @@
+<p-toast></p-toast>
+<div class="error-logs-viewer">
+  <div class="page-header">
+    <h1>Error Logs</h1>
+    <p class="text-muted">View and analyze application error logs</p>
+  </div>
+
+  <!-- Filters Section -->
+  <p-card class="filter-card">
+    <div class="filter-container">
+      <div class="filter-row">
+        <div class="filter-item">
+          <label for="fromDate">From Date</label>
+          <p-calendar
+            id="fromDate"
+            [ngModel]="fromDate()"
+            [showTime]="true"
+            [showIcon]="true"
+            dateFormat="yy-mm-dd"
+            placeholder="Select start date"
+            [style]="{ width: '100%' }"
+            (ngModelChange)="fromDate.set($event)"
+          ></p-calendar>
+        </div>
+
+        <div class="filter-item">
+          <label for="toDate">To Date</label>
+          <p-calendar
+            id="toDate"
+            [ngModel]="toDate()"
+            [showTime]="true"
+            [showIcon]="true"
+            dateFormat="yy-mm-dd"
+            placeholder="Select end date"
+            [style]="{ width: '100%' }"
+            (ngModelChange)="toDate.set($event)"
+          ></p-calendar>
+        </div>
+
+        <div class="filter-item">
+          <label for="level">Log Level</label>
+          <p-dropdown
+            id="level"
+            [options]="logLevelOptions"
+            [ngModel]="selectedLevel()"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="All Levels"
+            [style]="{ width: '100%' }"
+            (ngModelChange)="selectedLevel.set($event)"
+          ></p-dropdown>
+        </div>
+
+        <div class="filter-item">
+          <label for="source">Source</label>
+          <input
+            id="source"
+            type="text"
+            pInputText
+            [ngModel]="sourceFilter()"
+            placeholder="Filter by source"
+            (ngModelChange)="sourceFilter.set($event)"
+          />
+        </div>
+      </div>
+
+      <div class="filter-actions">
+        <p-button
+          label="Apply Filters"
+          icon="pi pi-filter"
+          (onClick)="applyFilters()"
+          [loading]="loading()"
+        ></p-button>
+        <p-button
+          label="Clear Filters"
+          icon="pi pi-filter-slash"
+          severity="secondary"
+          (onClick)="clearFilters()"
+        ></p-button>
+
+        <div class="export-container">
+          <p-button
+            #exportBtn
+            label="Export"
+            icon="pi pi-download"
+            severity="help"
+            [loading]="exporting()"
+            (onClick)="exportMenu.toggle($event)"
+          ></p-button>
+          <p-menu #exportMenu [model]="exportMenuItems" [popup]="true"></p-menu>
+        </div>
+      </div>
+    </div>
+  </p-card>
+
+  <!-- Error Message -->
+  @if (errorMessage()) {
+    <div class="error-banner" role="alert" aria-live="polite">
+      <i class="pi pi-exclamation-circle"></i>
+      <span>{{ errorMessage() }}</span>
+      <p-button
+        icon="pi pi-times"
+        [rounded]="true"
+        [text]="true"
+        severity="danger"
+        (onClick)="errorMessage.set(null)"
+      ></p-button>
+    </div>
+  }
+
+  <!-- Logs Table -->
+  <p-card class="table-card">
+    <div class="table-header">
+      <span class="record-count">
+        @if (totalRecords() > 0) {
+          Showing {{ showingFrom() }}-{{ showingTo() }} of {{ totalRecords() }} logs
+        } 
+      </span>
+    </div>
+
+    @if (loading()) {
+      <div class="loading-container" role="status" aria-live="polite" aria-label="Loading error logs">
+        <p-progressSpinner strokeWidth="4"></p-progressSpinner>
+        <p>Loading error logs...</p>
+      </div>
+    } @else {
+      <p-table
+        [value]="logs()"
+        [tableStyle]="{ 'min-width': '60rem' }"
+        styleClass="p-datatable-striped p-datatable-gridlines"
+        [rowHover]="true"
+        [ariaLabel]="'Error logs table'"
+      >
+        <ng-template pTemplate="header">
+          <tr>
+            <th style="width: 180px">Create Date</th>
+            <th style="width: 120px">Level</th>
+            <th style="width: 200px">Source</th>
+            <th>Message</th>
+            <th style="width: 100px">Actions</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-log>
+          <tr class="log-row" 
+              (click)="viewLogDetail(log)"
+              (keydown.enter)="viewLogDetail(log)"
+              (keydown.space)="viewLogDetail(log); $event.preventDefault()"
+              tabindex="0"
+              role="button"
+              [attr.aria-label]="'View error log from ' + formatDate(log.createDate) + ', Level: ' + log.metadata.Level">
+            <td>{{ formatDate(log.createDate) }}</td>
+            <td>
+              <p-tag
+                [value]="log.metadata.Level"
+                [severity]="getLogLevelSeverity(log.metadata.Level)"
+              ></p-tag>
+            </td>
+            <td class="source-cell" [pTooltip]="log.metadata.Source" tooltipPosition="top">
+              {{ truncateMessage(log.metadata.Source || 'N/A', 30) }}
+            </td>
+            <td class="message-cell" [pTooltip]="log.metadata.Message" tooltipPosition="top">
+              {{ truncateMessage(log.metadata.Message, 100) }}
+            </td>
+            <td>
+              <p-button
+                icon="pi pi-eye"
+                [rounded]="true"
+                [text]="true"
+                pTooltip="View Details"
+                tooltipPosition="top"
+                (onClick)="viewLogDetail(log); $event.stopPropagation()"
+              ></p-button>
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="5" class="empty-message">
+              <i class="pi pi-inbox"></i>
+              <p>No error logs found</p>
+              <span>Try adjusting your filters or check back later</span>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+
+      <!-- Pagination -->
+      @if (totalRecords() > 0) {
+        <div class="pagination-container">
+          <div class="page-size-selector">
+            <label>Items per page:</label>
+            <p-dropdown
+              [options]="pageSizeOptions"
+              [(ngModel)]="pageSize"
+              optionLabel="label"
+              optionValue="value"
+              (ngModelChange)="pageSize.set($event); onPageSizeChange()"
+            ></p-dropdown>
+          </div>
+
+          <div class="pagination-controls">
+            <p-button
+              icon="pi pi-angle-left"
+              [rounded]="true"
+              [text]="true"
+              [disabled]="currentPage() <= 1"
+              (onClick)="onPageChange(currentPage() - 1)"
+              pTooltip="Previous"
+            ></p-button>
+            <span class="page-info">Page {{ currentPage() }} of {{ totalPages() }}</span>
+            <p-button
+              icon="pi pi-angle-right"
+              [rounded]="true"
+              [text]="true"
+              [disabled]="currentPage() >= totalPages()"
+              (onClick)="onPageChange(currentPage() + 1)"
+              pTooltip="Next"
+            ></p-button>
+          </div>
+        </div>
+      }
+    }
+  </p-card>
+
+  <!-- Detail Modal -->
+  <p-dialog
+    header="Error Log Details"
+    [visible]="detailModalVisible()"
+    (visibleChange)="detailModalVisible.set($event)"
+    [modal]="true"
+    [style]="{ width: '800px', maxWidth: '95vw' }"
+    [draggable]="false"
+    [resizable]="false"
+    (onHide)="closeDetailModal()"
+  >
+    @if (selectedLog()) {
+      <div class="detail-content">
+        <div class="detail-header">
+          <div class="detail-info">
+            <div class="info-item">
+              <label>Log ID:</label>
+              <span class="log-id">{{ selectedLog()!.logId }}</span>
+            </div>
+            <div class="info-item">
+              <label>Created:</label>
+              <span>{{ formatDate(selectedLog()!.createDate) }}</span>
+            </div>
+            <div class="info-item">
+              <label>Level:</label>
+              <p-tag
+                [value]="selectedLog()!.metadata.Level"
+                [severity]="getLogLevelSeverity(selectedLog()!.metadata.Level)"
+              ></p-tag>
+            </div>
+          </div>
+          <p-button
+            label="Copy JSON"
+            icon="pi pi-copy"
+            severity="secondary"
+            (onClick)="copyToClipboard()"
+          ></p-button>
+        </div>
+
+        <div class="metadata-section">
+          <label>Metadata:</label>
+          <pre class="json-viewer"><code>{{ formatJsonForDisplay(selectedLog()!.rawMetadata) }}</code></pre>
+        </div>
+      </div>
+    }
+
+    <ng-template pTemplate="footer">
+      <p-button label="Close" icon="pi pi-times" (onClick)="closeDetailModal()"></p-button>
+    </ng-template>
+  </p-dialog>
+</div>

@@ -9,11 +9,16 @@ import { InvitationsComponent } from './pages/network/invitations/invitations.co
 import { JobsComponent } from './pages/jobs/jobs.component';
 import { MessagingComponent } from './pages/messaging/messaging.component';
 import { NotificationsComponent } from './pages/notifications/notifications.component';
+import { GamesComponent } from './pages/games/games.component';
+import { Game2048Component } from './pages/games/2048/game2048.component';
+import { TangoComponent } from './pages/games/tango/tango.component';
+import { QueensComponent } from './pages/games/queens/queens.component';
 import { LoginComponent } from './pages/auth/login/login.component';
 import { RegisterComponent } from './pages/auth/register/register.component';
 import { ForgotPasswordComponent } from './pages/auth/forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './pages/auth/reset-password/reset-password.component';
 import { AuthGuard } from './guards/auth.guard';
+import { gameAccessGuard } from './guards/game-access.guard';
 
 export const routes: Routes = [
   {
@@ -34,12 +39,17 @@ export const routes: Routes = [
       { path: 'network', component: NetworkComponent },
       { path: 'network/connections', component: ConnectionsComponent },
       { 
-        path: 'cv-builder',
+        path: 'cv-template',
         children: [
           { 
             path: '', 
             loadComponent: () => import('./pages/cv-builder/template-list/template-list.component')
               .then(m => m.TemplateListComponent)
+          },
+          { 
+            path: 'editor/:templateCode', 
+            loadComponent: () => import('./pages/cv-builder/cv-editor/cv-editor.component')
+              .then(m => m.CvEditorComponent)
           },
           { 
             path: 'editor', 
@@ -55,18 +65,41 @@ export const routes: Routes = [
       { path: 'jobs', component: JobsComponent },                 // Việc làm
       { path: 'messaging', component: MessagingComponent },       // Nhắn tin
       { path: 'notifications', component: NotificationsComponent }, // Thông báo
+      {
+        path: 'profile',
+        children: [
+          {
+            path: '',
+            pathMatch: 'full',
+            loadComponent: () => import('./pages/user-profile/my-profile/my-profile.component')
+              .then(m => m.MyProfileComponent)
+          },
+          {
+            path: 'edit',
+            loadComponent: () => import('./pages/user-profile/edit-profile/edit-profile.component')
+              .then(m => m.EditProfileComponent)
+          },
+          {
+            path: 'cvs',
+            loadComponent: () => import('./pages/user-profile/user-cv/user-cv.component')
+              .then(m => m.UserCvComponent)
+          },
+          {
+            path: ':userCode',
+            loadComponent: () => import('./pages/user-profile/other-user-profile/other-user-profile.component')
+              .then(m => m.OtherUserProfileComponent)
+          }
+        ]
+      },
+      { path: 'games', component: GamesComponent },               // Games list
+      { path: 'games/2048', component: Game2048Component, canActivate: [gameAccessGuard] },       // 2048 game
+      { path: 'games/tango', component: TangoComponent, canActivate: [gameAccessGuard] },         // Tango game
+      { path: 'games/queens', component: QueensComponent, canActivate: [gameAccessGuard] },       // Queens game
       // ... Các route khác sử dụng layout này
     ]
   },
-  // { path: 'login', component: LoginComponent },
-  // { path: '**', component: NotFoundComponent },
-  // {
-  //   path: 'admin',
-  //   component: AdminLayoutComponent, // Ví dụ layout khác cho trang admin
-  //   children: [
-  //     // ... admin routes
-  //   ]
-  // },
-  // { path: 'login', component: LoginComponent }, // Trang login có thể không cần layout
-  // { path: '**', component: NotFoundComponent } // Trang 404
+  {
+    path: 'admin',
+    loadChildren: () => import('./pages/admin/admin.routes').then(m => m.adminRoutes)
+  }
 ];

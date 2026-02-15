@@ -1,0 +1,9 @@
+<p-avatar
+  [image]="avatarUrl || undefined"
+  [label]="!avatarUrl ? getInitials() : ''"
+  [shape]="shape"
+  [styleClass]="'border-2 border-gray-200 ' + getSizeClass() + ' ' + styleClass"
+  [style]="{ 'background-color': !avatarUrl ? '#e5e7eb' : undefined }"
+>
+</p-avatar>
+
