@@ -1,0 +1,313 @@
+<p-toast></p-toast>
+
+<p-confirmDialog></p-confirmDialog>
+
+<div class="container mx-auto px-4 py-6 max-w-5xl">
+  <div class="bg-white rounded-lg shadow-md p-6">
+    <!-- Loading State -->
+    @if (loading()) {
+      <div class="flex justify-center items-center py-16">
+        <div class="text-center">
+          <p-progressSpinner
+            styleClass="w-12 h-12"
+            strokeWidth="4"
+            animationDuration=".8s"
+          ></p-progressSpinner>
+          <p class="text-gray-600 mt-4 text-sm">Loading profile...</p>
+        </div>
+      </div>
+    }
+
+    <!-- Error State -->
+    @if (error() && !loading()) {
+      <div class="mb-6">
+        <!-- Profile Not Found -->
+        @if (profileNotFound()) {
+          <div class="text-center py-12">
+            <i class="pi pi-user-minus text-6xl text-gray-300 mb-4"></i>
+            <h2 class="text-2xl font-semibold text-gray-700 mb-2">Profile Not Found</h2>
+            <p class="text-gray-500 mb-6">{{ error() }}</p>
+            <p-button
+              label="Go Back"
+              icon="pi pi-arrow-left"
+              (onClick)="router.navigate(['/'])"
+              [outlined]="true"
+            ></p-button>
+          </div>
+        } @else if (accessRestricted()) {
+          <!-- Access Restricted -->
+          <div class="text-center py-12">
+            <i class="pi pi-lock text-6xl text-gray-300 mb-4"></i>
+            <h2 class="text-2xl font-semibold text-gray-700 mb-2">Access Restricted</h2>
+            <p class="text-gray-500 mb-6">{{ error() }}</p>
+            <p-button
+              label="Go Back"
+              icon="pi pi-arrow-left"
+              (onClick)="router.navigate(['/'])"
+              [outlined]="true"
+            ></p-button>
+          </div>
+        } @else {
+          <!-- Generic Error -->
+          <p-message
+            severity="error"
+            [text]="error()!"
+          ></p-message>
+          <div class="mt-4 flex justify-end">
+            <p-button
+              label="Retry"
+              icon="pi pi-refresh"
+              (onClick)="retry()"
+              [outlined]="true"
+              severity="danger"
+              size="small"
+            ></p-button>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Profile Content -->
+    @if (!loading() && !error() && profileData(); as profile) {
+      <div class="space-y-6">
+        <!-- Profile Header -->
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-gray-200 pb-4 mb-6">
+          <div>
+            <h1 class="text-3xl font-bold text-gray-900 mb-1">User Profile</h1>
+            <p class="text-sm text-gray-500">View {{ profile.fullName || 'user' }}'s professional profile</p>
+          </div>
+          <!-- Friendship Action Buttons -->
+          <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            @if (friendshipStatus() === 'none') {
+              <p-button
+                label="Add Friend"
+                icon="pi pi-user-plus"
+                (onClick)="sendFriendRequest()"
+                [loading]="friendshipActionLoading()"
+                styleClass="w-full sm:w-auto"
+              ></p-button>
+            }
+
+            @else if (friendshipStatus() === 'pending_sent') {
+              <p-button
+                label="Cancel Request"
+                icon="pi pi-times"
+                (onClick)="cancelFriendRequest()"
+                [loading]="friendshipActionLoading()"
+                [outlined]="true"
+                severity="secondary"
+                styleClass="w-full sm:w-auto"
+              ></p-button>
+            }
+
+            @else if (friendshipStatus() === 'pending_received') {
+              <p-button
+                label="Accept"
+                icon="pi pi-check"
+                (onClick)="acceptFriendRequest()"
+                [loading]="friendshipActionLoading()"
+                styleClass="w-full sm:w-auto"
+              ></p-button>
+              <p-button
+                label="Decline"
+                icon="pi pi-times"
+                (onClick)="declineFriendRequest()"
+                [loading]="friendshipActionLoading()"
+                [outlined]="true"
+                severity="danger"
+                styleClass="w-full sm:w-auto"
+              ></p-button>
+            }
+
+            @else if (friendshipStatus() === 'friends') {
+              <p-button
+                label="Message"
+                icon="pi pi-envelope"
+                (onClick)="messageUser()"
+                styleClass="w-full sm:w-auto"
+              ></p-button>
+              <p-button
+                label="Unfriend"
+                icon="pi pi-user-minus"
+                (onClick)="unfriend()"
+                [loading]="friendshipActionLoading()"
+                [outlined]="true"
+                severity="danger"
+                styleClass="w-full sm:w-auto"
+              ></p-button>
+            }
+
+            @if (friendshipStatus() !== 'blocked') {
+              <p-button
+                icon="pi pi-ban"
+                (onClick)="blockUser()"
+                [loading]="friendshipActionLoading()"
+                [outlined]="true"
+                severity="danger"
+                pTooltip="Block User"
+                tooltipPosition="bottom"
+                styleClass="w-full sm:w-auto"
+              ></p-button>
+            }
+          </div>
+        </div>
+
+        <!-- Profile Header Section -->
+        <div class="flex flex-col md:flex-row gap-6 lg:gap-8 pb-8 border-b border-gray-200 mb-8">
+          <!-- Avatar -->
+          <div class="flex-shrink-0 flex justify-center md:justify-start">
+            <app-profile-avatar
+              [avatarUrl]="profile.avatarUrl"
+              [fullName]="profile.fullName"
+              size="xlarge"
+              shape="circle"
+              styleClass="shadow-lg"
+            ></app-profile-avatar>
+          </div>
+
+          <!-- Basic Information -->
+          <div class="flex-1 space-y-4">
+            <div>
+              <h2 class="text-3xl lg:text-4xl font-bold text-gray-900 mb-2">
+                {{ profile.fullName || 'No name provided' }}
+              </h2>
+              @if (profile.userCode) {
+                <p class="text-sm text-gray-500">
+                  <span class="font-medium">User Code:</span> {{ profile.userCode }}
+                </p>
+              }
+              <!-- Friendship Status Badge -->
+              @if (friendshipStatus() === 'friends') {
+                <span class="inline-flex items-center gap-1 text-green-600 text-sm mt-1">
+                  <i class="pi pi-check-circle"></i>
+                  Friends
+                </span>
+              } @else if (friendshipStatus() === 'pending_sent') {
+                <span class="inline-flex items-center gap-1 text-blue-600 text-sm mt-1">
+                  <i class="pi pi-clock"></i>
+                  Friend Request Sent
+                </span>
+              } @else if (friendshipStatus() === 'pending_received') {
+                <span class="inline-flex items-center gap-1 text-orange-600 text-sm mt-1">
+                  <i class="pi pi-envelope"></i>
+                  Wants to be your friend
+                </span>
+              } @else if (friendshipStatus() === 'blocked') {
+                <span class="inline-flex items-center gap-1 text-red-600 text-sm mt-1">
+                  <i class="pi pi-ban"></i>
+                  Blocked
+                </span>
+              }
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+              <div class="flex flex-col">
+                <span class="font-semibold text-gray-700 mb-1">User ID</span>
+                <span class="text-gray-600 font-mono text-xs break-all">{{ profile.id }}</span>
+              </div>
+              @if (profile.dateOfBirth) {
+                <div class="flex flex-col">
+                  <span class="font-semibold text-gray-700 mb-1">Date of Birth</span>
+                  <span class="text-gray-600">{{ formatDate(profile.dateOfBirth) }}</span>
+                </div>
+              }
+              <div class="flex flex-col">
+                <span class="font-semibold text-gray-700 mb-1">Gender</span>
+                <span class="text-gray-600">{{ getGenderLabel(profile.gender) }}</span>
+              </div>
+              @if (profile.portfolioUrl) {
+                <div class="flex flex-col">
+                  <span class="font-semibold text-gray-700 mb-1">Portfolio</span>
+                  <a
+                    [href]="profile.portfolioUrl"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="text-blue-600 hover:text-blue-800 underline inline-flex items-center gap-1"
+                  >
+                    View Portfolio
+                    <i class="pi pi-external-link text-xs"></i>
+                  </a>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Profile Sections Accordion -->
+        <p-accordion [multiple]="true" [activeIndex]="[0, 1, 2, 3]">
+          <!-- Skills Section -->
+          @if (profile.skills) {
+            <p-accordionTab>
+              <ng-template pTemplate="header">
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-star-fill text-blue-600"></i>
+                  <span class="font-semibold">Skills</span>
+                </div>
+              </ng-template>
+              <app-skills-display [skillsData]="profile.skills"></app-skills-display>
+            </p-accordionTab>
+          }
+
+          <!-- Experience Section -->
+          @if (profile.experience) {
+            <p-accordionTab>
+              <ng-template pTemplate="header">
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-briefcase text-blue-600"></i>
+                  <span class="font-semibold">Work Experience</span>
+                </div>
+              </ng-template>
+              <app-experience-display [experienceData]="profile.experience"></app-experience-display>
+            </p-accordionTab>
+          }
+
+          <!-- Education Section -->
+          @if (profile.education) {
+            <p-accordionTab>
+              <ng-template pTemplate="header">
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-graduation-cap text-blue-600"></i>
+                  <span class="font-semibold">Education</span>
+                </div>
+              </ng-template>
+              <app-education-display [educationData]="profile.education"></app-education-display>
+            </p-accordionTab>
+          }
+
+          <!-- Personal Projects Section -->
+          @if (profile.personalProjects) {
+            <p-accordionTab>
+              <ng-template pTemplate="header">
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-folder text-blue-600"></i>
+                  <span class="font-semibold">Personal Projects</span>
+                </div>
+              </ng-template>
+              <app-personal-projects-display
+                [personalProjectsData]="profile.personalProjects"
+              ></app-personal-projects-display>
+            </p-accordionTab>
+          }
+        </p-accordion>
+
+        <!-- Empty State Message -->
+        @if (
+          !profile.skills &&
+          !profile.experience &&
+          !profile.education &&
+          !profile.personalProjects
+        ) {
+          <div class="text-center py-12 px-4">
+            <div class="max-w-md mx-auto">
+              <i class="pi pi-user text-6xl text-gray-300 mb-4"></i>
+              <h3 class="text-xl font-semibold text-gray-700 mb-2">Profile is empty</h3>
+              <p class="text-gray-500">
+                This user hasn't added any information to their profile yet.
+              </p>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

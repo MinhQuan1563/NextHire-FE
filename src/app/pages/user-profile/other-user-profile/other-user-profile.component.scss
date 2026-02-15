@@ -1,0 +1,65 @@
+// Other User Profile Component Styles
+
+:host {
+  display: block;
+}
+
+// Friendship status badge animations
+.friendship-status-badge {
+  transition: all 0.3s ease;
+}
+
+// Button hover effects for friendship actions
+:host ::ng-deep {
+  .p-button {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+    &:hover:not(:disabled) {
+      transform: translateY(-1px);
+    }
+  }
+}
+
+// Profile header responsive adjustments
+.profile-header {
+  @media (max-width: 640px) {
+    text-align: center;
+  }
+}
+
+// Accordion customization
+:host ::ng-deep {
+  .p-accordion {
+    .p-accordion-header-link {
+      padding: 1rem 1.25rem;
+      
+      &:focus {
+        box-shadow: none;
+      }
+    }
+
+    .p-accordion-content {
+      padding: 1.25rem;
+    }
+  }
+}
+
+// Loading spinner container
+.loading-container {
+  min-height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// Error state styling
+.error-container {
+  min-height: 300px;
+}
+
+// Empty profile state
+.empty-profile {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 1rem;
+  padding: 3rem 2rem;
+}
