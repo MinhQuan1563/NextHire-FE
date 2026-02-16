@@ -10,8 +10,7 @@ pipeline {
         stage('Checkout Code') {
             steps {
                 git branch: 'main',
-                credentialsId: 'github-nexthire-key',
-                url: 'git@github.com:MinhQuan1563/NextHire-FE.git'
+                url: 'https://github.com/MinhQuan1563/NextHire-FE'
             }
         }
 
