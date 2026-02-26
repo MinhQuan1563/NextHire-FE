@@ -4,22 +4,11 @@ import { AvatarModule } from 'primeng/avatar';
 import { ButtonModule } from 'primeng/button';
 import { MenuModule } from 'primeng/menu';
 import { MenuItem } from 'primeng/api';
-import { PostActionsComponent } from '../post-actions/post-actions.component'; 
-
-
-export interface PostData {
-  id: string | number;
-  userAvatar?: string;
-  userInitial?: string;
-  userName: string;
-  userTitle?: string; 
-  postedTime: Date;
-  content: string; 
-  imageUrl?: string; 
-  likeCount: number;
-  commentCount: number;
-  repostCount?: number; 
-}
+import { PostActionsComponent } from '../post-actions/post-actions.component';
+import { PostResponse } from '@app/models/post/post.model';
+import { PostCommentComponent } from '../post-comment/post-comment.component';
+import { DialogModule } from 'primeng/dialog';
+import { PostLikeComponent } from '../post-like/post-like.component';
 
 @Component({
   selector: 'app-post-card',
@@ -30,16 +19,21 @@ export interface PostData {
     ButtonModule,
     MenuModule,
     DatePipe,
-    PostActionsComponent
+    PostActionsComponent,
+    PostCommentComponent,
+    DialogModule,
+    PostLikeComponent
   ],
   templateUrl: './post-card.component.html',
   styleUrls: ['./post-card.component.scss']
 })
 export class PostCardComponent {
-  @Input() post!: PostData;
+  @Input() post!: PostResponse;
 
   postMenuItems: MenuItem[];
-  selectedPostId: string | number | null = null;
+  selectedPostId: string | null = null;
+  showComments = false;
+  showLikes = false;
 
   constructor() {
     this.postMenuItems = [
@@ -51,16 +45,27 @@ export class PostCardComponent {
     ];
   }
 
-  showPostMenu(menu: any, event: Event, postId: string | number): void {
+  showPostMenu(menu: any, event: Event, postId: string): void {
     this.selectedPostId = postId;
     menu.toggle(event);
     event.stopPropagation();
-    // logic xử lý command cho menu items nếu cần
   }
 
-  // Hàm xử lý khi nhấn vào action (ví dụ like)
-  handlePostAction(action: { type: string, postId: string | number }) {
-      console.log(`Action '${action.type}' triggered for post ID: ${action.postId}`);
-      // logic xử lý (like, comment,...)
+  handlePostAction(action: { type: string, postId: string }) {
+    console.log(`Action '${action.type}' triggered for post ID: ${action.postId}`);
+    if (action.type === 'comment') {
+      this.showComments = !this.showComments;
+    }
+    else if (action.type === 'like') {
+      this.showLikes = !this.showLikes;
+    }
+  }
+
+  onLikeUpdated(newLikeCount: number) {
+    this.post.likeCount = newLikeCount;
+  }
+
+  getFirstImageUrl(): string | null {
+    return this.post.imageBase64s && this.post.imageBase64s.length > 0 ? this.post.imageBase64s[0] : null;
   }
 }

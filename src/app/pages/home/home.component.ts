@@ -1,40 +1,101 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { finalize } from 'rxjs';
+import { ToastModule } from 'primeng/toast';
+import { AvatarModule } from 'primeng/avatar';
+import { AuthService } from '@app/services/auth/auth.service';
+import { PostResponse } from '@app/models/post/post.model';
 import { InfoSidebarComponent } from '@shared/reusable-components/info-sidebar/info-sidebar.component';
-import { PostCardComponent, PostData } from '@shared/reusable-components/post-card/post-card.component';
+import { PostCardComponent } from '@shared/reusable-components/post-card/post-card.component';
+import { PostService } from '@app/services/posts/post.service';
+import { ToastService } from '@app/services/toast/toast.service';
+import { AppUserService } from '@app/services/app-user/app-user.service';
+import { CreatePostDialogComponent } from '@shared/reusable-components/create-post-dialog/create-post-dialog.component';
+import { AppUser } from '@app/models/app-user/app-user.model';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, InfoSidebarComponent, PostCardComponent],
+  imports: [
+    CommonModule, InfoSidebarComponent, PostCardComponent,
+    CreatePostDialogComponent, AvatarModule, ToastModule
+  ],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss']
 })
-export class HomeComponent {
+export class HomeComponent implements OnInit {
+  constructor(
+    private postService: PostService,
+    private authService: AuthService,
+    private toastService: ToastService,
+    private appUserService: AppUserService
+  ) {}
 
-  feedPosts: PostData[] = [
-    {
-      id: 'post1',
-      userName: 'Minh Quan',
-      userTitle: 'Software Engineer | Angular | .NET',
-      userInitial: 'M',
-      postedTime: new Date(Date.now() - 3 * 3600 * 1000),
-      content: 'Vừa hoàn thành xong module notification cho dự án NextHire! Sử dụng Angular 17, PrimeNG và Tailwind thật tuyệt vời. 🎉 #angular #primeng #tailwindcss',
-      imageUrl: 'favicon.ico',
-      likeCount: 15,
-      commentCount: 3
-    },
-    {
-      id: 'post2',
-      userName: 'Một Công Ty Khác',
-      userAvatar: 'favicon.ico',
-      userTitle: 'Công ty · Công nghệ thông tin',
-      postedTime: new Date(Date.now() - 2 * 86400000),
-      content: 'Chúng tôi đang tuyển dụng vị trí Senior Frontend Developer, làm việc với các công nghệ mới nhất. Xem chi tiết tại link...',
-      likeCount: 52,
-      commentCount: 11,
-      repostCount: 5
-    },
+  feedPosts: PostResponse[] = []; 
+  currentUserCode = '';
+  currentUser: AppUser | null = null;
+
+  pageSize = 10;
+  lastCreatedAt?: string;
+  lastPostCode?: string;
+
+  isLoading = false;
+  hasMore = true;
+  showCreateModal = false;
+
+  ngOnInit() {
+    this.currentUserCode = this.authService.getUserCodeFromToken() || '';
     
-  ];
+    if (this.currentUserCode) {
+      this.appUserService.getCurrentUser(this.currentUserCode).subscribe({
+        next: (user: AppUser) => {
+          this.currentUser = user;
+          this.loadFeeds();
+        },
+        error: (err) => {
+          console.error('Lỗi khi lấy thông tin người dùng:', err);
+        }
+      });
+    } 
+    else {
+      console.error('Không tìm thấy Người dùng. Vui lòng đăng nhập lại.');
+    }
+  }
+
+  loadFeeds() {
+    if (this.isLoading || !this.hasMore) return;
+
+    this.isLoading = true;
+
+    this.postService.getHomeFeed(this.currentUserCode, this.pageSize, this.lastCreatedAt, this.lastPostCode)
+      .pipe(finalize(() => this.isLoading = false))
+      .subscribe({
+        next: (res: PostResponse[]) => {
+          if (res && res.length > 0) {
+            this.feedPosts = [...this.feedPosts, ...res];
+
+            const lastPost = res[res.length - 1];
+            this.lastCreatedAt = lastPost.createdAt;
+            this.lastPostCode = lastPost.postCode;
+
+            if (res.length < this.pageSize) {
+              this.hasMore = false;
+            }
+          } 
+          else {
+            this.hasMore = false;
+          }
+        },
+        error: (err) => console.error('Lỗi tải feed:', err)
+      });
+  }
+
+  loadMore() {
+    this.loadFeeds();
+  }
+
+  onPostCreated(newPostDto: PostResponse) {
+    this.feedPosts = [newPostDto, ...this.feedPosts];
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 }

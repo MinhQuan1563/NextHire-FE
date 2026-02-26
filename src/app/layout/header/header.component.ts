@@ -64,7 +64,6 @@ export class HeaderComponent implements OnInit {
     )
     .subscribe({
       next: (user : User | null) => {
-        console.log(user)
         this.currentUser = user;
       }
     })

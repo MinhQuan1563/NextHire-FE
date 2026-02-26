@@ -18,6 +18,8 @@ import { RegisterComponent } from './pages/auth/register/register.component';
 import { ForgotPasswordComponent } from './pages/auth/forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './pages/auth/reset-password/reset-password.component';
 import { AuthGuard } from './guards/auth.guard';
+import { PermissionGuard } from './guards/permission.guard';
+import { PERMISSIONS } from '@shared/constants/permissions.constant';
 import { gameAccessGuard } from './guards/game-access.guard';
 
 export const routes: Routes = [
@@ -62,7 +64,12 @@ export const routes: Routes = [
       { path: 'network/following', component: FollowingComponent },     // Theo dõi
       { path: 'network/companies', component: CompaniesComponent },     // Công ty
       { path: 'network/invitations', component: InvitationsComponent }, // Lời mời
-      { path: 'jobs', component: JobsComponent },                 // Việc làm
+      { 
+        path: 'jobs',
+        loadComponent: () => import('./pages/jobs/jobs.component').then(m => m.JobsComponent),
+        canActivate: [AuthGuard, PermissionGuard],
+        data: { requiredPolicy: PERMISSIONS.Jobs.Default }
+      },
       { path: 'messaging', component: MessagingComponent },       // Nhắn tin
       { path: 'notifications', component: NotificationsComponent }, // Thông báo
       {
@@ -97,6 +104,24 @@ export const routes: Routes = [
       { path: 'games/queens', component: QueensComponent, canActivate: [gameAccessGuard] },       // Queens game
       // ... Các route khác sử dụng layout này
     ]
+  },
+  // { path: 'login', component: LoginComponent },
+  // { path: '**', component: NotFoundComponent },
+  // {
+  //   path: 'admin',
+  //   component: AdminLayoutComponent, // Ví dụ layout khác cho trang admin
+  //   children: [
+  //     // ... admin routes
+  //   ]
+  // },
+  // { path: 'login', component: LoginComponent }, // Trang login có thể không cần layout
+  {
+    path: 'forbidden',
+    loadComponent: () => import('./pages/forbidden/forbidden.component').then(m => m.ForbiddenComponent)
+  },
+  {
+    path: '**',
+    loadComponent: () => import('./pages/not-found/not-found.component').then(m => m.NotFoundComponent)
   },
   {
     path: 'admin',
