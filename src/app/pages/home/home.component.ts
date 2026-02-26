@@ -29,7 +29,6 @@ export class HomeComponent implements OnInit {
     private authService: AuthService,
     private toastService: ToastService,
     private appUserService: AppUserService
-
   ) {}
 
   feedPosts: PostResponse[] = []; 

@@ -1,5 +1,3 @@
-// Đã có PostResponse, PostCreateForm, PostUpdateForm
-
 export interface PostComment {
   commentId: string;
   parentId?: string;

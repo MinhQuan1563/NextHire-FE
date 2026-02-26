@@ -1,0 +1,61 @@
+<div class="flex gap-2 items-end bg-gray-100 rounded-3xl px-3 py-2 transition-all border border-transparent focus-within:border-blue-300 focus-within:bg-white focus-within:shadow-sm">
+  
+  <div class="pb-0.5">
+    <p-avatar 
+      [image]="avatarUrl" 
+      [label]="!avatarUrl ? userChar : ''" 
+      shape="circle" 
+      styleClass="bg-gray-300 text-white font-bold w-8 h-8">
+    </p-avatar>
+  </div>
+
+  <div class="flex-1 min-w-0 flex justify-between items-center">
+    <textarea 
+      pInputTextarea 
+      [(ngModel)]="inputValue" 
+      [placeholder]="placeholder" 
+      [autoResize]="true" 
+      rows="1"
+      (keydown)="onKeydown($event)"
+      [disabled]="disabled"
+      class="w-full bg-transparent border-none shadow-none text-sm py-2 px-1 focus:ring-0 placeholder-gray-500 text-gray-800 max-h-[120px] overflow-y-auto resize-none"
+      style="min-height: 36px;">
+    </textarea>
+  </div>
+
+  <div class="flex gap-1 pb-0.5">
+    
+    <button 
+        (click)="op.toggle($event)" 
+        class="w-9 h-9 rounded-full text-gray-400 hover:bg-gray-200 transition-colors flex items-center justify-center text-xl grayscale hover:grayscale-0">
+        🙂
+    </button>
+    
+    <button class="w-9 h-9 rounded-full text-gray-400 hover:bg-gray-200 hover:text-green-500 transition-colors flex items-center justify-center">
+      <i class="pi pi-image text-lg"></i>
+    </button>
+
+    <button 
+      class="w-9 h-9 rounded-full transition-colors flex items-center justify-center"
+      [class.text-blue-600]="inputValue.trim()"
+      [class.hover:bg-blue-100]="inputValue.trim()"
+      [class.text-gray-300]="!inputValue.trim()"
+      [disabled]="!inputValue.trim() || disabled"
+      (click)="handleSend()">
+      <i class="pi pi-send text-lg"></i>
+    </button>
+  </div>
+
+</div>
+
+<p-overlayPanel #op [style]="{padding: '0'}" appendTo="body">
+    <ng-template pTemplate>
+        <emoji-mart 
+            [showPreview]="false" 
+            [enableSearch]="true"
+            [darkMode]="false" 
+            color="#3B82F6" 
+            (emojiClick)="addEmoji($event)">
+        </emoji-mart>
+    </ng-template>
+</p-overlayPanel>

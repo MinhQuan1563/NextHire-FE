@@ -6,11 +6,14 @@ import { InputTextareaModule } from 'primeng/inputtextarea';
 import { CreatePostComment, PostComment } from '@app/models/post/post-comment.model';
 import { PostCommentService } from '@app/services/posts/post-comment.service';
 import { AuthService } from '@app/services/auth/auth.service';
+import { AvatarModule } from 'primeng/avatar';
+import { InputRichControlComponent } from '../input-rich-control/input-rich-control.component';
 
 @Component({
   selector: 'app-post-comments',
   standalone: true,
-  imports: [CommonModule, FormsModule, ButtonModule, InputTextareaModule],
+  imports: [CommonModule, FormsModule, ButtonModule, 
+    InputTextareaModule, AvatarModule, InputRichControlComponent],
   templateUrl: './post-comment.component.html',
   styleUrls: ['./post-comment.component.scss']
 })
@@ -21,7 +24,7 @@ export class PostCommentComponent implements OnInit {
   newCommentContent = '';
   replyingTo: string | null = null;
   replyContent = '';
-  pageSize = 10;
+  pageSize = 5;
   lastCreateAt?: string;
   lastCommentId?: string;
   isLoading = false;
@@ -43,22 +46,47 @@ export class PostCommentComponent implements OnInit {
   }
 
   loadComments(loadMore = false) {
-    if (this.isLoading || (!loadMore && !this.hasMore)) return;
+    if (!loadMore) {
+      this.hasMore = true;
+      this.lastCreateAt = undefined;
+      this.lastCommentId = undefined;
+    }
+
+    if (this.isLoading || !this.hasMore) return;
+
     this.isLoading = true;
+    console.log('Loading comments for postCode:', this.postCode);
+
     this.commentService.getCommentsByPost(this.postCode, this.pageSize, this.lastCreateAt, this.lastCommentId)
       .subscribe({
         next: (newComments) => {
           if (loadMore) {
-            this.comments = [...this.comments, ...newComments];
+            // 1. LỌC TRÙNG LẶP: Chỉ lấy những comment mới chưa từng có trong mảng
+            const uniqueNewComments = newComments.filter(
+              (newC) => !this.comments.some((oldC) => oldC.commentId === newC.commentId)
+            );
+
+            this.comments = [...this.comments, ...uniqueNewComments];
+
+            // 2. CHẶN VÒNG LẶP: Nếu API trả về toàn comment cũ (unique = 0) hoặc trả về ít hơn pageSize -> Chắc chắn hết data mới!
+            if (uniqueNewComments.length === 0 || newComments.length < this.pageSize) {
+              this.hasMore = false;
+            } else {
+              this.hasMore = true;
+            }
           } else {
+            // Load lần đầu tiên
             this.comments = newComments;
+            this.hasMore = newComments.length === this.pageSize;
           }
-          this.hasMore = newComments.length === this.pageSize;
+
+          // Cập nhật lại con trỏ (Cursor) cho lần gọi API tiếp theo
           if (newComments.length > 0) {
             const last = newComments[newComments.length - 1];
             this.lastCreateAt = last.createAt;
             this.lastCommentId = last.commentId;
           }
+
           this.isLoading = false;
         },
         error: (err) => {
@@ -82,6 +110,11 @@ export class PostCommentComponent implements OnInit {
       },
       error: (err) => console.error('Error creating comment:', err)
     });
+  }
+
+  onCommentSubmit(content: string) {
+    this.newCommentContent = content;
+    this.createComment();
   }
 
   startReply(commentId: string) {

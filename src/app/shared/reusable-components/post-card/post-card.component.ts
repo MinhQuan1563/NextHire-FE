@@ -6,6 +6,9 @@ import { MenuModule } from 'primeng/menu';
 import { MenuItem } from 'primeng/api';
 import { PostActionsComponent } from '../post-actions/post-actions.component';
 import { PostResponse } from '@app/models/post/post.model';
+import { PostCommentComponent } from '../post-comment/post-comment.component';
+import { DialogModule } from 'primeng/dialog';
+import { PostLikeComponent } from '../post-like/post-like.component';
 
 @Component({
   selector: 'app-post-card',
@@ -16,7 +19,10 @@ import { PostResponse } from '@app/models/post/post.model';
     ButtonModule,
     MenuModule,
     DatePipe,
-    PostActionsComponent
+    PostActionsComponent,
+    PostCommentComponent,
+    DialogModule,
+    PostLikeComponent
   ],
   templateUrl: './post-card.component.html',
   styleUrls: ['./post-card.component.scss']
@@ -27,6 +33,7 @@ export class PostCardComponent {
   postMenuItems: MenuItem[];
   selectedPostId: string | null = null;
   showComments = false;
+  showLikes = false;
 
   constructor() {
     this.postMenuItems = [
@@ -48,6 +55,9 @@ export class PostCardComponent {
     console.log(`Action '${action.type}' triggered for post ID: ${action.postId}`);
     if (action.type === 'comment') {
       this.showComments = !this.showComments;
+    }
+    else if (action.type === 'like') {
+      this.showLikes = !this.showLikes;
     }
   }
 
