@@ -6,19 +6,21 @@ import { AvatarModule } from 'primeng/avatar';
 import { AuthService } from '@app/services/auth/auth.service';
 import { PostResponse } from '@app/models/post/post.model';
 import { InfoSidebarComponent } from '@shared/reusable-components/info-sidebar/info-sidebar.component';
-import { PostCardComponent } from '@shared/reusable-components/post-card/post-card.component';
 import { PostService } from '@app/services/posts/post.service';
 import { ToastService } from '@app/services/toast/toast.service';
 import { AppUserService } from '@app/services/app-user/app-user.service';
-import { CreatePostDialogComponent } from '@shared/reusable-components/create-post-dialog/create-post-dialog.component';
 import { AppUser } from '@app/models/app-user/app-user.model';
+import { PostCardComponent } from '@shared/reusable-components/posts/post-card/post-card.component';
+import { CreatePostDialogComponent } from '@shared/reusable-components/posts/create-post-dialog/create-post-dialog.component';
+import { SkeletonModule } from 'primeng/skeleton';
 
 @Component({
   selector: 'app-home',
   standalone: true,
   imports: [
     CommonModule, InfoSidebarComponent, PostCardComponent,
-    CreatePostDialogComponent, AvatarModule, ToastModule
+    CreatePostDialogComponent, AvatarModule, ToastModule,
+    SkeletonModule  
   ],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss']
@@ -31,7 +33,7 @@ export class HomeComponent implements OnInit {
     private appUserService: AppUserService
   ) {}
 
-  feedPosts: PostResponse[] = []; 
+  feedPosts: PostResponse[] = [];
   currentUserCode = '';
   currentUser: AppUser | null = null;
 
@@ -42,12 +44,13 @@ export class HomeComponent implements OnInit {
   isLoading = false;
   hasMore = true;
   showCreateModal = false;
+  isInitialLoading = true;
 
   ngOnInit() {
     this.currentUserCode = this.authService.getUserCodeFromToken() || '';
     
     if (this.currentUserCode) {
-      this.appUserService.getCurrentUser(this.currentUserCode).subscribe({
+      this.appUserService.getUser(this.currentUserCode).subscribe({
         next: (user: AppUser) => {
           this.currentUser = user;
           this.loadFeeds();
@@ -68,7 +71,10 @@ export class HomeComponent implements OnInit {
     this.isLoading = true;
 
     this.postService.getHomeFeed(this.currentUserCode, this.pageSize, this.lastCreatedAt, this.lastPostCode)
-      .pipe(finalize(() => this.isLoading = false))
+      .pipe(finalize(() => {
+        this.isLoading = false;
+        this.isInitialLoading = false;
+      }))
       .subscribe({
         next: (res: PostResponse[]) => {
           if (res && res.length > 0) {

@@ -1,16 +1,113 @@
-<div class="bg-white rounded-lg shadow p-4 h-[calc(100vh-120px)] flex"> <div class="w-1/3 border-r border-gray-200 overflow-y-auto">
-      <h2 class="text-lg font-semibold p-2 border-b">Tin nhắn</h2>
+@if (isInitialLoading) {
+  <div class="flex h-[calc(100vh-92px)] bg-white overflow-hidden text-[15px]">
+    
+    <div class="w-[320px] flex-shrink-0 border-r border-gray-200 bg-white h-full p-4 flex flex-col gap-5">
+      <div class="flex justify-between items-center mb-1">
+        <p-skeleton width="80px" height="2rem"></p-skeleton>
+        <div class="flex gap-2">
+          <p-skeleton shape="circle" size="36px"></p-skeleton>
+          <p-skeleton shape="circle" size="36px"></p-skeleton>
+        </div>
+      </div>
+      <p-skeleton width="100%" height="40px" borderRadius="20px"></p-skeleton>
+      <div class="flex flex-col gap-4 mt-2">
+        @for (i of [1,2,3,4,5,6]; track $index) {
+          <div class="flex gap-3 items-center">
+            <p-skeleton shape="circle" size="50px" styleClass="flex-shrink-0"></p-skeleton>
+            <div class="flex flex-col gap-2 flex-1">
+              <p-skeleton width="60%" height="1rem"></p-skeleton>
+              <p-skeleton width="80%" height="0.8rem"></p-skeleton>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
 
-      <div class="p-2 hover:bg-gray-100 cursor-pointer border-b">Người dùng A</div>
-      <div class="p-2 hover:bg-gray-100 cursor-pointer border-b">Người dùng B</div>
-   </div>
-   <div class="w-2/3 flex flex-col">
-       <div class="p-2 border-b font-semibold">Tên người nhận</div>
-       <div class="flex-1 p-4 overflow-y-auto bg-gray-50">
-           <p class="text-sm">Nội dung chat...</p>
-       </div>
-        <div class="p-2 border-t">
-           <input type="text" placeholder="Nhập tin nhắn..." class="w-full p-2 border rounded">
-       </div>
-   </div>
-</div>
+    <div class="flex-1 flex flex-col bg-white min-w-0 h-full">
+      <div class="h-[60px] flex justify-between items-center px-4 border-b border-gray-100 flex-shrink-0">
+        <div class="flex items-center gap-3">
+          <p-skeleton shape="circle" size="40px"></p-skeleton>
+          <div class="flex flex-col gap-1.5">
+            <p-skeleton width="120px" height="1rem"></p-skeleton>
+            <p-skeleton width="80px" height="0.8rem"></p-skeleton>
+          </div>
+        </div>
+        <div class="flex gap-2">
+          <p-skeleton shape="circle" size="36px"></p-skeleton>
+          <p-skeleton shape="circle" size="36px"></p-skeleton>
+          <p-skeleton shape="circle" size="36px"></p-skeleton>
+        </div>
+      </div>
+      
+      <div class="flex-1 p-4 flex flex-col gap-4">
+        <div class="flex gap-2 items-end">
+          <p-skeleton shape="circle" size="28px"></p-skeleton>
+          <p-skeleton width="200px" height="40px" borderRadius="16px"></p-skeleton>
+        </div>
+        <div class="flex gap-2 items-end justify-end">
+          <p-skeleton width="250px" height="50px" borderRadius="16px"></p-skeleton>
+        </div>
+        <div class="flex gap-2 items-end">
+          <p-skeleton shape="circle" size="28px"></p-skeleton>
+          <p-skeleton width="150px" height="40px" borderRadius="16px"></p-skeleton>
+        </div>
+      </div>
+      
+      <div class="h-[60px] border-t border-gray-100 px-4 flex items-center gap-3 flex-shrink-0">
+        <p-skeleton shape="circle" size="36px"></p-skeleton>
+        <p-skeleton width="100%" height="40px" borderRadius="20px"></p-skeleton>
+        <p-skeleton shape="circle" size="36px"></p-skeleton>
+      </div>
+    </div>
+
+  </div>
+} 
+@else {
+  <div class="flex h-[calc(100vh-92px)] bg-white overflow-hidden text-[15px]">
+    <div class="w-[320px] flex-shrink-0 border-r border-gray-200 bg-white h-full overflow-hidden">
+      <app-chat-sidebar 
+        [activeUserCode]="activePartner?.userCode || ''"
+        (onSelectChat)="onChatSelected($event)">
+      </app-chat-sidebar>
+    </div>
+
+    <div class="flex-1 flex flex-col bg-white min-w-0 h-full overflow-hidden">
+      
+      @if (activePartner) {
+        <app-chat-window 
+          class="h-full w-full block" 
+          [partner]="activePartner"
+          (toggleInfo)="toggleRightSidebar()"
+          (onStartCall)="onStartCall($event)">
+        </app-chat-window>
+      } 
+      @else {
+        <div class="flex-1 flex flex-col items-center justify-center text-gray-500">
+          <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+            <i class="pi pi-comments text-4xl text-gray-400"></i>
+          </div>
+          <h3 class="text-xl font-semibold text-black mb-1">Your messages</h3>
+          <p>Select a chat or start a new conversation.</p>
+        </div>
+      }
+    </div>
+
+    @if (activePartner && showRightSidebar) {
+      <div class="w-[300px] flex-shrink-0 border-l border-gray-200 bg-white h-full overflow-hidden">
+        <app-chat-info [partner]="activePartner"></app-chat-info>
+      </div>
+    }
+  </div>
+}
+
+@if (activeCallRoomId) {
+  <div class="fixed inset-0 z-[9999] bg-black">
+    <app-video-call
+      [roomId]="activeCallRoomId"
+      [isCaller]="true"
+      [partnerName]="activePartner?.fullName || 'User'"
+      [isVideoCall]="activeCallType === 'VIDEO'"
+      (onCallEnded)="onCallEnded()"> 
+    </app-video-call>
+  </div>
+}

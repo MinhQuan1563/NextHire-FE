@@ -1,8 +1,0 @@
-<div class="post-actions flex justify-between items-center p-2">
-  <button pButton [icon]="hasLiked ? 'pi pi-thumbs-up-fill' : 'pi pi-thumbs-up'" 
-          [label]="'Thích (' + likeCount + ')'" 
-          (click)="toggleLike()" 
-          class="p-button-text"></button>
-  <button pButton icon="pi pi-comment" label="Bình luận" (click)="onComment()" class="p-button-text"></button>
-  <button pButton icon="pi pi-share-alt" label="Chia sẻ" (click)="onShare()" class="p-button-text"></button>
-</div>
