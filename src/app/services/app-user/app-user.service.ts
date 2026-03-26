@@ -16,7 +16,7 @@ export class AppUserService extends BaseApiService<AppUser> {
     super(http);
   }
 
-  getCurrentUser(userCode: string): Observable<AppUser> {
+  getUser(userCode: string): Observable<AppUser> {
     return this.http.get<AppUser>(`${this.getUrl()}/${userCode}`);
   }
 }

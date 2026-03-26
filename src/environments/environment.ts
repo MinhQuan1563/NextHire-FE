@@ -1,13 +1,14 @@
 export const environment = {
   production: false,
-  apiBaseUrl: 'http://136.110.48.253:5000',
-  apiUrl: 'http://136.110.48.253:5000/api',
+  apiBaseUrl: 'https://localhost:44396',
+  apiUrl: 'https://localhost:44396/api',
+  googleMapsApiKey: 'AIzaSyBbIks6dt11jA5JkqLQhi3l-mWG73JRCuw',
   application: {
     baseUrl: 'http://localhost:4200/',
     name: 'NextHireApp',
   },
   oAuthConfig: {
-    issuer: 'http://136.110.48.253:5000/', 
+    issuer: 'https://localhost:44396/', 
     clientId: 'NextHireApp_Password', 
     responseType: 'password', 
     scope: 'openid profile email offline_access NextHireApp', 
@@ -16,7 +17,7 @@ export const environment = {
   },
   apis: {
     default: {
-      url: 'http://136.110.48.253:5000',
+      url: 'https://localhost:44396',
       rootNamespace: 'NextHireApp',
     },
   },

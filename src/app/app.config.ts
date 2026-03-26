@@ -25,7 +25,7 @@ export const appConfig: ApplicationConfig = {
     ),
     // provideAbpOAuth(),
     provideHttpClient(
-      withInterceptors([authInterceptor, errorInterceptor]), 
+      withInterceptors([errorInterceptor, authInterceptor]),
       withFetch()
     ),
     

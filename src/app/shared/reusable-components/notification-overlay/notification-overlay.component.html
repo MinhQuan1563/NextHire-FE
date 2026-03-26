@@ -1,0 +1,24 @@
+<p-overlayPanel
+  #op
+  [style]="{ width: '400px' }"
+  styleClass="shadow-2xl rounded-2xl mt-2 border border-gray-100"
+>
+  <div class="flex flex-col max-h-[550px]">
+    <div class="flex justify-between items-center px-4 py-3">
+      <h2 class="text-[24px] font-bold text-black">Notifications</h2>
+      <button class="w-9 h-9 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-600 text-lg transition-colors">
+        <i class="pi pi-ellipsis-h"></i>
+      </button>
+    </div>
+
+    <div class="px-4 pt-4 border-t border-gray-200 text-center pb-3">
+      <a
+        routerLink="/notifications"
+        (click)="op.hide()"
+        class="text-blue-600 font-semibold text-[15px] hover:underline cursor-pointer"
+      >
+        See all in Notification
+      </a>
+    </div>
+  </div>
+</p-overlayPanel>

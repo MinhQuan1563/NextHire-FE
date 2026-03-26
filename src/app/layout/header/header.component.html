@@ -1,68 +1,191 @@
-<header class="app-header shadow-2 px-3 py-2 md:px-5 bg-white">
-  <div class="header-container flex items-center justify-between">
-
-    <div class="flex items-center">
-      <a routerLink="/" class="logo mr-2">
-        <!-- <img src="assets/images/logo-linkedin-icon.png" alt="Logo" height="34"> -->
-        <img src="favicon.ico" alt="Logo" height="34">
-      </a>
-      <div class="search-bar flex items-center border border-gray-300 rounded-md overflow-hidden">
-        <span class="px-2 text-gray-500">
-          <i class="pi pi-search"></i>
-        </span>
-        <input 
-          type="text" 
-          placeholder="Tìm kiếm" 
-          (keyup.enter)="onSearch($event)" 
-          class="p-2 text-sm outline-none flex-1"
-        />
-      </div>
+<header
+  class="app-header h-[60px] bg-white shadow-sm flex items-center justify-between px-4 border-b border-gray-200"
+>
+  <div class="flex items-center gap-2 w-1/4">
+    <a routerLink="/" class="logo flex-shrink-0 mr-1">
+      <img src="favicon.ico" alt="Logo" class="h-10 w-10" />
+    </a>
+    <div
+      class="search-bar hidden xl:flex items-center bg-gray-100 rounded-full px-3 py-2 w-[260px]"
+    >
+      <i class="pi pi-search text-gray-500 mr-2 text-sm"></i>
+      <input
+        type="text"
+        placeholder="Search"
+        (keyup.enter)="onSearch($event)"
+        class="bg-transparent text-[15px] outline-none flex-1 text-black placeholder-gray-500"
+      />
     </div>
+  </div>
 
-    <nav class="main-nav flex items-center">
-      <a routerLink="/" 
-         class="nav-item flex flex-col items-center justify-center p-2 mx-1 text-center hover:text-blue-600">
-        <i class="pi pi-home text-xl"></i>
-        <span class="nav-text text-xs">Trang chủ</span>
-      </a>
-      <a routerLink="/admin" 
-         class="nav-item flex flex-col items-center justify-center p-2 mx-1 text-center hover:text-blue-600">
-        <i class="pi pi-home text-xl"></i>
-        <span class="nav-text text-xs">Quản trị</span>
-      </a>
-      <a routerLink="/network" 
-         class="nav-item flex flex-col items-center justify-center p-2 mx-1 text-center hover:text-blue-600">
-        <i class="pi pi-users text-xl"></i>
-        <span class="nav-text text-xs">Mạng lưới</span>
-      </a>
-      <a routerLink="/jobs" 
-         class="nav-item flex flex-col items-center justify-center p-2 mx-1 text-center hover:text-blue-600">
-        <i class="pi pi-briefcase text-xl"></i>
-        <span class="nav-text text-xs">Việc làm</span>
-      </a>
-      <a routerLink="/messaging" 
-         class="nav-item flex flex-col items-center justify-center p-2 mx-1 text-center hover:text-blue-600">
-        <i class="pi pi-comments text-xl"></i>
-        <span class="nav-text text-xs">Nhắn tin</span>
-      </a>
-      <a routerLink="/notifications" 
-         class="nav-item flex flex-col items-center justify-center p-2 mx-1 text-center hover:text-blue-600">
-        <i class="pi pi-bell text-xl"></i>
-        <span class="nav-text text-xs">Thông báo</span>
-      </a>
-      <a routerLink="/cv-template" 
-         class="nav-item flex flex-col items-center justify-center p-2 mx-1 text-center hover:text-blue-600">
-        <i class="pi pi-id-card text-xl"></i>
-        <span class="nav-text text-xs">Tạo CV</span>
-      </a>
-      <div class="user-menu ml-2">
-        <p-tieredMenu #userMenuPopup [model]="userMenuItems" [popup]="true"></p-tieredMenu>
-        <button class="user-button flex flex-col items-center justify-center text-center" 
-                (click)="userMenuPopup.toggle($event)">
-          <p-avatar [image]="currentUser?.avatarUrl" label="" shape="circle" styleClass="user-avatar"></p-avatar>
-          <span class="nav-text text-xs mt-1">Tôi <i class="pi pi-caret-down text-xs ml-1"></i></span>
-        </button>
+  <nav
+    class="main-nav hidden md:flex flex-1 justify-center items-center h-full gap-2"
+  >
+    <a
+      routerLink="/"
+      routerLinkActive="text-blue-600 border-blue-600"
+      [routerLinkActiveOptions]="{ exact: true }"
+      class="h-full flex items-center justify-center px-1 border-b-[3px] border-transparent text-gray-500 cursor-pointer group"
+      pTooltip="Home"
+      tooltipPosition="bottom"
+    >
+      <div
+        class="flex items-center justify-center w-[60px] lg:w-[80px] h-[50px] rounded-lg group-hover:bg-gray-100 transition-colors"
+      >
+        <i class="pi pi-home text-[26px]"></i>
       </div>
-    </nav>
+    </a>
+    <a
+      routerLink="/admin"
+      routerLinkActive="text-blue-600 border-blue-600"
+      class="h-full flex items-center justify-center px-1 border-b-[3px] border-transparent text-gray-500 cursor-pointer group"
+      pTooltip="Admin"
+      tooltipPosition="bottom"
+    >
+      <div
+        class="flex items-center justify-center w-[60px] lg:w-[80px] h-[50px] rounded-lg group-hover:bg-gray-100 transition-colors"
+      >
+        <i class="pi pi-cog text-[26px]"></i>
+      </div>
+    </a>
+    <a
+      routerLink="/network"
+      routerLinkActive="text-blue-600 border-blue-600"
+      class="h-full flex items-center justify-center px-1 border-b-[3px] border-transparent text-gray-500 cursor-pointer group"
+      pTooltip="Network"
+      tooltipPosition="bottom"
+    >
+      <div
+        class="flex items-center justify-center w-[60px] lg:w-[80px] h-[50px] rounded-lg group-hover:bg-gray-100 transition-colors"
+      >
+        <i class="pi pi-users text-[26px]"></i>
+      </div>
+    </a>
+    <a
+      routerLink="/jobs"
+      routerLinkActive="text-blue-600 border-blue-600"
+      class="h-full flex items-center justify-center px-1 border-b-[3px] border-transparent text-gray-500 cursor-pointer group"
+      pTooltip="Jobs"
+      tooltipPosition="bottom"
+    >
+      <div
+        class="flex items-center justify-center w-[60px] lg:w-[80px] h-[50px] rounded-lg group-hover:bg-gray-100 transition-colors"
+      >
+        <i class="pi pi-briefcase text-[26px]"></i>
+      </div>
+    </a>
+    <a
+      routerLink="/cv-template"
+      routerLinkActive="text-blue-600 border-blue-600"
+      class="h-full flex items-center justify-center px-1 border-b-[3px] border-transparent text-gray-500 cursor-pointer group"
+      pTooltip="Create CV"
+      tooltipPosition="bottom"
+    >
+      <div
+        class="flex items-center justify-center w-[60px] lg:w-[80px] h-[50px] rounded-lg group-hover:bg-gray-100 transition-colors"
+      >
+        <i class="pi pi-id-card text-[26px]"></i>
+      </div>
+    </a>
+  </nav>
+
+  <div class="flex items-center justify-end w-1/4 gap-2.5">
+    <button
+      class="w-11 h-11 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-colors text-black relative"
+      (click)="chatDropdown.toggle($event)"
+      pTooltip="Messages"
+      tooltipPosition="bottom"
+    >
+      <i class="pi pi-comments text-xl"></i>
+      <span
+        class="absolute -top-1 -right-1 bg-red-500 text-white text-[11px] font-bold px-1.5 py-0.5 rounded-full border-2 border-white"
+        >2</span
+      >
+    </button>
+
+    <button
+      class="w-11 h-11 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-colors text-black relative"
+      (click)="notifDropdown.toggle($event)"
+      pTooltip="Notifications"
+      tooltipPosition="bottom"
+    >
+      <i class="pi pi-bell text-xl"></i>
+      <span
+        class="absolute -top-1 -right-1 bg-red-500 text-white text-[11px] font-bold px-1.5 py-0.5 rounded-full border-2 border-white"
+        >5</span
+      >
+    </button>
+
+    <div class="user-menu ml-1">
+      <p-tieredMenu
+        #userMenuPopup
+        [model]="userMenuItems"
+        [popup]="true"
+      ></p-tieredMenu>
+      <button
+        class="w-11 h-11 rounded-full flex items-center justify-center hover:brightness-95 transition-all p-0 border-none cursor-pointer overflow-hidden"
+        (click)="userMenuPopup.toggle($event)"
+      >
+        <p-avatar
+          [image]="currentUser?.avatarUrl"
+          label="U"
+          shape="circle"
+          class="w-full h-full"
+          (onError)="onImageError($event)"
+        ></p-avatar>
+      </button>
+    </div>
   </div>
 </header>
+
+<app-chat-overlay 
+  #chatDropdown 
+  [conversations$]="conversations$"
+  (chatSelected)="openFloatingChat($event.partnerCode, $event.partnerName, $event.partnerAvatar)">
+</app-chat-overlay>
+
+<app-notification-overlay 
+  #notifDropdown>
+</app-notification-overlay>
+
+@if (isFloatingChatOpen) {
+  <app-floating-chat 
+    [partner]="activeChatPartner" 
+    (closeChat)="closeFloatingChat()"
+    (onStartCall)="onStartCall($event)">
+  </app-floating-chat>
+}
+
+@if (incomingCallData) {
+  <div class="fixed inset-0 bg-black/70 z-[10000] flex items-center justify-center backdrop-blur-sm">
+    <div class="bg-white rounded-2xl p-8 flex flex-col items-center w-[320px] shadow-2xl animate-bounce">
+      <div class="w-20 h-20 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mb-4 text-3xl">
+        <i class="pi pi-user"></i>
+      </div>
+      <h3 class="text-xl font-bold text-black text-center">{{ incomingCallData.callerName }}</h3>
+      <p class="text-gray-500 mb-6 mt-1 text-sm">
+        Incoming {{ incomingCallData.isVideoCall ? 'video' : 'audio' }} call...
+      </p>
+      
+      <div class="flex gap-4 w-full">
+        <button (click)="declineCall()" class="flex-1 bg-red-500 hover:bg-red-600 text-white py-2.5 rounded-full font-bold transition-colors flex items-center justify-center gap-2">
+          <i class="pi pi-phone" style="transform: rotate(135deg);"></i> Decline
+        </button>
+        <button (click)="acceptCall()" class="flex-1 bg-green-500 hover:bg-green-600 text-white py-2.5 rounded-full font-bold transition-colors flex items-center justify-center gap-2">
+          <i class="pi pi-video"></i> Answer
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (activeCallRoomId) {
+  <div class="fixed inset-0 z-[9999] bg-black">
+    <app-video-call
+      [roomId]="activeCallRoomId"
+      [isCaller]="true"
+      [isVideoCall]="activeCallType === 'VIDEO'"
+      (onCallEnded)="handleCallEnded()"> 
+    </app-video-call>
+  </div>
+}

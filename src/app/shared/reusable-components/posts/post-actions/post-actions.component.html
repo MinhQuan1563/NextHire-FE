@@ -1,0 +1,27 @@
+<div class="post-actions flex gap-1 p-1 border-gray-100 mt-1">
+  
+  <button pButton 
+          (click)="toggleLike()"
+          [class.text-blue-600]="hasLiked"
+          [class.text-gray-500]="!hasLiked"
+          appPreventSpam
+          class="p-button-text flex-1 flex justify-center items-center gap-1.5 py-2 hover:bg-gray-100 transition-colors rounded-md">
+      <i class="pi text-lg" [ngClass]="hasLiked ? 'pi-thumbs-up-fill' : 'pi-thumbs-up'"></i>
+      <span class="font-semibold text-sm">Like</span>
+  </button>
+
+  <button pButton 
+          (click)="onComment()" 
+          class="p-button-text flex-1 flex justify-center items-center gap-1.5 py-2 text-gray-500 hover:bg-gray-100 transition-colors rounded-md">
+      <i class="pi pi-comment text-lg"></i>
+      <span class="font-semibold text-sm">Comment</span>
+  </button>
+
+  <button pButton 
+          (click)="onShare()" 
+          class="p-button-text flex-1 flex justify-center items-center gap-1.5 py-2 text-gray-500 hover:bg-gray-100 transition-colors rounded-md">
+      <i class="pi pi-share-alt text-lg"></i>
+      <span class="font-semibold text-sm">Share</span>
+  </button>
+  
+</div>

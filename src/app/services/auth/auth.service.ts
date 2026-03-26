@@ -1,6 +1,6 @@
 import { Injectable, PLATFORM_ID, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { BehaviorSubject, catchError, Observable, of, tap, throwError } from 'rxjs';
 import { isPlatformBrowser } from '@angular/common';
 import {
   LoginRequest,
@@ -12,6 +12,7 @@ import {
 } from '../../models/auth/auth.model';
 import { environment } from '../../../environments/environment';
 import { jwtDecode } from 'jwt-decode';
+import { clear } from 'node:console';
 
 @Injectable({
   providedIn: 'root',
@@ -60,19 +61,42 @@ export class AuthService {
   }
 
   login(loginRequest: LoginRequest): Observable<AuthResponse> {
-    return this.http
-      .post<AuthResponse>(`${this.apiUrl}/login`, loginRequest)
-      .pipe(
-        tap((response) => {
-          if (this.isBrowser) {
-            localStorage.setItem('access_token', response.accessToken);
-            localStorage.setItem('refresh_token', response.refreshToken);
-            this.getUserProfile().subscribe();
-          }
+    return this.http.post<AuthResponse>(`${this.apiUrl}/login`, loginRequest).pipe(
+      tap((response) => {
+        if (this.isBrowser) {
+          localStorage.setItem('access_token', response.accessToken);
           localStorage.setItem('refresh_token', response.refreshToken);
-          this.getUserProfile().subscribe();
-        }),
-      );
+        }
+        this.getUserProfile().subscribe();
+      })
+    );
+  }
+
+  refreshToken(): Observable<any> {
+    const refreshToken = this.getRefreshToken();
+    
+    if (!refreshToken) {
+      return throwError(() => new Error('No refresh token available'));
+    }
+
+    const formData = new FormData();
+    formData.append('refreshToken', refreshToken);
+
+    return this.http.post<any>(`${this.apiUrl}/Refresh`, formData).pipe(
+      tap((response) => {
+        if (this.isBrowser) {
+          localStorage.setItem('access_token', response.accessToken);
+          if (response.refreshToken) {
+            localStorage.setItem('refresh_token', response.refreshToken);
+          }
+        }
+      })
+    );
+  }
+
+  getRefreshToken(): string | null {
+    if (!this.isBrowser) return null;
+    return localStorage.getItem('refresh_token');
   }
 
   register(registerRequest: RegisterRequest): Observable<AuthResponse> {
@@ -111,18 +135,26 @@ export class AuthService {
     return this.http.post<void>(`${this.apiUrl}/reset-password`, request);
   }
 
-  logout() {
+  logout(): Observable<any> {
     return this.http.post(`${environment.apiUrl}/auth/logout`, {}).pipe(
       tap(() => {
-        if (this.isBrowser) {
-          localStorage.removeItem('access_token');
-          localStorage.removeItem('refresh_token');
-          localStorage.removeItem('user');
-        }
-        this.currentUserSubject.next(null);
-        this.currentUserSubject.next(null);
+        this.clearLocalData();
       }),
+      catchError((error) => {
+        this.clearLocalData();
+        
+        return of(null);
+      })
     );
+  }
+
+  clearLocalData(): void {
+    if (this.isBrowser) {
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('refresh_token');
+      localStorage.removeItem('user');
+    }
+    this.currentUserSubject.next(null);
   }
 
   /**
