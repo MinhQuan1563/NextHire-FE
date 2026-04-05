@@ -1,0 +1,93 @@
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4 bg-gray-100 min-h-screen p-4">
+  
+  <div class="col-span-1 hidden md:block">
+    <app-info-sidebar></app-info-sidebar>
+  </div>
+
+  <div class="col-span-1 md:col-span-3 space-y-4">
+    <div class="bg-white rounded-lg shadow p-4 flex items-center mb-2">
+        <h1 class="text-[17px] font-bold text-gray-800 flex items-center gap-2 m-0">
+            <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                <i class="pi pi-bookmark-fill text-blue-600 text-lg"></i>
+            </div>
+            Saved Posts
+        </h1>
+    </div>
+
+    <div class="flex flex-col gap-4">
+        @for (post of savedPosts; track post.postCode) {
+        <div class="flex bg-white rounded-xl border border-gray-200 overflow-hidden hover:bg-gray-50 cursor-pointer transition-colors shadow-sm"
+            (click)="viewPostDetail(post)">
+            
+            <div class="w-36 h-36 bg-gray-100 flex-shrink-0 relative">
+            @if (post.imageBase64s && post.imageBase64s.length > 0) {
+                <img [src]="post.imageBase64s[0]" class="w-full h-full object-cover" />
+            } @else {
+                <div class="w-full h-full flex items-center justify-center text-gray-400">
+                <i class="pi pi-file-edit text-3xl"></i>
+                </div>
+            }
+            </div>
+
+            <div class="p-4 flex flex-col justify-between flex-1 min-w-0">
+            <div>
+                <h3 class="font-bold text-base text-gray-900 truncate">
+                  {{ post.content || 'No text content' }}
+                </h3>
+                <p class="text-sm text-gray-500 mt-1 flex items-center gap-1.5 min-w-0">
+                  <i class="pi pi-bookmark text-blue-500 flex-shrink-0"></i> 
+                  <span class="truncate">
+                    Saved from 
+                    <span class="font-semibold text-gray-800 hover:underline">
+                      {{ authorDictionary[post.userCode] || post.userCode }}
+                    </span>
+                    's post
+                  </span>
+                </p>
+            </div>
+
+            <div class="flex items-center gap-2 mt-3">
+                <button class="px-4 py-1.5 bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm font-semibold rounded-lg transition"
+                        (click)="sharePost(post.postCode, $event)">
+                <i class="pi pi-share-alt mr-1"></i> Share
+                </button>
+                
+                <button class="w-8 h-8 rounded-lg bg-gray-200 hover:bg-gray-300 flex items-center justify-center transition"
+                        (click)="unsavePost(post.postCode, $event)" pTooltip="Unsave">
+                <i class="pi pi-bookmark-fill text-gray-700"></i>
+                </button>
+            </div>
+            </div>
+
+        </div>
+        }
+
+        @if (savedPosts.length === 0 && !isLoading) {
+        <div class="text-center py-12 text-gray-500">
+            <i class="pi pi-bookmark text-4xl mb-3"></i>
+            <p>You haven't saved anything yet.</p>
+        </div>
+        }
+    </div>
+  </div>
+</div>
+
+<p-dialog 
+  [(visible)]="displayPostModal" 
+  [modal]="true" 
+  [dismissableMask]="true"
+  [draggable]="false" 
+  [resizable]="false"
+  [showHeader]="false" 
+  styleClass="w-full max-w-2xl bg-transparent shadow-none"
+  contentStyleClass="p-0 rounded-xl overflow-hidden bg-white custom-dialog-no-spacing">
+  
+  @if (selectedPost) {
+    <div class="relative custom-modal-view-fix">
+      <app-post-card 
+        [post]="selectedPost"
+        (onUnsave)="handlePostUnsaved($any($event))">
+      </app-post-card>
+    </div>
+  }
+</p-dialog>

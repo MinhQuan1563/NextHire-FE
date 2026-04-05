@@ -1,9 +1,10 @@
-<div class="main-layout">
-  <app-header></app-header>
+<div class="main-layout min-h-screen flex flex-col bg-gray-50">
 
-  <main class="main-content py-4 px-3 md:px-5">
-    <div class="main-content-container">
-        <router-outlet></router-outlet>
+  <app-header [currentUser]="currentUser" class="sticky top-0 z-50 w-full block"></app-header>
+
+  <main class="main-content flex-1 py-4 px-3 md:px-5">
+    <div class="main-content-container max-w-7xl mx-auto">
+      <router-outlet></router-outlet>
     </div>
   </main>
 

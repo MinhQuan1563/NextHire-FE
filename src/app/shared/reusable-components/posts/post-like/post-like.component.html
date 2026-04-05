@@ -1,0 +1,46 @@
+<div class="flex flex-col gap-1 px-2 pb-2">
+  
+  @if (isLoading) {
+  <div class="flex justify-center items-center p-6">
+    <i class="pi pi-spin pi-spinner text-blue-500" style="font-size: 1.5rem"></i>
+  </div>
+  } 
+
+  @else if (likes.length === 0) {
+  <div class="text-center text-gray-500 py-6 text-sm">
+    No likes yet.
+  </div>
+  } 
+
+  @else {
+  @for (like of likes; track like.userId) {
+    <div class="flex items-center justify-between p-2 hover:bg-gray-50 rounded-lg cursor-pointer transition-colors duration-200 group">
+    
+    <div class="flex items-center gap-3">
+      <p-avatar 
+      [label]="(userByLike[like.userCode].fullName || like.userCode).charAt(0).toUpperCase()"
+      [image]="userByLike[like.userCode].avatarUrl"
+      shape="circle" 
+      size="large"
+      [style]="{'background-color': '#eef2ff', 'color': '#3b82f6'}">
+      </p-avatar>
+      
+      <div class="flex flex-col">
+      <span class="font-semibold text-sm text-gray-800 group-hover:text-blue-600 transition-colors">
+        {{ userByLike[like.userCode].fullName || like.userCode }}
+      </span>
+      <span class="text-xs text-gray-500">
+        {{ like.title || 'Candidate' }}
+      </span>
+      </div>
+    </div>
+
+    <button class="w-8 h-8 rounded-full flex items-center justify-center bg-gray-100 hover:bg-blue-100 hover:text-blue-600 text-gray-500 transition-colors">
+      <i class="pi pi-user-plus text-sm"></i>
+    </button>
+    
+    </div>
+  }
+  }
+
+</div>

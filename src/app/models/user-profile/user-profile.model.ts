@@ -36,6 +36,8 @@ export interface ParsedUserProfile {
   fullName: string | null;
   dateOfBirth: Date | null;
   gender: Gender;
+  email?: string;
+  phoneNumber?: string;
   avatarUrl: string | null;
   skills: SkillsJson | null;
   experience: ExperienceJson | null;

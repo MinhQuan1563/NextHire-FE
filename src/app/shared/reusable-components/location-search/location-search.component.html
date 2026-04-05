@@ -1,0 +1,42 @@
+<div class="flex flex-col h-[500px] bg-white rounded-xl">
+  <div class="flex items-center px-4 py-4 border-b border-gray-200">
+    <button (click)="back.emit()" class="w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 transition-colors border-none cursor-pointer">
+      <i class="pi pi-arrow-left text-lg"></i>
+    </button>
+    <h3 class="text-[20px] font-bold text-black m-0 flex-1 text-center pr-9">Search Location</h3>
+  </div>
+
+  <div class="p-3">
+    <div class="flex items-center bg-gray-100 rounded-lg px-3 py-2 border border-gray-200">
+      <i class="pi pi-search text-gray-500 mr-2"></i>
+      <input 
+        type="text" 
+        [(ngModel)]="searchQuery" 
+        (ngModelChange)="onSearchChange()" 
+        placeholder="Where are you located?" 
+        class="bg-transparent outline-none flex-1 text-[15px] text-black w-full border-none focus:ring-0">
+    </div>
+  </div>
+
+  <div class="flex-1 overflow-y-auto">
+    <div *ngIf="predictions.length > 0" class="px-4 py-2 text-[15px] font-bold text-black">Google Maps Suggestions</div>
+    
+    <div *ngFor="let place of predictions" 
+         (click)="selectPlace(place)"
+         class="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-100 cursor-pointer transition-colors">
+      
+      <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0 text-gray-700">
+        <i class="pi pi-map-marker text-lg"></i>
+      </div>
+      
+      <div class="flex flex-col overflow-hidden">
+        <span class="font-semibold text-[15px] text-black leading-tight">{{ place.structured_formatting.main_text }}</span>
+        <span class="text-[13px] text-gray-500 truncate mt-0.5">{{ place.structured_formatting.secondary_text }}</span>
+      </div>
+    </div>
+
+    <div *ngIf="searchQuery && predictions.length === 0" class="p-4 text-center text-gray-500">
+      No matching locations found.
+    </div>
+  </div>
+</div>

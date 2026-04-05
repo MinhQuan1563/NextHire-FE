@@ -1,0 +1,161 @@
+<p-dialog 
+  [(visible)]="visible" 
+  [modal]="true" 
+  [style]="{ width: '520px', maxWidth: '100vw' }" 
+  [draggable]="false" 
+  [resizable]="false"
+  [showHeader]="false" 
+  (onHide)="close()"
+  styleClass="rounded-xl overflow-hidden shadow-2xl p-0">
+  
+  <div *ngIf="currentView === 'main'" class="flex flex-col h-full">
+    
+    <div class="flex items-center justify-between px-4 py-4 border-b border-gray-200 relative">
+      <div class="w-9"></div> 
+      <h3 class="text-[20px] font-bold text-black m-0 flex-1 text-center">Create Post</h3>
+      <button (click)="close()" class="w-9 h-9 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center text-gray-600 transition-colors border-none cursor-pointer absolute right-4">
+        <i class="pi pi-times text-lg"></i>
+      </button>
+    </div>
+
+    <div class="p-4 flex flex-col max-h-[75vh] overflow-y-hidden">
+      
+      <div class="flex items-center gap-3 mb-4">
+        <p-avatar [image]="currentUserAvatar || 'assets/images/user-default.jpg'" shape="circle" [style]="{ width: '44px', height: '44px' }"></p-avatar>
+        <div class="flex flex-col justify-center">
+          
+          <h4 class="font-bold text-[15px] text-black leading-tight flex flex-wrap items-center gap-1">
+            <span>{{ currentUserName }}</span>
+            <ng-container *ngIf="selectedLocation">
+              <span class="font-normal text-gray-500 text-[14px]">is in</span>
+              <span class="font-bold text-black text-[15px]">{{ selectedLocation.name }}</span>
+            </ng-container>
+          </h4>
+          
+          <p-dropdown 
+            [options]="privacyOptions" 
+            [(ngModel)]="selectedPrivacy" 
+            optionLabel="label" 
+            optionValue="value"
+            appendTo="body" 
+            styleClass="mt-1 bg-gray-200 hover:bg-gray-300 transition-colors border-none rounded-md h-[26px] flex items-center px-1 shadow-none cursor-pointer">
+            <ng-template pTemplate="selectedItem" let-selectedOption>
+               <div class="flex items-center gap-1 text-black">
+                  <i [class]="selectedOption.icon" class="text-[12px]"></i>
+                  <span class="text-[13px] font-semibold">{{ selectedOption.label }}</span>
+               </div>
+            </ng-template>
+            <ng-template let-option pTemplate="item">
+              <div class="flex items-center gap-2">
+                  <i [class]="option.icon"></i>
+                  <span class="text-[14px]">{{ option.label }}</span>
+               </div>
+            </ng-template>
+          </p-dropdown>
+        </div>
+      </div>
+
+      <textarea 
+        [(ngModel)]="newPostContent"
+        rows="4" 
+        placeholder="What's on your mind, {{ currentUserName }}?" 
+        class="w-full border-none focus:ring-0 text-[18px] resize-none p-0 outline-none text-black placeholder-gray-500 bg-transparent min-h-[90px]">
+      </textarea>
+
+      <div class="flex justify-between items-center mb-3">
+        <div class="w-9 h-9 flex items-center justify-center cursor-pointer hover:bg-gray-100 rounded-lg">
+          <img src="https://static.xx.fbcdn.net/rsrc.php/v3/yI/r/szep1Xp-nQ4.png" alt="Aa" class="w-8 h-8 object-contain" 
+               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'">
+          <div class="hidden w-8 h-8 items-center justify-center bg-gradient-to-tr from-cyan-400 to-blue-500 rounded-md shadow-sm">
+             <span class="font-bold text-white text-sm">Aa</span>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="previewImages.length > 0" class="grid grid-cols-2 gap-2 p-2 border border-gray-200 rounded-xl relative mb-4">
+        <button 
+          (click)="previewImages = []; selectedFiles = []" 
+          class="absolute top-4 right-4 z-10 bg-white border border-gray-300 rounded-full w-8 h-8 flex items-center justify-center hover:bg-gray-100 transition-colors shadow-sm cursor-pointer">
+          <i class="pi pi-times text-gray-600 font-bold"></i>
+        </button>
+        <div *ngFor="let img of previewImages; let i = index" class="relative group">
+          <img [src]="img" class="w-full h-48 object-cover rounded-lg border border-gray-100">
+        </div>
+      </div>
+
+      <div *ngIf="selectedLocation" class="border border-gray-200 rounded-xl overflow-hidden relative mb-4 mt-2 flex-shrink-0">
+        <button (click)="removeLocation()" class="absolute top-3 right-3 z-10 bg-white border border-gray-300 rounded-full w-8 h-8 flex items-center justify-center hover:bg-gray-100 transition-colors shadow-sm cursor-pointer">
+          <i class="pi pi-times text-gray-600 font-bold"></i>
+        </button>
+        
+        <div class="w-full h-[180px] bg-gray-100 relative pointer-events-none">
+          <iframe 
+            width="100%" height="100%" frameborder="0" style="border:0"
+            [src]="'https://maps.google.com/maps?q=' + selectedLocation.name + '&t=&z=14&ie=UTF8&iwloc=&output=embed' | safe">
+          </iframe>
+        </div>
+
+        <div class="p-3 bg-white flex items-center gap-3 border-t border-gray-100">
+          <div class="w-11 h-11 bg-gray-200 rounded-full flex items-center justify-center flex-shrink-0">
+            <i class="pi pi-map-marker text-2xl text-black"></i>
+          </div>
+          <div class="flex-col">
+            <div class="text-[12px] text-gray-500 uppercase font-semibold tracking-wider">{{ selectedLocation.type || 'PLACE' }}</div>
+            <div class="font-bold text-black text-[16px] leading-tight">{{ selectedLocation.name }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="border border-gray-300 rounded-lg p-3 flex items-center justify-between shadow-[0_1px_2px_rgba(0,0,0,0.05)] mb-4 mt-auto">
+        <span class="text-[15px] font-semibold text-black pl-2">Add to your post</span>
+        <div class="flex gap-1">
+          <input type="file" #fileInput multiple accept="image/*" (change)="onFileSelected($event)" class="hidden">
+          
+          <button pTooltip="Photos/Videos" tooltipPosition="top" (click)="fileInput.click()" class="w-9 h-9 rounded-full hover:bg-gray-100 flex items-center justify-center transition-colors text-green-500 cursor-pointer border-none bg-transparent">
+            <i class="pi pi-images text-2xl"></i>
+          </button>
+          <button pTooltip="Tag people" tooltipPosition="top" class="w-9 h-9 rounded-full hover:bg-gray-100 flex items-center justify-center transition-colors text-blue-500 cursor-pointer border-none bg-transparent">
+            <i class="pi pi-user-plus text-xl"></i>
+          </button>
+          <button pTooltip="Feelings/Activity" tooltipPosition="top" (click)="op.toggle($event)" class="w-9 h-9 rounded-full hover:bg-gray-100 flex items-center justify-center transition-colors text-yellow-500 cursor-pointer border-none bg-transparent">
+            <i class="pi pi-face-smile text-xl text-gray-400 cursor-pointer hover:text-gray-600 transition-colors">🙂</i>
+          </button>
+          <button pTooltip="Check in" tooltipPosition="top" (click)="openLocationSearch()" class="w-9 h-9 rounded-full hover:bg-gray-100 flex items-center justify-center transition-colors text-red-500 cursor-pointer border-none bg-transparent">
+            <i class="pi pi-map-marker text-xl"></i>
+          </button>
+          <button pTooltip="More options" tooltipPosition="top" class="w-9 h-9 rounded-full hover:bg-gray-100 flex items-center justify-center transition-colors text-gray-500 cursor-pointer border-none bg-transparent">
+            <i class="pi pi-ellipsis-h text-xl"></i>
+          </button>
+        </div>
+      </div>
+
+      <button 
+        class="w-full font-semibold text-[15px] py-2.5 rounded-md transition-colors border-none"
+        [ngClass]="(newPostContent.trim() || selectedFiles.length > 0) ? 'bg-blue-600 text-white hover:bg-blue-700 cursor-pointer' : 'bg-gray-200 text-gray-400 cursor-not-allowed'"
+        [disabled]="!newPostContent.trim() && selectedFiles.length === 0"
+        (click)="submitPost()">
+        <i *ngIf="isPosting" class="pi pi-spin pi-spinner mr-2"></i>
+        Post
+      </button>
+    </div>
+  </div>
+
+  <app-location-search 
+    *ngIf="currentView === 'location'"
+    (back)="backToMain()"
+    (locationSelected)="onLocationSelected($event)">
+  </app-location-search>
+
+</p-dialog>
+
+<p-overlayPanel #op [style]="{padding: '0'}" appendTo="body">
+    <ng-template pTemplate>
+        <emoji-mart 
+            [showPreview]="false" 
+            [enableSearch]="true"
+            [darkMode]="false" 
+            color="#3B82F6" 
+            (emojiClick)="addEmoji($event)">
+        </emoji-mart>
+    </ng-template>
+</p-overlayPanel>

@@ -1,0 +1,221 @@
+<div class="fixed bottom-0 right-[100px] w-[360px] h-[500px] bg-white rounded-t-xl shadow-[0_0_15px_rgba(0,0,0,0.15)] flex flex-col z-[100] border border-gray-300">
+  <!-- HEADER -->
+  <div class="flex justify-between items-center p-2.5 border-b border-gray-200 shadow-sm cursor-pointer hover:bg-gray-50 rounded-t-xl transition-colors">
+  <div class="flex items-center gap-2.5">
+    <div class="relative w-[36px] h-[36px]">
+    <p-avatar [image]="partner.avatarUrl || 'assets/images/user-default.jpg'" shape="circle" styleClass="w-full h-full"></p-avatar>
+    <div *ngIf="partner.isOnline" class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
+    </div>
+    <div class="flex flex-col justify-center">
+    <h4 class="font-bold text-[15px] leading-tight text-black">{{ partner.fullName || partner.userCode }}</h4>
+    <p class="text-[12px] text-gray-500 leading-tight mt-0.5">{{ partner.isOnline ? 'Active now' : 'Offline' }}</p>
+    </div>
+  </div>
+  <div class="flex text-blue-600 gap-0.5">
+    <button (click)="startCall(false)" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center"><i class="pi pi-phone text-lg"></i></button>
+    <button (click)="startCall(true)" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center"><i class="pi pi-video text-lg"></i></button>
+    <button class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center" (click)="onClose()"><i class="pi pi-minus text-lg"></i></button>
+    <button class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center" (click)="onClose()"><i class="pi pi-times text-lg"></i></button>
+  </div>
+  </div>
+
+  <!-- MESSAGE CONTAINER -->
+  <div #chatScroll class="flex-1 overflow-y-auto p-4 flex flex-col gap-3 bg-white">
+    @if (isLoadingHistory) {
+      <div class="flex-1 flex flex-col items-center justify-center h-full">
+        <p-progressSpinner 
+          styleClass="w-10 h-10" 
+          strokeWidth="4" 
+          animationDuration=".5s">
+        </p-progressSpinner>
+        <span class="text-gray-500 text-sm mt-2">Loading messages...</span>
+      </div>
+    }
+    @else {
+      @for (msg of messages; track msg.messageId) {
+        <!-- VIDEO CALL -->
+        @if (isCallLog(msg.content)) {
+          <div class="flex gap-2 items-end mb-2" [ngClass]="msg.senderCode === currentUserCode ? 'justify-end' : ''">
+            @if (msg.senderCode !== currentUserCode) {
+              <p-avatar [image]="partner.avatarUrl" shape="circle" [style]="{ width: '28px', height: '28px' }"></p-avatar>
+            }
+            
+            <div class="bg-[#303030] text-white p-3 rounded-2xl w-[220px]">
+              <div class="flex items-center gap-3 mb-3">
+                <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+                    [ngClass]="getCallStatus(msg.content) === 'MISSED' ? 'bg-[#FF3B30]' : 'bg-[#454545]'">
+                  <i class="pi text-xl" [ngClass]="getCallStatus(msg.content) === 'MISSED' ? 'pi-phone' : (getCallType(msg.content) === 'VIDEO' ? 'pi-video' : 'pi-phone')"></i>
+                </div>
+                <div class="flex flex-col leading-tight">
+                  <span class="font-bold text-[15px]">{{ getCallTitle(msg.content) }}</span>
+                  <span class="text-[#A0A0A0] text-[13px] mt-0.5">{{ getCallSubtitle(msg.content, msg.createDate) }}</span>
+                </div>
+              </div>
+              <button class="w-full bg-[#454545] hover:bg-[#555] transition-colors py-1.5 rounded-lg font-semibold text-[15px]"
+                      (click)="callAgain(msg.content)">
+                {{ getCallStatus(msg.content) === 'MISSED' ? 'Call back' : 'Call again' }}
+              </button>
+            </div>
+          </div>
+        } 
+  
+        @else {
+          
+          @if (msg.senderCode !== currentUserCode) {
+            <div class="flex gap-2 items-end mb-1">
+              <p-avatar [image]="partner.avatarUrl" shape="circle" [style]="{ width: '28px', height: '28px' }" class="flex-shrink-0"></p-avatar>
+              
+              <div class="flex flex-col items-start gap-1.5 max-w-[75%]">
+                
+                @if (msg.content) {
+                  <div class="bg-gray-100 text-black px-3.5 py-2.5 rounded-2xl rounded-bl-none text-[15px] break-words shadow-sm">
+                    {{ msg.content }}
+                  </div>
+                }
+                
+                @if (msg.attachmentUrl) {
+                  @if (msg.attachmentType?.startsWith('image/')) {
+                    <p-image 
+                      [src]="msg.attachmentUrl" 
+                      alt="Image" 
+                      [preview]="true" 
+                      imageClass="max-w-[200px] max-h-[300px] object-cover rounded-2xl cursor-pointer border border-gray-100 shadow-sm block">
+                    </p-image>
+                  }
+                  @if (msg.attachmentType?.startsWith('audio/') || msg.attachmentType?.startsWith('video/')) {
+                    <audio controls class="w-[200px]">
+                      <source [src]="msg.attachmentUrl" [type]="msg.attachmentType">
+                    </audio>
+                  }
+                  @if (!msg.attachmentType?.startsWith('image/') && !msg.attachmentType?.startsWith('audio/') && !msg.attachmentType?.startsWith('video/')) {
+                    <a [href]="msg.attachmentUrl" target="_blank" class="flex items-center gap-3 bg-white border border-gray-200 hover:bg-gray-50 transition-colors p-2.5 rounded-2xl text-black no-underline w-[220px] shadow-sm">
+                      <div class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <i class="pi pi-file text-lg text-gray-600"></i>
+                      </div>
+                      <div class="flex flex-col min-w-0">
+                        <span class="font-semibold text-[14px] truncate">{{ msg.attachmentName }}</span>
+                      </div>
+                    </a>
+                  }
+                }
+  
+              </div>
+            </div>
+          } 
+          
+          @else {
+            <div class="flex justify-end items-end gap-1 mb-1">
+              
+              <div class="flex flex-col items-end gap-1.5 max-w-[75%]">
+                
+                @if (msg.content) {
+                  <div class="bg-blue-600 text-white px-3.5 py-2.5 rounded-2xl rounded-br-none text-[15px] break-words shadow-sm">
+                    {{ msg.content }}
+                  </div>
+                }
+                
+                @if (msg.attachmentUrl) {
+                  @if (msg.attachmentType?.startsWith('image/')) {
+                    <p-image 
+                      [src]="msg.attachmentUrl" 
+                      alt="Image" 
+                      [preview]="true" 
+                      imageClass="max-w-[200px] max-h-[300px] object-cover rounded-2xl cursor-pointer border border-gray-100 shadow-sm block">
+                    </p-image>
+                  }
+                  @if (msg.attachmentType?.startsWith('audio/') || msg.attachmentType?.startsWith('video/')) {
+                    <audio controls class="w-[200px]">
+                      <source [src]="msg.attachmentUrl" [type]="msg.attachmentType">
+                    </audio>
+                  }
+                  @if (!msg.attachmentType?.startsWith('image/') && !msg.attachmentType?.startsWith('audio/') && !msg.attachmentType?.startsWith('video/')) {
+                    <a [href]="msg.attachmentUrl" target="_blank" class="flex items-center gap-3 bg-white border border-gray-200 hover:bg-gray-50 transition-colors p-2.5 rounded-2xl text-black no-underline w-[220px] shadow-sm">
+                      <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <i class="pi pi-file text-lg text-blue-600"></i>
+                      </div>
+                      <div class="flex flex-col min-w-0">
+                        <span class="font-semibold text-[14px] truncate">{{ msg.attachmentName }}</span>
+                      </div>
+                    </a>
+                  }
+                }
+  
+              </div>
+            </div>
+          }
+        }
+      }
+
+      @if (messages.length === 0) {
+        <div class="flex-1 flex flex-col items-center justify-center text-gray-400">
+          <i class="pi pi-comments text-4xl mb-2"></i>
+          <p class="text-sm">Send a greeting to {{ partner.fullName }}!</p>
+        </div>
+      }
+    }
+  </div>
+
+  <!-- INPUT AREA -->
+  <div class="border-t border-gray-100 bg-white rounded-b-xl flex flex-col relative">
+    @if (selectedFile) {
+      <div class="px-3 py-2 bg-gray-50 border-b border-gray-100 flex items-center relative">
+        <div class="relative flex items-center gap-3 bg-white p-2 pr-8 rounded-xl border border-gray-200 shadow-sm">
+          
+          @if (previewUrl) {
+            <img [src]="previewUrl" class="w-12 h-12 object-cover rounded-lg border border-gray-100" />
+          } @else {
+            <div class="w-12 h-12 bg-gray-800 text-white flex items-center justify-center rounded-lg">
+              <i class="pi pi-file text-xl"></i>
+            </div>
+          }
+          
+          <div class="flex flex-col max-w-[160px]">
+            <span class="text-[14px] font-bold text-black truncate">{{ selectedFile.name }}</span>
+            <span class="text-[12px] text-gray-500">{{ formatBytes(selectedFile.size) }}</span>
+          </div>
+
+          <button (click)="removeSelectedFile()" class="absolute top-[-8px] right-[-8px] w-6 h-6 bg-gray-300 hover:bg-red-500 text-black hover:text-white rounded-full flex items-center justify-center transition-colors shadow-md">
+            <i class="pi pi-times text-xs font-bold"></i>
+          </button>
+
+        </div>
+      </div>
+    }
+    
+    <div class="p-3 flex items-center gap-1.5 border-t border-gray-100 relative">
+      <button (click)="attachMenu.toggle($event)" class="w-8 h-8 rounded-full text-blue-600 hover:bg-gray-100 flex items-center justify-center">
+        <i class="pi pi-plus-circle text-xl"></i>
+      </button>
+
+      <p-menu #attachMenu [model]="attachMenuItems" [popup]="true" appendTo="body" styleClass="w-64 text-sm shadow-2xl rounded-xl border border-gray-200"></p-menu>
+
+      <input type="file" #fileUpload class="hidden" [accept]="fileAcceptType" (change)="onFileSelected($event)" />
+    
+      <div class="flex-1 relative bg-gray-100 rounded-full flex items-center h-10 ml-1">
+        <input 
+          type="text" 
+          [(ngModel)]="messageContent" 
+          (keyup.enter)="sendMessage()"
+          [disabled]="isSending"
+          placeholder="Aa" 
+          class="bg-transparent outline-none w-full text-[15px] text-black px-4 pr-10" 
+        />
+        
+        <button (click)="toggleEmojiPicker()" class="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full text-blue-600 hover:bg-gray-200 flex items-center justify-center transition-colors">
+          <i class="pi pi-face-smile text-xl text-gray-400 cursor-pointer hover:text-gray-600 transition-colors">🙂</i>
+        </button>
+      </div>
+
+      @if (showEmojiPicker) {
+        <div class="absolute bottom-14 right-12 z-50 shadow-2xl rounded-lg overflow-hidden">
+          <emoji-mart (emojiClick)="addEmoji($event)" [darkMode]="false" [showPreview]="false"></emoji-mart>
+        </div>
+      }
+    
+      <button class="w-8 h-8 rounded-full text-blue-600 hover:bg-gray-100 flex items-center justify-center ml-1" 
+          (click)="messageContent.trim() ? sendMessage() : sendLike()">
+        <i class="pi" [ngClass]="(messageContent.trim() || selectedFile) ? 'pi-send' : 'pi-thumbs-up-fill text-2xl'"></i>
+      </button>
+    </div>
+  </div>
+</div>

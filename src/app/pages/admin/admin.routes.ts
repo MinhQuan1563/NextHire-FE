@@ -44,6 +44,11 @@ export const adminRoutes: Routes = [
         data: { breadcrumb: 'Manage Games' }
       },
       {
+        path: 'permissions',
+        loadComponent: () => import('./role-permissions/role-permissions.component').then(m => m.RolePermissionsComponent),
+        data: { breadcrumb: 'Manage Permissions' }
+      },
+      {
         path: 'error-logs',
         loadComponent: () => import('./error-logs/error-logs-viewer.component').then(m => m.ErrorLogsViewerComponent),
         data: { breadcrumb: 'Error Logs' }

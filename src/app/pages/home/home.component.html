@@ -1,20 +1,112 @@
-<div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-    <div class="col-span-1">
-        <app-info-sidebar></app-info-sidebar>
-    </div>
+<p-toast></p-toast>
 
-    <div class="col-span-1 md:col-span-3 space-y-4">
-        <div class="bg-white rounded-lg shadow p-4">
-            <h2 class="text-lg font-semibold mb-2">Tạo bài viết</h2>
-        </div>
-        
-        <!-- <div class="bg-white rounded-lg shadow p-4">
-            <h2 class="text-lg font-semibold mb-2">Bảng tin</h2>
-            <p class="text-gray-600 text-sm">Nội dung feed chính...</p>
-        </div> -->
-        <div class="feed-list space-y-4">
-         <app-post-card *ngFor="let post of feedPosts" [post]="post"></app-post-card>
-     </div>
-    </div>
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4 bg-gray-100 min-h-screen p-4">
+  
+  <div class="col-span-1 hidden md:block">
+    <app-info-sidebar></app-info-sidebar>
+  </div>
 
+  <div class="col-span-1 md:col-span-3 space-y-4">
+   
+    <div *hasPermission="'NextHireApp.Posts.Create'" class="bg-white rounded-lg shadow p-4">
+      <div class="flex items-center gap-3">
+      <p-avatar icon="pi pi-user" shape="circle" size="large" styleClass="bg-gray-200 text-gray-600"></p-avatar>
+      
+      <div 
+        (click)="showCreateModal = true"
+        class="flex-1 bg-gray-100 hover:bg-gray-200 cursor-pointer rounded-full px-4 py-3 transition-colors text-gray-500 font-medium select-none">
+        What's on your mind?
+      </div>
+      </div>
+    </div>
+  
+    @if (isInitialLoading) {
+      <div class="space-y-4 mt-4">
+        @for (i of [1,2,3]; track $index) {
+          <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+            <div class="flex items-center gap-3 mb-4">
+              <p-skeleton shape="circle" size="40px"></p-skeleton>
+              <div class="flex flex-col gap-1.5 flex-1">
+                <p-skeleton width="150px" height="1.2rem"></p-skeleton>
+                <p-skeleton width="100px" height="0.8rem"></p-skeleton>
+              </div>
+            </div>
+            <div class="space-y-2 mb-4">
+              <p-skeleton width="100%" height="1rem"></p-skeleton>
+              <p-skeleton width="80%" height="1rem"></p-skeleton>
+              <p-skeleton width="90%" height="1rem"></p-skeleton>
+            </div>
+            <p-skeleton width="100%" height="300px" borderRadius="12px"></p-skeleton>
+          </div>
+        }
+      </div>
+    }
+
+    <div class="feed-list space-y-4">
+      @for (post of feedPosts; track post.postCode) {
+        @if (post.isHidden) {
+          <div class="bg-white border border-gray-200 rounded-xl p-4 flex justify-between items-center shadow-sm my-3">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full bg-gray-100 flex justify-center items-center">
+                <i class="pi pi-eye-slash text-gray-600 text-lg"></i>
+              </div>
+              
+              <div>
+                <h4 class="font-bold text-[15px] text-gray-900 m-0 leading-tight">Post Hidden</h4>
+                <p class="text-[13px] text-gray-500 m-0 mt-0.5">Hiding posts helps us personalize your Feed.</p>
+              </div>
+            </div>
+            
+            <button (click)="undoHidePost(post)" 
+                    class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 transition-colors rounded-lg font-semibold text-sm">
+              Undo
+            </button>
+          </div>
+        } 
+        @else {
+          <app-post-card 
+            [post]="post" 
+            (onHidePost)="handleHidePost($event)">
+          </app-post-card>
+        }
+      } 
+      @empty {
+        @if (!isInitialLoading) { 
+          <div class="text-center p-8 bg-white rounded shadow text-gray-500">
+            No posts to display yet.
+          </div>
+        }
+      }
+
+      @if (isLoading && !isInitialLoading) {
+      <div class="text-center py-4">
+        <i class="pi pi-spin pi-spinner text-2xl text-blue-500"></i>
+        <span class="ml-2 text-gray-600">Loading more...</span>
+      </div>
+      }
+
+      @if (hasMore && !isLoading && feedPosts.length > 0) {
+      <div class="text-center pb-4">
+        <button 
+          (click)="loadMore()" 
+          class="px-6 py-2 bg-white border border-gray-300 text-gray-700 font-medium rounded-full shadow-sm hover:bg-gray-50 transition-colors">
+          View older posts
+        </button>
+      </div>
+      }
+      
+      @if (!hasMore && feedPosts.length > 0) {
+      <div class="text-center py-4 text-gray-400 text-sm">
+        You've reached the end.
+      </div>
+      }
+    </div>
+  </div>
 </div>
+
+<app-create-post-dialog 
+  [(visible)]="showCreateModal"
+  [currentUserAvatar]="currentUser?.avatarUrl || 'assets/images/user-default.jpg'"
+  [currentUserName]="currentUser?.fullName || 'You'"
+  (postCreated)="onPostCreated($event)">
+</app-create-post-dialog>
