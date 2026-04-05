@@ -1,64 +1,71 @@
 <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-    <div class="col-span-1">
-        <app-info-sidebar></app-info-sidebar>
-    </div>
-
-    <div class="col-span-1 md:col-span-3 space-y-4">
-<div class="bg-white rounded-lg shadow">
-  <div class="flex justify-between items-center p-4 border-b">
-     
-    <p-selectButton [options]="filterOptions" [(ngModel)]="selectedFilter" optionLabel="label" optionValue="value"></p-selectButton>
+  <div class="col-span-1">
+    <app-info-sidebar></app-info-sidebar>
   </div>
 
-
-  <div *ngIf="hasNotifications; else noNotifications" class="divide-y divide-gray-100">
-     
-    <div
-      *ngFor="let notification of filteredNotifications"
-      class="notification-item flex items-start p-4 hover:bg-gray-50 cursor-pointer relative group"
-      [class.bg-blue-50]="notification.isUnread"
-      (click)="markAsRead(notification)"> <div class="mr-3 flex-shrink-0">
-        <p-avatar
-          *ngIf="notification.avatarUrl || notification.avatarLabel"
-          [image]="notification.avatarUrl"
-          [label]="!notification.avatarUrl ? notification.avatarLabel : ''"
-          size="large"
-          shape="circle">
-        </p-avatar>
-        <i *ngIf="notification.icon && !notification.avatarUrl && !notification.avatarLabel"
-           [ngClass]="notification.icon"
-           class="text-2xl text-gray-500 p-avatar p-avatar-circle p-avatar-lg flex items-center justify-center bg-gray-100">
-        </i>
+  <div class="col-span-1 md:col-span-3 space-y-4">
+    <div class="bg-white rounded-lg shadow">
+      <div class="flex justify-between items-center p-4 border-b sticky top-0 bg-white z-10 rounded-t-lg">
+        <p-selectButton [options]="filterOptions" [(ngModel)]="selectedFilter" optionLabel="label" optionValue="value"></p-selectButton>
       </div>
 
-      <div class="flex-1 mr-4"> <p class="text-sm text-gray-800" [innerHTML]="notification.message"></p>
-        <span class="text-xs text-gray-500 mt-1 block">
-          {{ notification.date | date:'shortTime' }} · {{ notification.date | date:'dd/MM' }} </span>
-      </div>
+      <div class="max-h-[650px] overflow-y-auto divide-y divide-gray-100 custom-scrollbar" (scroll)="onScroll($event)">
+        
+        <div *ngIf="isLoading && allNotifications.length === 0" class="p-12 text-center text-gray-400">
+          <i class="pi pi-spin pi-spinner text-4xl mb-2"></i>
+          <p>Loading notifications...</p>
+        </div>
 
-      <div class="flex flex-col items-end ml-auto text-xs text-gray-500 flex-shrink-0">
-         <p-menu #notifMenu [model]="notificationMenuItems" [popup]="true"></p-menu>
-         <button pButton type="button" icon="pi pi-ellipsis-v"
-                 (click)="showNotificationMenu(notifMenu, $event, notification)"
-                 class="p-button-rounded p-button-text p-button-sm text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity">
-         </button>
-      </div>
+        <ng-container *ngIf="hasNotifications; else noNotifications">
+          <div *ngFor="let notification of filteredNotifications"
+               class="notification-item flex items-start p-4 hover:bg-gray-50 cursor-pointer relative group transition-colors"
+               [class.bg-blue-50]="!notification.isRead"
+               (click)="markAsRead(notification)"> 
+            
+            <div class="mr-4 flex-shrink-0">
+               <i [ngClass]="getIconForType(notification.type)"
+                  class="text-2xl p-avatar p-avatar-circle p-avatar-lg flex items-center justify-center">
+               </i>
+            </div>
 
-       <div *ngIf="notification.isUnread" class="absolute top-2 right-2">
-         <span class="block w-2 h-2 bg-blue-500 rounded-full"></span>
+            <div class="flex-1 mr-4"> 
+              <p class="text-sm text-gray-800 m-0">
+                <span class="font-bold mr-1">{{ notification.title }}</span>
+                <span>{{ notification.content }}</span>
+              </p>
+              <span class="text-xs text-gray-500 mt-1 block font-medium" [class.text-blue-600]="!notification.isRead">
+                {{ notification.createDate | date:'MMM d, y, h:mm a' }}
+              </span>
+            </div>
+
+            <div class="flex flex-col items-end ml-auto text-xs text-gray-500 flex-shrink-0">
+               <p-menu #notifMenu [model]="notificationMenuItems" [popup]="true"></p-menu>
+               <button pButton type="button" icon="pi pi-ellipsis-v"
+                       (click)="showNotificationMenu(notifMenu, $event, notification)"
+                       class="p-button-rounded p-button-text p-button-sm text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity">
+               </button>
+            </div>
+
+            <div *ngIf="!notification.isRead" class="absolute top-4 right-4">
+               <span class="block w-2.5 h-2.5 bg-blue-600 rounded-full shadow-sm"></span>
+            </div>
+          </div>
+        </ng-container>
+
+        <ng-template #noNotifications>
+          <div *ngIf="!isLoading" class="text-center p-16">
+            <i class="pi pi-check-circle text-5xl text-green-400 mb-4 opacity-80"></i>
+            <p class="text-gray-700 font-bold text-lg m-0">You have viewed all notifications!</p>
+            <p class="text-sm text-gray-500 mt-2">When there is new activity, it will appear here.</p>
+          </div>
+        </ng-template>
+
+        <div *ngIf="isLoadingMore" class="p-4 text-center text-blue-500 flex justify-center items-center gap-2">
+          <i class="pi pi-spin pi-spinner text-xl"></i>
+          <span class="text-sm font-medium">Loading more...</span>
+        </div>
+
       </div>
     </div>
   </div>
-
-  <ng-template #noNotifications>
-     
-    <div class="text-center p-10">
-      <i class="pi pi-check-circle text-4xl text-green-500 mb-3"></i>
-      <p class="text-gray-600 font-semibold">Bạn không có thông báo nào</p>
-      <p class="text-sm text-gray-500">Tất cả thông báo của bạn sẽ hiển thị ở đây.</p>
-    </div>
-  </ng-template>
 </div>
-    </div>
-</div>
-

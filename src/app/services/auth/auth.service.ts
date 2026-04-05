@@ -6,13 +6,12 @@ import {
   LoginRequest,
   RegisterRequest,
   AuthResponse,
-  User,
   ForgotPasswordRequest,
   ResetPasswordRequest,
+  User,
 } from '../../models/auth/auth.model';
 import { environment } from '../../../environments/environment';
 import { jwtDecode } from 'jwt-decode';
-import { clear } from 'node:console';
 
 @Injectable({
   providedIn: 'root',
@@ -161,11 +160,30 @@ export class AuthService {
    * Check if current user has Admin role
    */
   isAdmin(): boolean {
-    const user = this.currentUserSubject.value;
-    if (!user || !user.roles) {
+    if (!this.isBrowser) return false;
+
+    const token = this.getToken();
+    if (!token) return false;
+
+    try {
+      const decoded: any = jwtDecode(token);
+      const roleClaim = decoded['role'] || null;
+
+      if (!roleClaim) return false;
+
+      if (Array.isArray(roleClaim)) {
+        return roleClaim.includes('admin');
+      } 
+      else if (typeof roleClaim === 'string') {
+        return roleClaim === 'admin';
+      }
+
+      return false;
+    } 
+    catch (error) {
+      console.error('ERROR: Decode token in isAdmin()', error);
       return false;
     }
-    return user.roles.some(role => role.toLowerCase() === 'admin');
   }
 
   /**

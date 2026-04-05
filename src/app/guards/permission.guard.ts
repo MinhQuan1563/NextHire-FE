@@ -1,7 +1,7 @@
 import { inject } from '@angular/core';
 import { Router, type CanActivateFn } from '@angular/router';
-import { PermissionService } from '@abp/ng.core';
 import { AuthService } from '../services/auth/auth.service';
+import { PermissionService } from '@app/services/permission/permission.service'; 
 
 export const PermissionGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);
@@ -19,7 +19,7 @@ export const PermissionGuard: CanActivateFn = (route, state) => {
     return true;
   }
 
-  if (permissionService.getGrantedPolicy(requiredPolicy)) {
+  if (permissionService.hasPermission(requiredPolicy)) {
     return true;
   }
 

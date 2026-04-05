@@ -8,7 +8,7 @@
 
   <div class="col-span-1 md:col-span-3 space-y-4">
    
-    <div class="bg-white rounded-lg shadow p-4">
+    <div *hasPermission="'NextHireApp.Posts.Create'" class="bg-white rounded-lg shadow p-4">
       <div class="flex items-center gap-3">
       <p-avatar icon="pi pi-user" shape="circle" size="large" styleClass="bg-gray-200 text-gray-600"></p-avatar>
       
@@ -44,7 +44,31 @@
 
     <div class="feed-list space-y-4">
       @for (post of feedPosts; track post.postCode) {
-        <app-post-card [post]="post"></app-post-card>
+        @if (post.isHidden) {
+          <div class="bg-white border border-gray-200 rounded-xl p-4 flex justify-between items-center shadow-sm my-3">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full bg-gray-100 flex justify-center items-center">
+                <i class="pi pi-eye-slash text-gray-600 text-lg"></i>
+              </div>
+              
+              <div>
+                <h4 class="font-bold text-[15px] text-gray-900 m-0 leading-tight">Post Hidden</h4>
+                <p class="text-[13px] text-gray-500 m-0 mt-0.5">Hiding posts helps us personalize your Feed.</p>
+              </div>
+            </div>
+            
+            <button (click)="undoHidePost(post)" 
+                    class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 transition-colors rounded-lg font-semibold text-sm">
+              Undo
+            </button>
+          </div>
+        } 
+        @else {
+          <app-post-card 
+            [post]="post" 
+            (onHidePost)="handleHidePost($event)">
+          </app-post-card>
+        }
       } 
       @empty {
         @if (!isInitialLoading) { 

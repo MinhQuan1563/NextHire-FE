@@ -1,5 +1,5 @@
 import { Component, DestroyRef, inject, Input, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { AsyncPipe, CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { AvatarModule } from 'primeng/avatar';
@@ -17,9 +17,13 @@ import { ChatPartner } from '@app/models/message/message.model';
 import { MessageStateService } from '@app/services/message/message-stage.service';
 import { ChatOverlayComponent } from '@shared/reusable-components/messages/chat-overlay/chat-overlay.component';
 import { NotificationOverlayComponent } from '@shared/reusable-components/notification-overlay/notification-overlay.component';
-import { SignalrService } from '@app/services/signalr/signalr.service';
 import { MessageService } from '@app/services/message/message.service';
 import { VideoCallComponent } from '@shared/reusable-components/messages/video-call/video-call.component';
+import { map } from 'rxjs';
+import { NotificationService } from '@app/services/notification/notification.service';
+import { NotificationDto } from '@app/models/notification/notification.model';
+import { SignalrService } from '@app/services/signalr/signalr.service';
+import { MessageService as PrimeMessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-header',
@@ -28,7 +32,7 @@ import { VideoCallComponent } from '@shared/reusable-components/messages/video-c
     CommonModule, RouterLink, ButtonModule, InputTextModule,
     AvatarModule, MenuModule, TieredMenuModule, OverlayPanelModule,
     TooltipModule, FloatingChatComponent, ChatOverlayComponent,
-    NotificationOverlayComponent, VideoCallComponent
+    NotificationOverlayComponent, VideoCallComponent, AsyncPipe
   ],
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss',
@@ -42,6 +46,7 @@ export class HeaderComponent implements OnInit {
   activeCallType: 'AUDIO' | 'VIDEO' | null = null;
   isCaller: boolean = false;
   callStartTime: number = 0;
+  isLoggingOut = false;
 
   // Controls floating chat window in the bottom corner when clicking a person in chat list
   isFloatingChatOpen = false;
@@ -51,12 +56,22 @@ export class HeaderComponent implements OnInit {
   incomingCallData: any = null;
   activeCallRoomId: string | null = null;
 
+  totalUnreadCount$ = this.conversations$.pipe(
+    map(chats => chats.filter(chat => chat.hasUnread).length)
+  );
+
+  // For notification overlay
+  public notifications: NotificationDto[] = [];
+  public unreadCount = 0;
+
   constructor(
     private authService: AuthService,
     private router: Router,
     private messageService: MessageService,
     public messageStateService: MessageStateService,
-    private signalrService: SignalrService
+    public notificationService: NotificationService,
+    private signalrService: SignalrService,
+    private primeMessageService: PrimeMessageService
   ) {
     this.userMenuItems = [
       {
@@ -83,6 +98,7 @@ export class HeaderComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // Lắng nghe trạng thái online của bạn chat
     this.messageStateService.conversations$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(chats => {
@@ -98,27 +114,62 @@ export class HeaderComponent implements OnInit {
         }
       });
 
+    // Lắng nghe cuộc gọi đến
     this.messageStateService.incomingCall$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(callData => {
         this.incomingCallData = callData;
       });
 
+    // Lắng nghe khi bị từ chối cuộc gọi
     this.messageStateService.callDeclined$
-    .pipe(takeUntilDestroyed(this.destroyRef))
-    .subscribe(receiverCode => {
-      alert("User is busy or has declined the call.");
-      
-      if (this.activeChatPartner && this.activeCallType) {
-        const content = `[CALL|MISSED|${this.activeCallType}|0]`;
-        this.messageService.sendMessage({ receiverCode: this.activeChatPartner.userCode, content }).subscribe();
-        this.messageStateService.updateConversationWhenSend(this.activeChatPartner.userCode, "Missed call");
-      }
-      this.activeCallRoomId = null; 
-      this.activeCallType = null;
-    });
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(receiverCode => {
+        alert("User is busy or has declined the call.");
+        
+        if (this.activeChatPartner && this.activeCallType) {
+          const content = `[CALL|MISSED|${this.activeCallType}|0]`;
+          this.messageService.sendMessage({ receiverCode: this.activeChatPartner.userCode, content }).subscribe();
+          this.messageStateService.updateConversationWhenSend(this.activeChatPartner.userCode, "Missed call");
+        }
+        this.activeCallRoomId = null; 
+        this.activeCallType = null;
+      });
+
+    // Lắng nghe Thông báo Real-time
+    this.signalrService.notificationReceived$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((newNotif: any) => {
+        this.unreadCount++;
+        this.notifications.unshift(newNotif);
+
+        let severity = 'info';
+        if (newNotif.type === 'POST_LIKE') severity = 'success';
+        if (newNotif.type === 'NEW_POST') severity = 'warn';
+
+        this.primeMessageService.add({
+          severity: severity,
+          summary: newNotif.title,
+          detail: newNotif.content,
+          life: 4000
+        });
+
+        // Nếu notificationService của bạn có quản lý state, có thể update nó ở đây
+        // this.notificationService.updateState(newNotif);
+      });
+
+    // Lắng nghe sự kiện tài khoản bị khóa
+    this.signalrService.accountLocked$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        this.authService.clearLocalData();
+        this.router.navigate(['/auth/login'], { queryParams: { locked: 'true' } });
+      });
+
+    this.notificationService.fetchUnreadCount();
   }
 
+  // Mở cửa sổ chat khi click vào 1 người trong danh sách chat
   openFloatingChat(userCode: string, name: string, avatar?: string) {
     this.messageStateService.markConversationAsRead(userCode);
 
@@ -195,22 +246,30 @@ export class HeaderComponent implements OnInit {
   }
 
   logout() {
-    this.authService.logout().subscribe({
-      next: () => {
-        this.router.navigate(['/auth/login']);
-      },
-      error: (error) => {
-        console.error('Logout failed:', error);
-      },
+    this.isLoggingOut = true;
+    
+    this.primeMessageService.add({ 
+      severity: 'info', 
+      summary: 'Goodbye!', 
+      detail: 'Logging you out securely...', 
+      life: 1500 
     });
+
+    setTimeout(() => {
+      this.authService.logout().subscribe({
+        next: () => {
+          this.router.navigate(['/auth/login']);
+        },
+        error: (error) => {
+          console.error('Logout failed:', error);
+          this.authService.clearLocalData();
+          this.router.navigate(['/auth/login']);
+        },
+      });
+    }, 1500);
   }
 
   onSearch(event: Event) {
     const query = (event.target as HTMLInputElement).value;
-  }
-
-  onImageError(event: Event) {
-    const img = event.target as HTMLImageElement;
-    img.src = 'assets/images/default-avatar.png';
   }
 }

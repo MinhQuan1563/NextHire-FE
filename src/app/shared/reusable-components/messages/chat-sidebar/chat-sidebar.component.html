@@ -21,7 +21,7 @@
              (click)="selectChat(chat)">
           
           <div class="relative w-[50px] h-[50px] flex-shrink-0">
-            <img [src]="chat.partnerAvatar || 'assets/images/default-avatar.png'" class="w-full h-full rounded-full object-cover">
+            <img [src]="chat.partnerAvatar || 'assets/images/user-default.jpg'" class="w-full h-full rounded-full object-cover">
             @if (chat.isOnline) { <div class="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full"></div> }
           </div>
 

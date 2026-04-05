@@ -9,6 +9,8 @@ export interface PostResponse {
   privacy: number;
   likeCount: number;
   commentCount: number;
+  isSaved: boolean;
+  isHidden?: boolean;
 }
 
 export interface PostCreateForm {

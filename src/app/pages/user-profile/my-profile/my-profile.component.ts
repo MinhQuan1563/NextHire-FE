@@ -1,170 +1,126 @@
-import { Component, inject, OnInit, signal, DestroyRef } from '@angular/core';
-import { CommonModule, DatePipe } from '@angular/common';
+import { Component, inject, OnInit, signal, DestroyRef, computed } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { catchError, finalize, of } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { HttpErrorResponse } from '@angular/common/http';
-
-// PrimeNG Components
 import { ButtonModule } from 'primeng/button';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { MessageModule } from 'primeng/message';
 import { AccordionModule } from 'primeng/accordion';
-
-// Models
-import {
-  UserProfileDto,
-  ParsedUserProfile,
-  Gender,
-  GenderLabels,
-} from '../../../models/user-profile';
-import {
-  SkillsJson,
-  ExperienceJson,
-  EducationJson,
-  PersonalProjectsJson,
-  SavedJobsJson,
-} from '../../../models/user-profile/profile-json-structures.model';
-
-// Services
-import { UserProfileService } from '../../../services/user-profile/user-profile.service';
-
-// Shared Components
-import { ProfileAvatarComponent } from '../../../shared/reusable-components/profile-components/profile-avatar/profile-avatar.component';
-import { SkillsDisplayComponent } from '../../../shared/reusable-components/profile-components/skills-display/skills-display.component';
-import { ExperienceDisplayComponent } from '../../../shared/reusable-components/profile-components/experience-display/experience-display.component';
-import { EducationDisplayComponent } from '../../../shared/reusable-components/profile-components/education-display/education-display.component';
-import { PersonalProjectsDisplayComponent } from '../../../shared/reusable-components/profile-components/personal-projects-display/personal-projects-display.component';
-import { SavedJobsDisplayComponent } from '../../../shared/reusable-components/profile-components/saved-jobs-display/saved-jobs-display.component';
+import { AuthService } from '@app/services/auth/auth.service';
+import { ProfileAvatarComponent } from '@shared/reusable-components/profile-components/profile-avatar/profile-avatar.component';
+import { SkillsDisplayComponent } from '@shared/reusable-components/profile-components/skills-display/skills-display.component';
+import { ExperienceDisplayComponent } from '@shared/reusable-components/profile-components/experience-display/experience-display.component';
+import { EducationDisplayComponent } from '@shared/reusable-components/profile-components/education-display/education-display.component';
+import { PersonalProjectsDisplayComponent } from '@shared/reusable-components/profile-components/personal-projects-display/personal-projects-display.component';
+import { SavedJobsDisplayComponent } from '@shared/reusable-components/profile-components/saved-jobs-display/saved-jobs-display.component';
+import { EducationJson, ExperienceJson, Gender, GenderLabels, ParsedUserProfile, PersonalProjectsJson, SavedJobsJson, SkillsJson } from '@app/models/user-profile';
+import { User } from '@app/models/auth/auth.model';
+import { ToastService } from '@app/services/toast/toast.service';
+import { PostResponse } from '@app/models/post/post.model';
+import { PostCardComponent } from '@shared/reusable-components/posts/post-card/post-card.component';
+import { PostService } from '@app/services/posts/post.service';
+import { SkeletonModule } from "primeng/skeleton";
+import { HasPermissionDirective } from '@shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-my-profile',
   standalone: true,
   imports: [
-    CommonModule,
-    RouterModule,
-    DatePipe,
-    ButtonModule,
-    ProgressSpinnerModule,
-    MessageModule,
-    AccordionModule,
-    ProfileAvatarComponent,
-    SkillsDisplayComponent,
-    ExperienceDisplayComponent,
-    EducationDisplayComponent,
-    PersonalProjectsDisplayComponent,
-    SavedJobsDisplayComponent,
-  ],
+    CommonModule, RouterModule, ButtonModule, ProgressSpinnerModule,
+    MessageModule, AccordionModule, ProfileAvatarComponent, SkillsDisplayComponent,
+    ExperienceDisplayComponent, EducationDisplayComponent, PersonalProjectsDisplayComponent,
+    SavedJobsDisplayComponent, PostCardComponent, SkeletonModule, HasPermissionDirective
+],
   templateUrl: './my-profile.component.html',
   styleUrls: ['./my-profile.component.scss'],
 })
 export class MyProfileComponent implements OnInit {
   // Dependency Injection
-  private readonly userProfileService = inject(UserProfileService);
+  private readonly authService = inject(AuthService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly toastService = inject(ToastService);
+  private readonly postService = inject(PostService);
 
   // State Management with Signals
-  loading = signal<boolean>(false);
+  loading = signal<boolean>(true);
   error = signal<string | null>(null);
   profileData = signal<ParsedUserProfile | null>(null);
 
-  /**
-   * Component initialization
-   */
+  // Activity
+  myPosts = signal<PostResponse[]>([]);
+  isPostsLoading = signal<boolean>(true);
+
   ngOnInit(): void {
-    this.loadProfile();
-  }
+    this.authService.currentUser$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (user: User | null) => {
+          if (user) {
+            this.profileData.set(this.parseProfile(user));
+            this.error.set(null);
 
-  /**
-   * Load current user profile
-   * Implements retry logic and proper error handling
-   */
-  loadProfile(): void {
-    this.loading.set(true);
-    this.error.set(null);
-
-    this.userProfileService
-      .getCurrentUserProfile()
-      .pipe(
-        catchError((err: HttpErrorResponse) => {
-          const errorMessage = this.getErrorMessage(err);
-          this.error.set(errorMessage);
-          console.error('Error loading profile:', err);
-          return of(null);
-        }),
-        finalize(() => this.loading.set(false)),
-        takeUntilDestroyed(this.destroyRef)
-      )
-      .subscribe((profile) => {
-        if (profile) {
-          this.profileData.set(this.parseProfile(profile));
+            if (user.userCode) {
+              this.loadmyPosts(user.userCode);
+            }
+          } 
+          else {
+            this.profileData.set(null);
+            this.error.set('You are not logged in or session has expired.');
+          }
+          this.loading.set(false);
+        },
+        error: (err) => {
+          console.error('Error fetching current user:', err);
+          this.error.set('Failed to load profile data.');
+          this.loading.set(false);
         }
       });
   }
 
   /**
-   * Get user-friendly error message based on HTTP error response
+   * Parse User object (từ Auth) sang ParsedUserProfile
+   * Lưu ý: Hãy đảm bảo object `User` của bạn có chứa các thuộc tính JSON này.
+   * Nếu không, bạn có thể phải gọi thêm API UserProfileService ở đây.
    */
-  private getErrorMessage(error: HttpErrorResponse): string {
-    // Handle network errors
-    if (error.status === 0) {
-      return 'Network error. Please check your internet connection and try again.';
-    }
-
-    // Handle specific HTTP status codes
-    switch (error.status) {
-      case 401:
-        return 'You are not authorized to view this profile. Please log in again.';
-      case 403:
-        return 'You do not have permission to access this profile.';
-      case 404:
-        return 'Profile not found.';
-      case 500:
-        return 'Server error. Please try again later.';
-      case 503:
-        return 'Service temporarily unavailable. Please try again later.';
-      default:
-        // Try to get error message from response
-        if (error.error?.message) {
-          return error.error.message;
-        }
-        if (error.message) {
-          return error.message;
-        }
-        return `Failed to load profile. Please try again. (Error: ${error.status || 'Unknown'})`;
-    }
+  private parseProfile(user: User): ParsedUserProfile {
+    return {
+      id: user.id || '',
+      userCode: user.userCode || '',
+      fullName: user.fullName || 'Anonymous User',
+      dateOfBirth: user.dateOfBirth ? new Date(user.dateOfBirth) : null,
+      gender: user.gender as Gender,
+      email: user.email,
+      phoneNumber: user.phoneNumber,
+      avatarUrl: user.avatarUrl || null,
+      skills: this.parseJsonField<SkillsJson>((user as any).skills),
+      experience: this.parseJsonField<ExperienceJson>((user as any).experience),
+      education: this.parseJsonField<EducationJson>((user as any).education),
+      personalProjects: this.parseJsonField<PersonalProjectsJson>((user as any).personalProjects),
+      portfolioUrl: (user as any).portfolioUrl,
+      savedJobs: this.parseJsonField<SavedJobsJson>((user as any).savedJobs),
+    };
   }
 
-  /**
-   * Parse UserProfileDto to ParsedUserProfile
-   * Converts JSON strings to typed objects and date strings to Date objects
-   */
-  private parseProfile(profile: UserProfileDto): ParsedUserProfile {
-    return {
-      id: profile.id,
-      userCode: profile.userCode,
-      fullName: profile.fullName,
-      dateOfBirth: profile.dateOfBirth
-        ? new Date(profile.dateOfBirth)
-        : null,
-      gender: profile.gender,
-      avatarUrl: profile.avatarUrl,
-      skills: this.parseJsonField<SkillsJson>(profile.skills),
-      experience: this.parseJsonField<ExperienceJson>(profile.experience),
-      education: this.parseJsonField<EducationJson>(profile.education),
-      personalProjects: this.parseJsonField<PersonalProjectsJson>(
-        profile.personalProjects
-      ),
-      portfolioUrl: profile.portfolioUrl,
-      savedJobs: this.parseJsonField<SavedJobsJson>(profile.savedJobs),
-    };
+  copyToClipboard(text: string): void {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(text)
+      .then(() => {
+        this.toastService.showSuccess('Copied!', 'Account ID has been copied to clipboard.');
+      })
+      .catch(err => {
+        console.error('Lỗi khi copy: ', err);
+        this.toastService.showError('Error', 'Failed to copy Account ID.');
+      });
+    } 
+    else {
+      this.toastService.showWarning('Warning', 'Your browser does not support copying.');
+    }
   }
 
   /**
    * Parse JSON string field safely
-   * Returns null if parsing fails or field is null/empty
    */
-  private parseJsonField<T>(jsonString: string | null): T | null {
+  private parseJsonField<T>(jsonString: string | null | undefined): T | null {
     if (!jsonString || jsonString.trim() === '') {
       return null;
     }
@@ -199,10 +155,70 @@ export class MyProfileComponent implements OnInit {
   }
 
   /**
-   * Retry loading profile
+   * Retry loading profile (Dùng trong trường hợp reload force)
    */
   retry(): void {
-    this.loadProfile();
+    this.loading.set(true);
+    this.error.set(null);
+    setTimeout(() => this.loading.set(false), 500); 
+  }
+
+  /**
+   * Handle loading user's own posts for the "My Activity" tab
+   */
+  loadmyPosts(userCode: string) {
+    this.isPostsLoading.set(true);
+    this.postService.getMyFeed(userCode, 2, undefined, undefined).subscribe({
+      next: (posts: PostResponse[]) => {
+        this.myPosts.set(posts || []);
+        this.isPostsLoading.set(false);
+      },
+      error: (err) => {
+        console.error('Failed to load recent posts', err);
+        this.isPostsLoading.set(false);
+      }
+    });
+  }
+
+  handleHidePost(postCode: string) {
+    this.myPosts.update(posts => {
+      const post = posts.find(p => p.postCode === postCode);
+      if (post) post.isHidden = true;
+      return [...posts];
+    });
+
+    this.postService.hidePost(postCode).subscribe({
+      next: () => {},
+      error: (err) => {
+        this.myPosts.update(posts => {
+          const post = posts.find(p => p.postCode === postCode);
+          if (post) post.isHidden = false;
+          return [...posts];
+        });
+        this.toastService.showError('Error', 'Could not hide post.');
+        console.error('Hide post failed', err);
+      }
+    });
+  }
+
+  undoHidePost(post: PostResponse) {
+    this.myPosts.update(posts => {
+      const p = posts.find(x => x.postCode === post.postCode);
+      if (p) p.isHidden = false;
+      return [...posts];
+    });
+
+    this.postService.unhidePost(post.postCode).subscribe({
+      next: () => {},
+      error: (err) => {
+        this.myPosts.update(posts => {
+          const p = posts.find(x => x.postCode === post.postCode);
+          if (p) p.isHidden = true;
+          return [...posts];
+        });
+        this.toastService.showError('Error', 'Could not undo hide post.');
+        console.error('Undo hide post failed', err);
+      }
+    });
   }
 }
-

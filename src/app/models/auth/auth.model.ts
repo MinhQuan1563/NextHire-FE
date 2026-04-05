@@ -1,3 +1,5 @@
+import { Gender } from "../user-profile";
+
 export interface LoginRequest {
   userNameOrEmail: string;
   password: string;
@@ -30,15 +32,32 @@ export interface ResetPasswordRequest {
   password: string;
 }
 
+// export interface User {
+//   id: string;
+//   username: string;
+//   email: string;
+//   firstName: string;
+//   lastName: string;
+//   fullName: string;
+//   phoneNumber?: string;
+//   profilePicture?: string;
+//   avatarUrl?:string;
+//   roles: string[];
+// }
+
 export interface User {
   id: string;
-  username: string;
+  userCode: string;
+  fullName?: string;
+  dateOfBirth?: string;
+  gender: Gender;
   email: string;
-  firstName: string;
-  lastName: string;
-  fullName: string;
   phoneNumber?: string;
-  profilePicture?: string;
-  avatarUrl?:string;
-  roles: string[];
+  avatarUrl?: string;
+  skills?: string;
+  experience?: string;
+  education?: string;
+  personalProjects?: string;
+  portfolioUrl?: string;
+  savedJobs?: string;
 }

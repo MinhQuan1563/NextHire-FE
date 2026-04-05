@@ -13,6 +13,7 @@ import { AppUser } from '@app/models/app-user/app-user.model';
 import { PostCardComponent } from '@shared/reusable-components/posts/post-card/post-card.component';
 import { CreatePostDialogComponent } from '@shared/reusable-components/posts/create-post-dialog/create-post-dialog.component';
 import { SkeletonModule } from 'primeng/skeleton';
+import { HasPermissionDirective } from '@shared/directives/has-permission.directive';
 
 @Component({
   selector: 'app-home',
@@ -20,7 +21,7 @@ import { SkeletonModule } from 'primeng/skeleton';
   imports: [
     CommonModule, InfoSidebarComponent, PostCardComponent,
     CreatePostDialogComponent, AvatarModule, ToastModule,
-    SkeletonModule  
+    SkeletonModule, HasPermissionDirective
   ],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss']
@@ -103,5 +104,35 @@ export class HomeComponent implements OnInit {
   onPostCreated(newPostDto: PostResponse) {
     this.feedPosts = [newPostDto, ...this.feedPosts];
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  handleHidePost(postCode: string) {
+    const targetPost = this.feedPosts.find(p => p.postCode === postCode);
+    
+    if (targetPost) {
+      targetPost.isHidden = true; 
+
+      this.postService.hidePost(postCode).subscribe({
+        next: () => {},
+        error: (err) => {
+          targetPost.isHidden = false; 
+          this.toastService.showError('Error', 'Could not hide post.');
+          console.error('Hide post failed', err);
+        }
+      });
+    }
+  }
+
+  undoHidePost(post: PostResponse) { 
+    post.isHidden = false; 
+
+    this.postService.unhidePost(post.postCode).subscribe({
+      next: () => {},
+      error: (err) => {
+        post.isHidden = true; 
+        this.toastService.showError('Error', 'Could not undo hide post.');
+        console.error('Undo hide post failed', err);
+      }
+    });
   }
 }

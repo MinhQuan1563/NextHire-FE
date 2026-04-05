@@ -27,7 +27,7 @@ export const errorInterceptor: HttpInterceptorFn = (
             severity = 'warn';
             break;
           case 400:
-            errorMessage = error.error?.message || 'Invalid request. Please check your input.';
+            errorMessage = error.error?.error_description || error.error?.message || 'Invalid request. Please check your input.';
             break;
           case 401:
             errorMessage = 'Your session has expired. Please log in again.';
@@ -35,6 +35,7 @@ export const errorInterceptor: HttpInterceptorFn = (
             break;
           case 403:
             errorMessage = 'You do not have permission to perform this action.';
+            router.navigate(['/forbidden']); 
             break;
           case 404:
             errorMessage = error.error?.message || 'The requested resource was not found.';
@@ -60,7 +61,9 @@ export const errorInterceptor: HttpInterceptorFn = (
         logError(`HTTP ${error.status} error`, error);
       }
 
-      if (error.status !== 401) {
+      const isLoginRequest = request.url.includes('/login') || request.url.includes('/connect/token');
+
+      if (error.status !== 401 && error.status !== 403) {
         messageService.add({
           severity,
           summary: getErrorSummary(error.status),
@@ -69,7 +72,7 @@ export const errorInterceptor: HttpInterceptorFn = (
         });
       }
 
-      return throwError(() => new Error(errorMessage));
+      return throwError(() => error);
     })
   );
 };

@@ -12,7 +12,7 @@ export class ToastService {
    * @param title Tiêu đề thông báo
    * @param message Nội dung chi tiết
    */
-  success(title: string, message: string) {
+  showSuccess(title: string, message: string) {
     this.messageService.add({
       severity: 'success',
       summary: title,
@@ -21,7 +21,7 @@ export class ToastService {
     });
   }
 
-  error(title: string, message: string) {
+  showError(title: string, message: string) {
     this.messageService.add({
       severity: 'error',
       summary: title,
@@ -30,7 +30,7 @@ export class ToastService {
     });
   }
 
-  warning(title: string, message: string) {
+  showWarning(title: string, message: string) {
     this.messageService.add({
       severity: 'warn',
       summary: title,
@@ -39,7 +39,7 @@ export class ToastService {
     });
   }
 
-  info(title: string, message: string) {
+  showInfo(title: string, message: string) {
     this.messageService.add({
       severity: 'info',
       summary: title,

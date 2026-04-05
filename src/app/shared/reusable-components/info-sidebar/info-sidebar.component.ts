@@ -1,9 +1,9 @@
 import { Component, DestroyRef, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AvatarModule } from 'primeng/avatar';
-import { AuthService } from '../../../services/auth/auth.service';
-import { User } from '../../../models/auth/auth.model';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { AuthService } from '@app/services/auth/auth.service';
+import { User } from '@app/models/auth/auth.model';
 
 @Component({
   selector: 'app-info-sidebar',
@@ -26,5 +26,13 @@ export class InfoSidebarComponent implements OnInit {
         this.currentUser = user;
       }
     })
+  }
+
+  navigateToSavedPosts() {
+    window.location.href = '/saved-posts';
+  }
+
+  navigateToProfile() {
+    window.location.href = '/profile';
   }
 }

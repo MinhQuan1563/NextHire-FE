@@ -135,13 +135,13 @@ export class CreatePostDialogComponent {
       .pipe(finalize(() => this.isPosting = false))
       .subscribe({
         next: (res) => {
-          this.toastService.success('Success', 'New post created successfully');
+          this.toastService.showSuccess('Success', 'New post created successfully');
           this.postCreated.emit(res);
           this.close();
         },
         error: (err) => {
           console.error(err);
-          this.toastService.error('Error', 'Failed to create new post');
+          this.toastService.showError('Error', 'Failed to create new post');
         }
       });
   }

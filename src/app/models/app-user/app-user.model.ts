@@ -1,9 +1,11 @@
+import { Gender } from "../user-profile";
+
 export interface AppUser {
   id: string;
   userCode: string;
   fullName?: string;
   dateOfBirth?: string;
-  gender: GenderType;
+  gender: Gender;
   avatarUrl?: string;
   skills?: string;
   experience?: string;
@@ -11,9 +13,15 @@ export interface AppUser {
   personalProjects?: string;
   portfolioUrl?: string;
   savedJobs?: string;
+  email?: string;
+  phoneNumber?: string;
+  role?: string;
+  isLocked?: boolean;
 }
 
-export enum GenderType {
-  Male = 1,
-  Female = 2
+export interface GetUsersInput {
+  filter?: string;
+  isLocked?: boolean | null;
+  skipCount: number;
+  maxResultCount: number;
 }
