@@ -4,13 +4,12 @@
   "compilerOptions": {
     "outDir": "./dist/out-tsc",
     "strict": true,
-    "baseUrl": "src",
     "paths": {
-      "@core/*": ["app/core/*"],
-      "@shared/*": ["app/shared/*"],
-      "@pages/*": ["app/pages/*"],
-      "@env/*": ["environments/*"],
-      "@app/*": ["app/*"]
+      "@core/*": ["./src/app/core/*"],
+      "@shared/*": ["./src/app/shared/*"],
+      "@pages/*": ["./src/app/pages/*"],
+      "@env/*": ["./src/environments/*"],
+      "@app/*": ["./src/app/*"]
     },
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
@@ -21,7 +20,7 @@
     "sourceMap": true,
     "declaration": false,
     "experimentalDecorators": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "importHelpers": true,
     "target": "ES2022",
     "module": "ES2022",

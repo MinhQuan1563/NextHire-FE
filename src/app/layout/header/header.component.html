@@ -97,23 +97,21 @@
       tooltipPosition="bottom"
     >
       <i class="pi pi-comments text-xl"></i>
-      <span
-        class="absolute -top-1 -right-1 bg-red-500 text-white text-[11px] font-bold px-1.5 py-0.5 rounded-full border-2 border-white"
-        >2</span
-      >
+      @if ((totalUnreadCount$ | async); as unreadCount) {
+        <span class="absolute -top-1 -right-1 bg-red-500 text-white text-[11px] font-bold px-1.5 py-0.5 rounded-full border-2 border-white">
+          {{ unreadCount > 99 ? '99+' : unreadCount }}
+        </span>
+      }
     </button>
 
-    <button
-      class="w-11 h-11 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-colors text-black relative"
-      (click)="notifDropdown.toggle($event)"
-      pTooltip="Notifications"
-      tooltipPosition="bottom"
-    >
+    <button class="w-11 h-11 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-colors text-black relative" (click)="notifDropdown.toggle($event)">
       <i class="pi pi-bell text-xl"></i>
-      <span
-        class="absolute -top-1 -right-1 bg-red-500 text-white text-[11px] font-bold px-1.5 py-0.5 rounded-full border-2 border-white"
-        >5</span
-      >
+      
+      @if (notificationService.unreadCount$ | async; as unread) {
+        <span class="absolute -top-1 -right-1 bg-red-500 text-white text-[11px] font-bold px-1.5 py-0.5 rounded-full border-2 border-white z-10 shadow-sm">
+          {{ unread > 5 ? '5+' : unread }}
+        </span>
+      }
     </button>
 
     <div class="user-menu ml-1">
@@ -127,11 +125,10 @@
         (click)="userMenuPopup.toggle($event)"
       >
         <p-avatar
-          [image]="currentUser?.avatarUrl"
-          label="U"
+          [image]="currentUser?.avatarUrl || 'assets/images/user-default.jpg'"
           shape="circle"
-          class="w-full h-full"
-          (onError)="onImageError($event)"
+          [style]="{ width: '80%', height: '80%', 'display': 'flex', 'justify-content': 'center', 'align-items': 'center' }"
+          styleClass="object-cover"
         ></p-avatar>
       </button>
     </div>
@@ -187,5 +184,13 @@
       [isVideoCall]="activeCallType === 'VIDEO'"
       (onCallEnded)="handleCallEnded()"> 
     </app-video-call>
+  </div>
+}
+
+@if (isLoggingOut) {
+  <div class="fixed inset-0 bg-white/80 z-[100000] flex flex-col items-center justify-center backdrop-blur-md transition-all duration-500">
+    <i class="pi pi-spin pi-spinner text-blue-600 text-6xl mb-6 shadow-sm rounded-full"></i>
+    <h2 class="text-3xl font-bold text-gray-800 animate-pulse tracking-wide">Logging out...</h2>
+    <p class="text-gray-500 mt-3 font-medium text-lg">Safely clearing your session</p>
   </div>
 }

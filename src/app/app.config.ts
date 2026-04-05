@@ -9,7 +9,7 @@ import { provideAbpCore, withOptions } from '@abp/ng.core';
 import { registerLocale } from '@abp/ng.core/locale';
 import { provideAbpOAuth } from '@abp/ng.oauth';
 import { provideStore } from '@ngrx/store';
-import { MessageService } from 'primeng/api';
+import { ConfirmationService, MessageService } from 'primeng/api';
 import { environment } from '../environments/environment';
 
 export const appConfig: ApplicationConfig = {
@@ -30,6 +30,7 @@ export const appConfig: ApplicationConfig = {
     ),
     
     provideStore(),
-    MessageService
+    MessageService,
+    ConfirmationService
   ],
 };

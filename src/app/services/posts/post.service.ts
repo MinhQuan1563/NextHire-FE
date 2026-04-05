@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BaseApiService } from '../base-api.service';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { PostCreateForm, PostResponse, PostUpdateForm } from '@app/models/post/post.model';
 
 @Injectable({
@@ -60,6 +60,16 @@ export class PostService extends BaseApiService<PostResponse> {
     return this.http.get<PostResponse[]>(this.getUrl('feeds/me'), { params });
   }
 
+  getMyReactedPosts(pageSize: number, lastCreatedAt?: string, lastPostCode?: string): Observable<PostResponse[]> {
+    const queryPayload = {
+      pageSize,
+      lastCreatedAt,
+      lastPostCode
+    };
+    const params = this.buildHttpParams(queryPayload);
+    return this.http.get<PostResponse[]>(this.getUrl('my-reacted-posts'), { params });
+  }
+
   createPost(data: PostCreateForm): Observable<PostResponse> {
     const formData = new FormData();
     if (data.content) formData.append('Content', data.content);
@@ -85,5 +95,31 @@ export class PostService extends BaseApiService<PostResponse> {
       });
     }
     return this.http.put<PostResponse>(this.getUrl(), formData);
+  }
+
+  toggleSavePost(postCode: string): Observable<boolean> {
+    const headers = { 'Content-Type': 'application/json' };
+    const payload = JSON.stringify(postCode); 
+
+    return this.http.post<{ isSaved: boolean }>(`${this.getUrl()}/toggle-save`, payload, { headers })
+      .pipe(map(res => !!res?.isSaved));
+  }
+
+  hidePost(postCode: string): Observable<void> {
+    const headers = { 'Content-Type': 'application/json' };
+    const payload = JSON.stringify(postCode); 
+
+    return this.http.post<void>(`${this.getUrl()}/hide`, payload, { headers });
+  }
+
+  unhidePost(postCode: string): Observable<void> {
+    const headers = { 'Content-Type': 'application/json' };
+    const payload = JSON.stringify(postCode);
+
+    return this.http.post<void>(`${this.getUrl()}/unhide`, payload, { headers });
+  }
+
+  getMySavedPosts(): Observable<PostResponse[]> {
+    return this.http.get<PostResponse[]>(this.getUrl('saved'));
   }
 }

@@ -5,11 +5,16 @@ import { AuthService } from '@app/services/auth/auth.service';
 import { PostLikeService } from '@app/services/posts/post-like.service';
 import { CreatePostLike } from '@app/models/post/post-like.model';
 import { PreventSpamDirective } from '@shared/directives/prevent-spam.directive';
+import { DialogModule } from 'primeng/dialog';
+import { PostCommentComponent } from '../post-comment/post-comment.component';
 
 @Component({
   selector: 'app-post-actions',
   standalone: true,
-  imports: [CommonModule, ButtonModule, PreventSpamDirective],
+  imports: [
+    CommonModule, ButtonModule, PreventSpamDirective, 
+    DialogModule, PostCommentComponent
+  ],
   templateUrl: './post-actions.component.html',
   styleUrls: ['./post-actions.component.scss']
 })
@@ -20,6 +25,7 @@ export class PostActionsComponent implements OnInit {
   @Output() likeUpdated = new EventEmitter<number>();
 
   hasLiked = false;
+  showComments = false;
   currentUserCode = '';
 
   constructor(

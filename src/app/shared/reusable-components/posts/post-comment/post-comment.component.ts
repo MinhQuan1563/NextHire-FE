@@ -8,19 +8,30 @@ import { PostCommentService } from '@app/services/posts/post-comment.service';
 import { AuthService } from '@app/services/auth/auth.service';
 import { AvatarModule } from 'primeng/avatar';
 import { InputRichControlComponent } from '@shared/reusable-components/input-rich-control/input-rich-control.component';
+import { ConfirmationService } from 'primeng/api';
+
+export interface UIComment extends PostComment {
+  replies?: UIComment[];
+  isLoadingReplies?: boolean;
+  repliesLoaded?: boolean;
+}
 
 @Component({
   selector: 'app-post-comments',
   standalone: true,
-  imports: [CommonModule, FormsModule, ButtonModule, 
-    InputTextareaModule, AvatarModule, InputRichControlComponent],
+  imports: [
+    CommonModule, FormsModule, ButtonModule, 
+    InputTextareaModule, AvatarModule,
+    InputRichControlComponent
+  ],
   templateUrl: './post-comment.component.html',
   styleUrls: ['./post-comment.component.scss']
 })
+
 export class PostCommentComponent implements OnInit {
   @Input() postCode!: string;
 
-  comments: PostComment[] = [];
+  comments: UIComment[] = [];
   newCommentContent = '';
   replyingTo: string | null = null;
   replyContent = '';
@@ -31,7 +42,11 @@ export class PostCommentComponent implements OnInit {
   hasMore = true;
   currentUserCode = '';
 
-  constructor(private commentService: PostCommentService, private authService: AuthService) {}
+  constructor(
+    private commentService: PostCommentService, 
+    private authService: AuthService,
+    private confirmationService: ConfirmationService
+  ) {}
 
   ngOnInit() {
     const code = this.authService.getUserCodeFromToken() || '';
@@ -120,10 +135,34 @@ export class PostCommentComponent implements OnInit {
     this.commentService.createComment(dto).subscribe({
       next: (reply) => {
         const parent = this.comments.find(c => c.commentId === parentId);
-        if (parent) parent.childCommentCount++;
+        if (parent) {
+          parent.childCommentCount++;
+          if (!parent.replies) {
+            parent.replies = [];
+          }
+          parent.replies.unshift(reply);
+        }
         this.cancelReply();
       },
       error: (err) => console.error('Error replying:', err)
+    });
+  }
+
+  loadReplies(parent: UIComment) {
+    if (parent.isLoadingReplies) return;
+    
+    parent.isLoadingReplies = true;
+    
+    this.commentService.getChildComments(parent.commentId, 10).subscribe({
+      next: (replies: PostComment[]) => {
+        parent.replies = replies;
+        parent.repliesLoaded = true;
+        parent.isLoadingReplies = false;
+      },
+      error: (err) => {
+        console.error('Lỗi tải replies', err);
+        parent.isLoadingReplies = false;
+      }
     });
   }
 
@@ -136,8 +175,45 @@ export class PostCommentComponent implements OnInit {
     });
   }
 
-  // Helper: Load replies (có thể mở rộng nếu cần)
-  loadReplies(parentId: string) {
-    // Implement nếu cần load replies riêng
+  confirmDelete(commentId: string) {
+  this.confirmationService.confirm({
+    message: 'Are you sure you want to delete this comment?',
+    header: 'Confirm Delete',
+    icon: 'pi pi-exclamation-triangle text-red-500',
+    acceptButtonStyleClass: 'p-button-danger p-button-sm border-round-md shadow-1 hover:shadow-2 transition-all',
+    rejectButtonStyleClass: 'p-button-text p-button-plain p-button-sm text-600 hover:text-900 hover:surface-200 border-round-md transition-all mr-3',
+    
+    accept: () => {
+      this.executeDelete(commentId);
+    }
+  });
+}
+
+  executeDelete(commentId: string) {
+    this.commentService.deleteComment(commentId).subscribe({
+      next: () => {
+        const initialLength = this.comments.length;
+        this.comments = this.comments.filter(c => c.commentId !== commentId);
+
+        if (this.comments.length === initialLength) {
+          this.comments.forEach(parent => {
+            if (parent.replies && parent.replies.some(r => r.commentId === commentId)) {
+              parent.replies = parent.replies.filter(r => r.commentId !== commentId);
+              parent.childCommentCount = Math.max(0, parent.childCommentCount - 1); 
+            }
+          });
+        }
+      },
+      error: (err) => console.error('Error deleting comment:', err)
+    });
+  }
+
+  getVnTime(utcString: string): Date | null {
+    if (!utcString) return null;
+
+    let cleanStr = utcString.replace(/Z/ig, '');
+    cleanStr = cleanStr.split('.')[0];
+    
+    return new Date(cleanStr + 'Z');
   }
 }

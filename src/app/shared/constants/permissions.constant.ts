@@ -63,4 +63,28 @@ export const PERMISSIONS = {
         Delete: "NextHireApp.Games.Delete",
         ResetScore: "NextHireApp.Games.ResetScore",
     },
+
+    // Friendships
+    Friendships: {
+        Default: "NextHireApp.Friendships",
+        Manage: "NextHireApp.Friendships.Manage",
+    },
+
+    // Messages
+    Messages: {
+        Default: "NextHireApp.Messages",
+        Send: "NextHireApp.Messages.Send",
+    },
+
+    // CompanyFollowers
+    CompanyFollowers: {
+        Default: "NextHireApp.CompanyFollowers",
+        Manage: "NextHireApp.CompanyFollowers.Manage",
+    },
+
+    // UserProfiles
+    UserProfiles: {
+        Default: "NextHireApp.UserProfiles",
+        Update: "NextHireApp.UserProfiles.Update",
+    },
 };

@@ -11,7 +11,7 @@
   </button>
 
   <button pButton 
-          (click)="onComment()" 
+          (click)="showComments = true"
           class="p-button-text flex-1 flex justify-center items-center gap-1.5 py-2 text-gray-500 hover:bg-gray-100 transition-colors rounded-md">
       <i class="pi pi-comment text-lg"></i>
       <span class="font-semibold text-sm">Comment</span>
@@ -23,5 +23,22 @@
       <i class="pi pi-share-alt text-lg"></i>
       <span class="font-semibold text-sm">Share</span>
   </button>
+
+    <p-dialog 
+        [(visible)]="showComments" 
+        [modal]="true" 
+        [draggable]="false" 
+        [resizable]="false"
+        [dismissableMask]="true"
+        header="Comments"
+        [style]="{ width: '700px', height: '665px', 'max-width': '95vw', 'max-height': '80vh' }"
+        styleClass="custom-dialog">
+        
+        @if (showComments) {
+            <div class="pt-2">
+                <app-post-comments [postCode]="postId"></app-post-comments>
+            </div>
+        }
+    </p-dialog>
   
 </div>

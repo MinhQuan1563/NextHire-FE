@@ -21,7 +21,7 @@
     <div class="p-4 flex flex-col max-h-[75vh] overflow-y-hidden">
       
       <div class="flex items-center gap-3 mb-4">
-        <p-avatar [image]="currentUserAvatar || 'assets/images/default-avatar.png'" shape="circle" [style]="{ width: '44px', height: '44px' }"></p-avatar>
+        <p-avatar [image]="currentUserAvatar || 'assets/images/user-default.jpg'" shape="circle" [style]="{ width: '44px', height: '44px' }"></p-avatar>
         <div class="flex flex-col justify-center">
           
           <h4 class="font-bold text-[15px] text-black leading-tight flex flex-wrap items-center gap-1">
@@ -70,7 +70,6 @@
              <span class="font-bold text-white text-sm">Aa</span>
           </div>
         </div>
-        <i class="pi pi-face-smile text-xl text-gray-400 cursor-pointer hover:text-gray-600 transition-colors">🙂</i>
       </div>
 
       <div *ngIf="previewImages.length > 0" class="grid grid-cols-2 gap-2 p-2 border border-gray-200 rounded-xl relative mb-4">

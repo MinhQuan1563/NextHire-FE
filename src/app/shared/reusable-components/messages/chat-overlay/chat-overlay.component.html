@@ -41,7 +41,7 @@
                (click)="onChatClick(chat)">
             
             <div class="relative w-[52px] h-[52px] flex-shrink-0">
-              <p-avatar [image]="chat.partnerAvatar || 'assets/images/default-avatar.png'" shape="circle" styleClass="w-full h-full"></p-avatar>
+              <p-avatar [image]="chat.partnerAvatar || 'assets/images/user-default.jpg'" shape="circle" styleClass="w-full h-full"></p-avatar>
               @if (chat.isOnline) {
                 <div class="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full"></div>
               }
@@ -69,7 +69,7 @@
 
         } @empty {
           <div class="text-center text-gray-500 py-8 text-sm">
-            {{ activeFilter === 'unread' ? 'Không có tin nhắn chưa đọc.' : 'Chưa có cuộc trò chuyện nào.' }}
+            {{ activeFilter === 'unread' ? 'No unread messages.' : 'No conversations yet.' }}
           </div>
         }
       }

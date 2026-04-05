@@ -65,6 +65,7 @@ export class AdminLayoutComponent {
     { label: 'Manage Companies', icon: 'pi pi-building', route: '/admin/companies' },
     { label: 'CV Templates', icon: 'pi pi-file', route: '/admin/cv-templates' },
     { label: 'Manage Games', icon: 'pi pi-box', route: '/admin/games' },
+    { label: 'Manage Permissions', icon: 'pi pi-shield', route: '/admin/permissions' },
     { label: 'Error Logs', icon: 'pi pi-exclamation-triangle', route: '/admin/error-logs' }
   ];
 

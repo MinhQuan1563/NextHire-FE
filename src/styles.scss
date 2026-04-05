@@ -45,3 +45,12 @@ html, body {
 .pac-container {
   z-index: 100000 !important; 
 }
+
+// Custom styles for dialog
+.custom-dialog .p-dialog-content {
+    padding: 0 16px 16px 16px !important; 
+}
+
+.custom-dialog .p-dialog-header {
+    padding: 16px 24px !important; 
+}

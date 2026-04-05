@@ -1,16 +1,10 @@
 <div class="bg-white rounded-lg shadow overflow-hidden">
   <ng-container *ngIf="currentUser != null else anon">
     <div class="relative">
-      <ng-container *ngIf="currentUser.profilePicture; else grayBg">
-        <img
-          [src]="currentUser.profilePicture"
-          alt="Cover"
-          class="w-full h-16 object-cover"
-        />
-      </ng-container>
+      <div class="w-full h-16 bg-gradient-to-r from-blue-200 to-blue-400"></div>
       <div class="absolute left-1/2 transform -translate-x-1/2 -bottom-8">
         <p-avatar
-          [image]="currentUser.avatarUrl"
+          [image]="currentUser.avatarUrl || 'assets/images/user-default.jpg'"
           styleClass="w-16 h-16 text-xl border-2 border-white"
           shape="circle"
         >
@@ -19,26 +13,26 @@
     </div>
 
     <div class="text-center pt-10 pb-4 border-b border-gray-200 px-4">
-      <h3 class="font-semibold text-gray-800 hover:underline cursor-pointer">
+      <a (click)="navigateToProfile()" class="font-semibold text-gray-800 hover:underline cursor-pointer">
         {{ currentUser.fullName! }}
-      </h3>
-      <p class="text-xs text-gray-500 mt-1">{{ currentUser.email || currentUser.username }}</p>
+      </a>
+      <p class="text-xs text-gray-500 mt-1">{{ currentUser.email || 'Please update your email' }}</p>
     </div>
 
     <div class="py-3 px-4 text-xs text-gray-500 border-b border-gray-200 space-y-1">
       <div class="flex justify-between items-center hover:bg-gray-100 p-1 rounded cursor-pointer">
-        <span>Lượt xem hồ sơ</span>
+        <span>Profile Views</span>
         <span class="text-blue-600 font-semibold">{{ 0 }}</span>
       </div>
       <div class="flex justify-between items-center hover:bg-gray-100 p-1 rounded cursor-pointer">
-        <span>Lượt hiển thị bài viết</span>
+        <span>Post Impressions</span>
         <span class="text-blue-600 font-semibold">{{ 0 }}</span>
       </div>
     </div>
 
-    <div class="py-3 px-4 text-xs text-gray-500 hover:bg-gray-100 cursor-pointer">
+    <div class="py-3 px-4 text-xs text-gray-500 hover:bg-gray-100 cursor-pointer" (click)="navigateToSavedPosts()">
       <i class="pi pi-bookmark mr-1"></i>
-      <span class="font-semibold text-gray-700">Mục đã lưu</span>
+      <span class="font-semibold text-gray-700">Saved Posts</span>
     </div>
   </ng-container>
   
@@ -46,11 +40,9 @@
     <div class="w-full h-16 bg-gray-300"></div>
   </ng-template>
 
-
   <ng-template #anon>
     <div class="relative">
-      Error when retrieve user infomation
+      Error retrieving user information
     </div>
-
   </ng-template>
 </div>

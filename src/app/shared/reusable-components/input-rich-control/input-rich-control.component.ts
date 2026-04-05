@@ -35,9 +35,7 @@ export class InputRichControlComponent {
       return;
     }
     
-    console.log('Nội dung comment:', this.inputValue);
-    // TODO: Viết logic gọi API gửi comment ở đây...
-    
+    this.onSend.emit(this.inputValue.trim());
     this.inputValue = ''; 
   }
 

@@ -1,0 +1,90 @@
+<div class="container mx-auto px-4 py-6 max-w-5xl">
+  <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+    
+    <div class="flex justify-between items-start mb-6 pb-5 border-b border-gray-200">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900 m-0">Role Permissions</h1>
+        <p class="text-gray-500 text-sm mt-1.5">Manage and configure access rights for different account types.</p>
+      </div>
+      <p-button 
+        label="Save Changes" 
+        icon="pi pi-check" 
+        [loading]="isSaving" 
+        (onClick)="savePermissions()"
+        styleClass="p-button-primary shadow-sm font-semibold rounded-lg">
+      </p-button>
+    </div>
+
+    <div class="mb-8 flex items-center gap-4 bg-gray-50/50 p-4 rounded-lg border border-gray-100">
+      <span class="font-semibold text-gray-700">Select Role:</span>
+      <p-dropdown 
+        [options]="roles" 
+        [(ngModel)]="selectedRole" 
+        (onChange)="onRoleChange()"
+        styleClass="w-64 !rounded-lg"
+        placeholder="Select a role">
+      </p-dropdown>
+    </div>
+
+    <div *ngIf="isLoading" class="text-center py-16">
+      <i class="pi pi-spin pi-spinner text-4xl text-blue-500"></i>
+      <p class="mt-3 text-gray-500 font-medium">Fetching permissions...</p>
+    </div>
+
+    <div *ngIf="!isLoading">
+      <p-accordion [multiple]="true" styleClass="custom-permission-accordion">
+        <ng-container *ngFor="let group of permissionGroups">
+          
+          <p-accordionTab *ngIf="group.name === 'NextHireApp'" [selected]="true">
+            
+            <ng-template pTemplate="header">
+              <div class="flex items-center gap-2 text-gray-800">
+                <i class="pi pi-shield text-blue-600"></i>
+                <span class="font-bold text-lg">{{ group.displayName }} Permissions</span>
+              </div>
+            </ng-template>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 px-2 py-4">
+              <ng-container *ngFor="let parentPerm of group.structuredPerms">
+                <div class="bg-gray-50/50 rounded-lg p-5 border border-gray-100 shadow-sm hover:shadow transition-shadow">
+                  
+                  <div class="flex items-center gap-3 pb-3 border-b border-gray-200">
+                    <p-checkbox 
+                      [(ngModel)]="parentPerm.isGranted" 
+                      [binary]="true" 
+                      [inputId]="parentPerm.name"
+                      (onChange)="onParentPermissionChange(group, parentPerm)">
+                    </p-checkbox>
+                    <label [for]="parentPerm.name" class="cursor-pointer text-gray-900 font-bold text-[15px] hover:text-blue-600 transition-colors">
+                      {{ parentPerm.displayName }}
+                    </label>
+                  </div>
+
+                  <div class="flex flex-col gap-3 mt-4 ml-2">
+                    <ng-container *ngFor="let childPerm of parentPerm.children">
+                      <div class="flex items-center gap-3 pl-4 border-l-2" [ngClass]="childPerm.isGranted ? 'border-blue-400' : 'border-gray-200'">
+                        <p-checkbox 
+                          [(ngModel)]="childPerm.isGranted" 
+                          [binary]="true" 
+                          [inputId]="childPerm.name"
+                          (onChange)="onChildPermissionChange(group, parentPerm, childPerm)">
+                        </p-checkbox>
+                        <label [for]="childPerm.name" class="cursor-pointer text-gray-600 text-sm font-medium hover:text-gray-900 transition-colors" [ngClass]="{'text-gray-900': childPerm.isGranted}">
+                          {{ childPerm.displayName }}
+                        </label>
+                      </div>
+                    </ng-container>
+                  </div>
+                  
+                </div>
+              </ng-container>
+            </div>
+
+          </p-accordionTab>
+
+        </ng-container>
+      </p-accordion>
+    </div>
+
+  </div>
+</div>

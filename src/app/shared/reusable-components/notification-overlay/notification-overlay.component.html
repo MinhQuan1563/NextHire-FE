@@ -1,24 +1,65 @@
-<p-overlayPanel
-  #op
-  [style]="{ width: '400px' }"
-  styleClass="shadow-2xl rounded-2xl mt-2 border border-gray-100"
->
-  <div class="flex flex-col max-h-[550px]">
-    <div class="flex justify-between items-center px-4 py-3">
-      <h2 class="text-[24px] font-bold text-black">Notifications</h2>
-      <button class="w-9 h-9 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-600 text-lg transition-colors">
-        <i class="pi pi-ellipsis-h"></i>
-      </button>
-    </div>
+<p-overlayPanel #op [style]="{ width: '380px', padding: '0' }" styleClass="shadow-xl rounded-xl border-none">
+  
+  <div class="px-4 py-3 border-b flex justify-between items-center bg-white sticky top-0 z-10 rounded-t-xl">
+    <h3 class="font-bold text-lg m-0 text-gray-800">Notifications</h3>
+    <button (click)="markAllAsRead()" 
+            class="text-blue-600 hover:bg-blue-50 px-2 py-1 rounded text-sm font-semibold transition-colors">
+      Mark all as read
+    </button>
+  </div>
 
-    <div class="px-4 pt-4 border-t border-gray-200 text-center pb-3">
-      <a
-        routerLink="/notifications"
-        (click)="op.hide()"
-        class="text-blue-600 font-semibold text-[15px] hover:underline cursor-pointer"
-      >
-        See all in Notification
-      </a>
+  <div class="max-h-[400px] overflow-y-auto bg-white" (scroll)="onScroll($event)">
+    
+    @if (isLoading && notifications.length === 0) {
+      <div class="p-8 text-center text-gray-400">
+        <i class="pi pi-spin pi-spinner text-3xl"></i>
+      </div>
+    }
+
+    <div class="flex flex-col">
+      @for (noti of notifications; track noti.notificationId) {
+        
+        <div (click)="onNotiClick(noti)" 
+             class="flex gap-3 p-3 hover:bg-gray-50 cursor-pointer transition-colors border-b"
+             [ngClass]="{'bg-blue-50/40': !noti.isRead}">
+          
+          <div class="w-12 h-12 rounded-full flex justify-center items-center shrink-0"
+               [ngClass]="noti.channel === 2 ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'">
+            <i class="pi text-xl" [ngClass]="noti.channel === 2 ? 'pi-envelope' : 'pi-bell'"></i>
+          </div>
+
+          <div class="flex-1 min-w-0 pt-1">
+            <p class="text-[14px] text-gray-800 m-0 line-clamp-3 leading-snug">
+              <span class="font-bold mr-1 line-clamp-1">{{ noti.title }}</span> 
+              <span class="text-gray-600 line-clamp-2">{{ noti.content }}</span>
+            </p>
+            <span class="text-[12px] font-medium mt-1 inline-block" 
+                  [ngClass]="noti.isRead ? 'text-gray-500' : 'text-blue-600'">
+              {{ noti.createDate | date:'MMM d, y, h:mm a' }}
+            </span>
+          </div>
+
+          @if (!noti.isRead) {
+            <div class="w-2.5 h-2.5 bg-blue-600 rounded-full mt-2 shrink-0 shadow-sm"></div>
+          }
+        </div>
+
+      }
+
+      @empty {
+        @if (!isLoading) {
+          <div class="p-8 text-center flex flex-col items-center">
+            <i class="pi pi-bell-slash text-4xl mb-3 text-gray-300"></i>
+            <p class="text-gray-500 font-medium m-0">No notifications yet.</p>
+          </div>
+        }
+      }
     </div>
+    
+    @if (isLoadingMore) {
+      <div class="p-3 text-center text-blue-500">
+        <i class="pi pi-spin pi-spinner text-xl"></i>
+      </div>
+    }
   </div>
 </p-overlayPanel>
