@@ -1,5 +1,6 @@
 import { Component, ElementRef, ViewChild, AfterViewInit, Input, Output, EventEmitter } from '@angular/core';
 import { AuthService } from '@app/services/auth/auth.service';
+import { environment } from '@env/environment';
 import { ZegoUIKitPrebuilt } from '@zegocloud/zego-uikit-prebuilt';
 
 @Component({
@@ -24,8 +25,8 @@ export class VideoCallComponent implements AfterViewInit {
   }
 
   joinRoom() {
-    const appID = 185239144;
-    const serverSecret = "5baadb803a5cd3eea514b0b4eb3cb902"; 
+    const appID = environment.videoAppId;
+    const serverSecret = environment.videoServerSecret;
 
     const userCode = this.authService.getUserCodeFromToken() || '';
     const userName = this.authService.getCurrentUser()?.fullName || 'NextHire User';
