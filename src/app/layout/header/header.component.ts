@@ -65,7 +65,7 @@ export class HeaderComponent implements OnInit {
   public unreadCount = 0;
 
   constructor(
-    private authService: AuthService,
+    public authService: AuthService,
     private router: Router,
     private messageService: MessageService,
     public messageStateService: MessageStateService,

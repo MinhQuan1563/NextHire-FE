@@ -18,75 +18,91 @@
     </div>
   </div>
 
-  <nav
-    class="main-nav hidden md:flex flex-1 justify-center items-center h-full gap-2"
-  >
+  <nav class="main-nav hidden md:flex flex-1 justify-center items-center h-full gap-2">
+    
     <a
       routerLink="/"
-      routerLinkActive="text-blue-600 border-blue-600"
+      routerLinkActive="border-blue-600"
       [routerLinkActiveOptions]="{ exact: true }"
-      class="h-full flex items-center justify-center px-1 border-b-[3px] border-transparent text-gray-500 cursor-pointer group"
+      #rlaHome="routerLinkActive" 
+      class="h-full flex items-center justify-center px-1 border-b-[3px] border-transparent cursor-pointer"
       pTooltip="Home"
       tooltipPosition="bottom"
     >
       <div
-        class="flex items-center justify-center w-[60px] lg:w-[80px] h-[50px] rounded-lg group-hover:bg-gray-100 transition-colors"
+        class="flex items-center justify-center w-[60px] lg:w-[80px] h-[50px] rounded-lg transition-colors"
+        [ngClass]="rlaHome.isActive ? 'bg-blue-100 text-blue-600' : 'text-gray-500 hover:bg-gray-100'"
       >
         <i class="pi pi-home text-[26px]"></i>
       </div>
     </a>
-    <a
-      routerLink="/admin"
-      routerLinkActive="text-blue-600 border-blue-600"
-      class="h-full flex items-center justify-center px-1 border-b-[3px] border-transparent text-gray-500 cursor-pointer group"
-      pTooltip="Admin"
-      tooltipPosition="bottom"
-    >
-      <div
-        class="flex items-center justify-center w-[60px] lg:w-[80px] h-[50px] rounded-lg group-hover:bg-gray-100 transition-colors"
+
+    @if (authService.isAdmin()) {
+      <a
+        routerLink="/admin"
+        routerLinkActive="border-blue-600"
+        #rlaAdmin="routerLinkActive"
+        class="h-full flex items-center justify-center px-1 border-b-[3px] border-transparent cursor-pointer"
+        pTooltip="Admin"
+        tooltipPosition="bottom"
       >
-        <i class="pi pi-cog text-[26px]"></i>
-      </div>
-    </a>
+        <div
+          class="flex items-center justify-center w-[60px] lg:w-[80px] h-[50px] rounded-lg transition-colors"
+          [ngClass]="rlaAdmin.isActive ? 'bg-blue-100 text-blue-600' : 'text-gray-500 hover:bg-gray-100'"
+        >
+          <i class="pi pi-cog text-[26px]"></i>
+        </div>
+      </a>
+    }
+
     <a
       routerLink="/network"
-      routerLinkActive="text-blue-600 border-blue-600"
-      class="h-full flex items-center justify-center px-1 border-b-[3px] border-transparent text-gray-500 cursor-pointer group"
+      routerLinkActive="border-blue-600"
+      #rlaNetwork="routerLinkActive"
+      class="h-full flex items-center justify-center px-1 border-b-[3px] border-transparent cursor-pointer"
       pTooltip="Network"
       tooltipPosition="bottom"
     >
       <div
-        class="flex items-center justify-center w-[60px] lg:w-[80px] h-[50px] rounded-lg group-hover:bg-gray-100 transition-colors"
+        class="flex items-center justify-center w-[60px] lg:w-[80px] h-[50px] rounded-lg transition-colors"
+        [ngClass]="rlaNetwork.isActive ? 'bg-blue-100 text-blue-600' : 'text-gray-500 hover:bg-gray-100'"
       >
         <i class="pi pi-users text-[26px]"></i>
       </div>
     </a>
+
     <a
       routerLink="/jobs"
-      routerLinkActive="text-blue-600 border-blue-600"
-      class="h-full flex items-center justify-center px-1 border-b-[3px] border-transparent text-gray-500 cursor-pointer group"
+      routerLinkActive="border-blue-600"
+      #rlaJobs="routerLinkActive"
+      class="h-full flex items-center justify-center px-1 border-b-[3px] border-transparent cursor-pointer"
       pTooltip="Jobs"
       tooltipPosition="bottom"
     >
       <div
-        class="flex items-center justify-center w-[60px] lg:w-[80px] h-[50px] rounded-lg group-hover:bg-gray-100 transition-colors"
+        class="flex items-center justify-center w-[60px] lg:w-[80px] h-[50px] rounded-lg transition-colors"
+        [ngClass]="rlaJobs.isActive ? 'bg-blue-100 text-blue-600' : 'text-gray-500 hover:bg-gray-100'"
       >
         <i class="pi pi-briefcase text-[26px]"></i>
       </div>
     </a>
+
     <a
       routerLink="/cv-template"
-      routerLinkActive="text-blue-600 border-blue-600"
-      class="h-full flex items-center justify-center px-1 border-b-[3px] border-transparent text-gray-500 cursor-pointer group"
+      routerLinkActive="border-blue-600"
+      #rlaCv="routerLinkActive"
+      class="h-full flex items-center justify-center px-1 border-b-[3px] border-transparent cursor-pointer"
       pTooltip="Create CV"
       tooltipPosition="bottom"
     >
       <div
-        class="flex items-center justify-center w-[60px] lg:w-[80px] h-[50px] rounded-lg group-hover:bg-gray-100 transition-colors"
+        class="flex items-center justify-center w-[60px] lg:w-[80px] h-[50px] rounded-lg transition-colors"
+        [ngClass]="rlaCv.isActive ? 'bg-blue-100 text-blue-600' : 'text-gray-500 hover:bg-gray-100'"
       >
         <i class="pi pi-id-card text-[26px]"></i>
       </div>
     </a>
+
   </nav>
 
   <div class="flex items-center justify-end w-1/4 gap-2.5">

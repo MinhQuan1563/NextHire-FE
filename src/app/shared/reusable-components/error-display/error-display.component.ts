@@ -11,9 +11,9 @@ import { ButtonModule } from 'primeng/button';
 })
 export class ErrorDisplayComponent {
   @Input() errorCode: string = '403';
-  @Input() title: string = 'Truy cập bị từ chối';
-  @Input() message: string = 'Bạn không có quyền thực hiện thao tác này.';
-  @Input() buttonLabel: string = 'Về trang chủ';
+  @Input() title: string = 'Access denied';
+  @Input() message: string = 'You do not have permission to perform this action.';
+  @Input() buttonLabel: string = 'Go to homepage';
   @Input() showButton: boolean = true;
 
   @Output() onAction = new EventEmitter<void>();

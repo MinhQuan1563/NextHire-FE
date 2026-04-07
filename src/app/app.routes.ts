@@ -21,6 +21,7 @@ import { authGuard } from './guards/auth.guard';
 import { PermissionGuard } from './guards/permission.guard';
 import { PERMISSIONS } from '@shared/constants/permissions.constant';
 import { gameAccessGuard } from './guards/game-access.guard';
+import { adminGuard } from './guards/admin.guard';
 
 export const routes: Routes = [
   // ==========================================
@@ -144,7 +145,8 @@ export const routes: Routes = [
   // ==========================================
   {
     path: 'admin',
-    loadChildren: () => import('./pages/admin/admin.routes').then(m => m.adminRoutes)
+    loadChildren: () => import('./pages/admin/admin.routes').then(m => m.adminRoutes),
+    canActivate: [adminGuard]
   },
   {
     path: 'forbidden',
